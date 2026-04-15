@@ -1,0 +1,50 @@
+### 1) Create an account - should get 201 with auto-generated ID
+POST http://localhost:8080/stocks
+Content-Type: application/json
+
+{
+  "name": "Ayub Inc.",
+  "symbol": "AI",
+  "price": 1000.00
+}
+
+
+### 2) Create another account - should get 201 with a different ID
+POST http://localhost:8080/stocks
+Content-Type: application/json
+
+{
+  "name": "Iman Industries",
+  "symbol": "II",
+  "price": 1.23
+}
+
+### 2) Create another account - should get 201 with a different ID
+POST http://localhost:8080/stocks
+Content-Type: application/json
+
+{
+  "name": "Shivam LLC",
+  "symbol": "SL",
+  "price": 0.45
+}
+
+
+### 3) List all accounts - should see both accounts
+GET http://localhost:8080/stocks
+Accept: application/json
+
+
+### 4) Get one account by ID - should see Priya's account
+GET http://localhost:8080/stocks/1
+Accept: application/json
+
+
+### 5) Delete an account - should get 204 No Content
+DELETE http://localhost:8080/stocks/2
+Accept: application/json
+
+
+# ### 6) Get deleted account - should get 404
+# GET http://localhost:8090/api/accounts/2
+# Accept: application/json
