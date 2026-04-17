@@ -7,6 +7,13 @@ Content-Type: application/json
   "symbol": "AI",
   "price": 1000.00
 }
+### 1) Create an account - should get 201 with auto-generated ID
+GET http://localhost:8080/prices/AI
+Accept: application/json
+### 1) Create an account - should get 201 with auto-generated ID
+GET http://localhost:8080/prices/AAPL
+Accept: application/json
+
 
 
 ### 2) Create another account - should get 201 with a different ID
@@ -48,3 +55,7 @@ Accept: application/json
 # ### 6) Get deleted account - should get 404
 # GET http://localhost:8090/api/accounts/2
 # Accept: application/json
+
+### Get live price for AAPL
+GET http://localhost:8080/prices/AAPL
+Accept: application/json

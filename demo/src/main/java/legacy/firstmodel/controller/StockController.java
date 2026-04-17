@@ -26,8 +26,8 @@ public class StockController {
 
     
     @PostMapping
-    public ResponseEntity<Stock> createStock(@RequestBody CreateStockRequest request){}
-        Stock stock = new Stock(request.getSymbol(), request.getCompanyName(), request.getStockName(), request.getCurrency());
+    public ResponseEntity<Stock> createStock(@RequestBody CreateStockRequest request){
+        Stock stock = new Stock(request.getSymbol(), request.getCompanyName(), request.getStockName(), request.getPrice());
         Stock createdStock = stockService.createStock(stock);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdStock);
     }

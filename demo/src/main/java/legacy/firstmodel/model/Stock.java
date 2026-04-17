@@ -5,6 +5,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.persistence.Column;
 
 @Entity
 @Table(name = "stocks")
@@ -23,19 +24,19 @@ public class Stock {
     private String stockName;
 
 
-    @Column(name = "currency")
-    private String currency;
-`
+    @Column(name = "price", precision = 10, scale = 2)
+    private double price;
+
     public Stock() {
     }
     
     
 
-    public Stock(String symbol, String companyName, String stockName, String currency){
+    public Stock(String symbol, String companyName, String stockName, double price){
         this.symbol = symbol;
         this.companyName = companyName;
         this.stockName = stockName;
-        this.currency = currency;
+        this.price = price;
     }
     
 
@@ -73,12 +74,12 @@ public class Stock {
     }
 
 
-    public String getCurrency() {
-        return currency;
+    public double getPrice() {
+        return price;
     }
 
-    public void setCurrency(String currency) {
-        this.currency = currency;
+    public void setPrice(double price) {
+        this.price = price;
     }
 
 }
