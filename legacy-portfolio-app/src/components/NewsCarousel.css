@@ -1,0 +1,140 @@
+/* News carousel container */
+.news-carousel {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Navigation row: previous arrow, dot indicators, next arrow */
+.news-wheel-indicators {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+/* Arrow navigation buttons */
+.wheel-arrow {
+  background: transparent;
+  border: 1px solid #e0e7f0;
+  color: #173b6b;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 1.3rem;
+  font-family: inherit;
+  line-height: 1;
+  padding-bottom: 2px;
+}
+
+.wheel-arrow:hover {
+  background: #eaf1fa;
+  border-color: #b7c5db;
+}
+
+.wheel-arrow:focus-visible {
+  outline: 3px solid #9bc4ea;
+  outline-offset: 2px;
+}
+
+/* Dot row */
+.wheel-dots {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.wheel-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #cdd7e6;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition: background 0.2s ease;
+}
+
+.wheel-dot.active {
+  background: #2d68aa;
+  width: 11px;
+  height: 11px;
+}
+
+/* Stacked card area */
+.news-cards-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Base card appearance */
+.news-card {
+  border: 1px solid #e8eef6;
+  border-radius: 18px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Fully visible active story */
+.news-card-active {
+  background: #ffffff;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+}
+
+/* Dimmed inactive stories */
+.news-card-muted {
+  background: #f7fafc;
+  opacity: 0.45;
+  pointer-events: none;
+}
+
+/* Category tag (e.g. Earnings, Macro) */
+.news-tag {
+  display: inline-block;
+  background: #eaf1fa;
+  color: #1c4f91;
+  font-size: 0.76rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 4px 10px;
+  border-radius: 100px;
+  align-self: flex-start;
+}
+
+/* Headline text */
+.news-title {
+  font-size: 0.97rem;
+  font-weight: 700;
+  color: #162844;
+  line-height: 1.5;
+}
+
+/* Source and time row */
+.news-meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.82rem;
+  color: #8896aa;
+}
+
+/* Read-more link */
+.news-link {
+  font-size: 0.88rem;
+  color: #2d68aa;
+  font-weight: 700;
+  text-decoration: none;
+  align-self: flex-start;
+}
+
+.news-link:hover {
+  color: #173b6b;
+  text-decoration: underline;
+}

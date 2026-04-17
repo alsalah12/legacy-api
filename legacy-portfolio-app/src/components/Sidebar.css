@@ -1,0 +1,136 @@
+/* Dark collapsible left navigation */
+.sidebar {
+  width: 250px;
+  background: #13243b;
+  color: #e8eef8;
+  border-right: 1px solid #20344f;
+  transition: width 0.25s ease;
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  top: 78px;
+  height: calc(100vh - 78px);
+}
+
+.sidebar.collapsed {
+  width: 84px;
+}
+
+/* Toggle button row */
+.sidebar-top {
+  display: flex;
+  justify-content: flex-end;
+  padding: 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.sidebar-toggle {
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.06);
+  color: #ffffff;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-family: inherit;
+}
+
+.sidebar-toggle:focus-visible {
+  outline: 3px solid #4d88c7;
+  outline-offset: 2px;
+}
+
+/* Nav link list */
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  padding: 14px 12px;
+  gap: 6px;
+}
+
+/* Each nav item is a button for accessibility */
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  color: #d7e3f4;
+  background: transparent;
+  border: none;
+  padding: 14px;
+  border-radius: 12px;
+  font-size: 0.98rem;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.nav-item:hover {
+  background: rgba(255, 255, 255, 0.07);
+  color: #ffffff;
+}
+
+.nav-item.active {
+  background: linear-gradient(180deg, #2d68aa, #214f85);
+  color: #ffffff;
+  font-weight: 700;
+}
+
+.nav-item:focus-visible {
+  outline: 3px solid #4d88c7;
+  outline-offset: 2px;
+}
+
+.nav-icon {
+  min-width: 20px;
+  text-align: center;
+  font-size: 1rem;
+}
+
+.nav-label {
+  white-space: nowrap;
+}
+
+.signout-item {
+  margin-top: 14px;
+}
+
+/* Responsive: sidebar goes horizontal on mobile */
+@media (max-width: 1050px) {
+  .sidebar {
+    top: 0;
+    height: auto;
+    position: relative;
+  }
+}
+
+@media (max-width: 760px) {
+  .sidebar {
+    width: 100%;
+    height: auto;
+    position: relative;
+    top: 0;
+  }
+
+  .sidebar.collapsed {
+    width: 100%;
+  }
+
+  .sidebar-nav {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .nav-item {
+    flex: 1 1 calc(50% - 8px);
+    justify-content: center;
+  }
+}
+
+@media (max-width: 560px) {
+  .nav-item {
+    flex: 1 1 100%;
+  }
+}
