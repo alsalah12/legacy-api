@@ -1,10 +1,9 @@
 package legacy.firstmodel.repository;
 
-import legacy.firstmodel.model.Stock;
+import legacy.firstmodel.model.Portfolio;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface StockRepository extends JpaRepository<Stock, Long> {
-    Stock findBySymbol(String symbol);
+public interface PortfolioRepository extends JpaRepository<Portfolio, Long> {
 }

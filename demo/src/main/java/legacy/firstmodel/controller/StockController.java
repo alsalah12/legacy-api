@@ -1,18 +1,18 @@
 package legacy.firstmodel.controller;
 
-import java.util.Optional;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.http.HttpStatus;
 
-
-
-import legacy.firstmodel.dto.CreateStockRequest;
+import legacy.firstmodel.dto.ErrorResponse;
+import legacy.firstmodel.dto.StockCreateRequest;
+import legacy.firstmodel.dto.StockResponse;
 import legacy.firstmodel.model.Stock;
 import legacy.firstmodel.service.StockService;
-import legacy.firstmodel.dto.ErrorResponse;
 
 @RestController
 @RequestMapping("/stocks")
@@ -23,38 +23,120 @@ public class StockController {
         this.stockService = stockService;
     }
 
-
-    
     @PostMapping
-    public ResponseEntity<Stock> createStock(@RequestBody CreateStockRequest request){
-        Stock stock = new Stock(request.getSymbol(), request.getCompanyName(), request.getStockName(), request.getPrice());
+    public ResponseEntity<StockResponse> createStock(@RequestBody StockCreateRequest request) {
+        Stock stock = new Stock(
+            request.getCompanyName(),
+            request.getSymbol(),
+            request.getBidPrice(),
+            request.getAskPrice(),
+            request.getPerformance(),
+            request.getQuantityOwned()
+        );
         Stock createdStock = stockService.createStock(stock);
-        return ResponseEntity.status(HttpStatus.CREATED).body(createdStock);
+        StockResponse response = new StockResponse(
+            createdStock.getId(),
+            createdStock.getCompanyName(),
+            createdStock.getSymbol(),
+            createdStock.getBidPrice(),
+            createdStock.getAskPrice(),
+            createdStock.getPerformance(),
+            createdStock.getQuantityOwned()
+        );
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @GetMapping
-    public ResponseEntity<List<Stock>> getAllStocks(){
+    public ResponseEntity<List<StockResponse>> getAllStocks() {
         List<Stock> stocks = stockService.getAllStocks();
-        return ResponseEntity.ok(stocks);
+        List<StockResponse> responses = stocks.stream()
+            .map(s -> new StockResponse(
+                s.getId(),
+                s.getCompanyName(),
+                s.getSymbol(),
+                s.getBidPrice(),
+                s.getAskPrice(),
+                s.getPerformance(),
+                s.getQuantityOwned()
+            ))
+            .collect(Collectors.toList());
+        return ResponseEntity.ok(responses);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<?> getStockById(@PathVariable Long id){
+    public ResponseEntity<?> getStockById(@PathVariable Long id) {
         Optional<Stock> stock = stockService.getStockById(id);
         if (stock.isPresent()) {
-            return ResponseEntity.ok(stock.get());
+            Stock s = stock.get();
+            StockResponse response = new StockResponse(
+                s.getId(),
+                s.getCompanyName(),
+                s.getSymbol(),
+                s.getBidPrice(),
+                s.getAskPrice(),
+                s.getPerformance(),
+                s.getQuantityOwned()
+            );
+            return ResponseEntity.ok(response);
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-            .body(new ErrorResponse("NOT FOUND","Stock not found"));
+                .body(new ErrorResponse("NOT_FOUND", "Stock not found"));
+        }
+    }
+
+    @GetMapping("/symbol/{symbol}")
+    public ResponseEntity<?> getStockBySymbol(@PathVariable String symbol) {
+        Stock stock = stockService.getStockBySymbol(symbol);
+        if (stock != null) {
+            StockResponse response = new StockResponse(
+                stock.getId(),
+                stock.getCompanyName(),
+                stock.getSymbol(),
+                stock.getBidPrice(),
+                stock.getAskPrice(),
+                stock.getPerformance(),
+                stock.getQuantityOwned()
+            );
+            return ResponseEntity.ok(response);
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(new ErrorResponse("NOT_FOUND", "Stock not found"));
+        }
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<StockResponse> updateStock(@PathVariable Long id, @RequestBody StockCreateRequest request) {
+        Optional<Stock> existing = stockService.getStockById(id);
+        if (existing.isPresent()) {
+            Stock stock = existing.get();
+            stock.setCompanyName(request.getCompanyName());
+            stock.setSymbol(request.getSymbol());
+            stock.setBidPrice(request.getBidPrice());
+            stock.setAskPrice(request.getAskPrice());
+            stock.setPerformance(request.getPerformance());
+            stock.setQuantityOwned(request.getQuantityOwned());
+            Stock updated = stockService.updateStock(stock);
+            StockResponse response = new StockResponse(
+                updated.getId(),
+                updated.getCompanyName(),
+                updated.getSymbol(),
+                updated.getBidPrice(),
+                updated.getAskPrice(),
+                updated.getPerformance(),
+                updated.getQuantityOwned()
+            );
+            return ResponseEntity.ok(response);
+        } else {
+            return ResponseEntity.notFound().build();
         }
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteStock(@PathVariable Long id){
+    public ResponseEntity<?> deleteStock(@PathVariable Long id) {
         Optional<Stock> stock = stockService.getStockById(id);
         if (stock.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-            .body(new ErrorResponse("NOT FOUND","Stock not found"));
+                .body(new ErrorResponse("NOT_FOUND", "Stock not found"));
         }
         stockService.deleteStockById(id);
         return ResponseEntity.noContent().build();

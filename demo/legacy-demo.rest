@@ -59,3 +59,31 @@ Accept: application/json
 ### Get live price for AAPL
 GET http://localhost:8080/prices/AAPL
 Accept: application/json
+
+### Buy 10 shares of AAPL
+POST http://localhost:8080/holdings/buy
+Content-Type: application/json
+
+{
+  "symbol": "AAPL",
+  "quantity": 10,
+  "price": 150.00
+}
+
+### Sell 5 shares of AAPL
+POST http://localhost:8080/holdings/sell
+Content-Type: application/json
+
+{
+  "symbol": "AAPL",
+  "quantity": 5,
+  "price": 155.00
+}
+
+### Get current holdings
+GET http://localhost:8080/holdings
+Accept: application/json
+
+### Get portfolio balance
+GET http://localhost:8080/portfolio/1/balance
+Accept: application/json

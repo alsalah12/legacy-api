@@ -1,38 +1,20 @@
-package legacy.firstmodel.model;
+package legacy.firstmodel.dto;
 
-import jakarta.persistence.*;
 import java.math.BigDecimal;
 
-@Entity
-@Table(name = "stocks")
-public class Stock {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    @Column(name = "company_name", nullable = false)
+public class StockCreateRequest {
     private String companyName;
-
-    @Column(name = "symbol", nullable = false, unique = true)
     private String symbol;
-
-    @Column(name = "bid_price", nullable = false)
     private BigDecimal bidPrice;
-
-    @Column(name = "ask_price", nullable = false)
     private BigDecimal askPrice;
-
-    @Column(name = "performance", nullable = false)
     private BigDecimal performance;
-
-    @Column(name = "quantity_owned", nullable = false)
     private Integer quantityOwned;
 
     // Constructors, getters, setters
-    public Stock() {}
+    public StockCreateRequest() {}
 
-    public Stock(String companyName, String symbol, BigDecimal bidPrice, BigDecimal askPrice,
-                 BigDecimal performance, Integer quantityOwned) {
+    public StockCreateRequest(String companyName, String symbol, BigDecimal bidPrice, BigDecimal askPrice,
+                              BigDecimal performance, Integer quantityOwned) {
         this.companyName = companyName;
         this.symbol = symbol;
         this.bidPrice = bidPrice;
@@ -40,10 +22,6 @@ public class Stock {
         this.performance = performance;
         this.quantityOwned = quantityOwned;
     }
-
-    // Getters and setters
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
 
     public String getCompanyName() { return companyName; }
     public void setCompanyName(String companyName) { this.companyName = companyName; }
@@ -62,5 +40,4 @@ public class Stock {
 
     public Integer getQuantityOwned() { return quantityOwned; }
     public void setQuantityOwned(Integer quantityOwned) { this.quantityOwned = quantityOwned; }
-}    
-
+}
