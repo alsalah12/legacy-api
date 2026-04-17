@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+
+    <script>
+    //get data from form and send to server using fetch api
+
+    async function addUser() {
+        let name = document.getElementById('name').value;
+        let stockname = document.getElementById('stockname').value;
+        let purchasedate = document.getElementById('purchasedate').value;
+        let purchaseprice = document.getElementById('purchaseprice').value;
+        let quantity = document.getElementById('quantity').value;
+
+        alert(`Name: ${name}, Stock Name: ${stockname}, Purchase Date: ${purchasedate}, Purchase Price: ${purchaseprice}, Quantity: ${quantity}`);
+      // Add to json 
+
+        let userData = {
+            name: name,
+            age: age
+        };
+        
+        let response = await fetch("http://localhost:5000/users", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(userData)
+        })
+
+
+    }
+
+
+    
+    </script>
+    
+</head>
+<body>
+    <h1>Add User</h1>
+    <form>
+        Name: <input type="text" id="name" name="name" required><br><br>
+        Age: <input type="number" id="age" name="age" required><br><br>
+        <button type="submit" onclick="addUser()">Submit</button>
+    
+</body>
+</html>
