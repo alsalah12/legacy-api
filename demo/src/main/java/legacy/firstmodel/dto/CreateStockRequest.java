@@ -12,11 +12,15 @@ public class CreateStockRequest {
     public CreateStockRequest() {
     }
 
-    public CreateStockRequest(String name, String symbol, double price) {
-        this.name = name;
+    public CreateStockRequest(String symbol,String companyName, String stockName, String currency) {
         this.symbol = symbol;
-        this.price = price;
+        this.companyName = companyName;
+        this.stockName = stockName;
+        this.currency = currency;
     }
+
+
+    
 
     public String getName() {
         return name;
