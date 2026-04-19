@@ -87,3 +87,11 @@ Accept: application/json
 ### Get portfolio balance
 GET http://localhost:8080/portfolio/1/balance
 Accept: application/json
+
+### Get portfolio balance
+GET http://localhost:8080/portfolio
+Accept: application/json
+
+### Get stock history 
+GET http://localhost:8080/prices/AAPL/history
+Accept: application/json

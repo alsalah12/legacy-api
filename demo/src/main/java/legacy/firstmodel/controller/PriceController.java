@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import legacy.firstmodel.dto.HistoryResponse;
 import legacy.firstmodel.dto.PriceResponse;
 import legacy.firstmodel.service.PriceService;
 
@@ -22,5 +23,10 @@ public class PriceController {
         PriceResponse price = priceService.getLivePrice(symbol);
         return ResponseEntity.ok(price);
     }
-}
 
+    @GetMapping("/{symbol}/history")
+    public ResponseEntity<HistoryResponse> getHistory(@PathVariable String symbol) {
+        HistoryResponse history = priceService.getHistory(symbol);
+        return ResponseEntity.ok(history);
+    }
+}

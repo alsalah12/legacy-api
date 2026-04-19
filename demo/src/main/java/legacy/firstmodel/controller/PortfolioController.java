@@ -1,6 +1,7 @@
 package legacy.firstmodel.controller;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -12,7 +13,9 @@ import org.springframework.web.bind.annotation.*;
 
 import legacy.firstmodel.dto.ErrorResponse;
 import legacy.firstmodel.dto.PortfolioResponse;
+import legacy.firstmodel.model.Holdings;
 import legacy.firstmodel.model.Portfolio;
+import legacy.firstmodel.service.HoldingsService;
 import legacy.firstmodel.service.PortfolioService;
 
 @RestController
@@ -22,32 +25,40 @@ public class PortfolioController {
     @Autowired
     private PortfolioService portfolioService;
 
+    @Autowired
+    private HoldingsService holdingsService;
+
+    private BigDecimal calculatePortfolioTotalValue() {
+        return holdingsService.getAllHoldingsResponses().stream()
+            .map(holdings -> holdings.getTotalValue() == null ? BigDecimal.ZERO : holdings.getTotalValue())
+            .reduce(BigDecimal.ZERO, BigDecimal::add)
+            .setScale(2, RoundingMode.HALF_UP);
+    }
+
+    private PortfolioResponse buildResponse(Portfolio portfolio) {
+        BigDecimal totalValue = calculatePortfolioTotalValue();
+        return new PortfolioResponse(
+            portfolio.getId(),
+            totalValue,
+            portfolio.getTotalInvested(),
+            portfolio.getTotalProfit(),
+            portfolio.getTotalReturnPercent(),
+            portfolio.getBalance()
+        );
+    }
+
     @PostMapping
     public ResponseEntity<PortfolioResponse> createPortfolio(@RequestBody Portfolio portfolio) {
+        portfolio.setTotalValue(calculatePortfolioTotalValue());
         Portfolio created = portfolioService.createPortfolio(portfolio);
-        PortfolioResponse response = new PortfolioResponse(
-            created.getId(),
-            created.getTotalValue(),
-            created.getTotalInvested(),
-            created.getTotalProfit(),
-            created.getTotalReturnPercent(),
-            created.getBalance()
-        );
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        return ResponseEntity.status(HttpStatus.CREATED).body(buildResponse(created));
     }
 
     @GetMapping
     public ResponseEntity<List<PortfolioResponse>> getAllPortfolios() {
         List<Portfolio> portfolios = portfolioService.getAllPortfolios();
         List<PortfolioResponse> responses = portfolios.stream()
-            .map(p -> new PortfolioResponse(
-                p.getId(),
-                p.getTotalValue(),
-                p.getTotalInvested(),
-                p.getTotalProfit(),
-                p.getTotalReturnPercent(),
-                p.getBalance()
-            ))
+            .map(this::buildResponse)
             .collect(Collectors.toList());
         return ResponseEntity.ok(responses);
     }
@@ -56,16 +67,7 @@ public class PortfolioController {
     public ResponseEntity<?> getPortfolioById(@PathVariable Long id) {
         Optional<Portfolio> portfolio = portfolioService.getPortfolioById(id);
         if (portfolio.isPresent()) {
-            Portfolio p = portfolio.get();
-            PortfolioResponse response = new PortfolioResponse(
-                p.getId(),
-                p.getTotalValue(),
-                p.getTotalInvested(),
-                p.getTotalProfit(),
-                p.getTotalReturnPercent(),
-                p.getBalance()
-            );
-            return ResponseEntity.ok(response);
+            return ResponseEntity.ok(buildResponse(portfolio.get()));
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(new ErrorResponse("NOT_FOUND", "Portfolio not found"));
@@ -77,21 +79,13 @@ public class PortfolioController {
         Optional<Portfolio> existing = portfolioService.getPortfolioById(id);
         if (existing.isPresent()) {
             Portfolio p = existing.get();
-            p.setTotalValue(portfolio.getTotalValue());
+            p.setTotalValue(calculatePortfolioTotalValue());
             p.setTotalInvested(portfolio.getTotalInvested());
             p.setTotalProfit(portfolio.getTotalProfit());
             p.setTotalReturnPercent(portfolio.getTotalReturnPercent());
             p.setBalance(portfolio.getBalance());
             Portfolio updated = portfolioService.updatePortfolio(p);
-            PortfolioResponse response = new PortfolioResponse(
-                updated.getId(),
-                updated.getTotalValue(),
-                updated.getTotalInvested(),
-                updated.getTotalProfit(),
-                updated.getTotalReturnPercent(),
-                updated.getBalance()
-            );
-            return ResponseEntity.ok(response);
+            return ResponseEntity.ok(buildResponse(updated));
         } else {
             return ResponseEntity.notFound().build();
         }

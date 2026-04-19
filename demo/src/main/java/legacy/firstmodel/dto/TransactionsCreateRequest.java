@@ -2,10 +2,7 @@ package legacy.firstmodel.dto;
 
 import java.math.BigDecimal;
 
-public class TransactionsResponse {
-    private Long id;
-    private String date;
-    private String time;
+public class TransactionsCreateRequest {
     private String companyName;
     private String symbol;
     private BigDecimal stockPrice;
@@ -13,30 +10,7 @@ public class TransactionsResponse {
     private BigDecimal totalPrice;
     private String transactionType;
 
-    // Constructors, getters, setters
-    public TransactionsResponse() {}
-
-    public TransactionsResponse(Long id, String date, String time, String companyName, String symbol,
-                                BigDecimal stockPrice, Integer quantity, BigDecimal totalPrice, String transactionType) {
-        this.id = id;
-        this.date = date;
-        this.time = time;
-        this.companyName = companyName;
-        this.symbol = symbol;
-        this.stockPrice = stockPrice;
-        this.quantity = quantity;
-        this.totalPrice = totalPrice;
-        this.transactionType = transactionType;
-    }
-
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-
-    public String getDate() { return date; }
-    public void setDate(String date) { this.date = date; }
-
-    public String getTime() { return time; }
-    public void setTime(String time) { this.time = time; }
+    public TransactionsCreateRequest() {}
 
     public String getCompanyName() { return companyName; }
     public void setCompanyName(String companyName) { this.companyName = companyName; }

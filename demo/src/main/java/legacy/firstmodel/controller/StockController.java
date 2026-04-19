@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -12,15 +13,23 @@ import legacy.firstmodel.dto.ErrorResponse;
 import legacy.firstmodel.dto.StockCreateRequest;
 import legacy.firstmodel.dto.StockResponse;
 import legacy.firstmodel.model.Stock;
+import legacy.firstmodel.service.PriceService;
 import legacy.firstmodel.service.StockService;
 
 @RestController
 @RequestMapping("/stocks")
 public class StockController {
-    private final StockService stockService;
 
-    public StockController(StockService stockService) {
+    private final StockService stockService;
+    private final PriceService priceService;
+
+    public StockController(StockService stockService, PriceService priceService) {
         this.stockService = stockService;
+        this.priceService = priceService;
+    }
+
+    private java.math.BigDecimal getLivePriceOrStored(String symbol, java.math.BigDecimal storedPrice) {
+        return priceService.getLivePrice(symbol).getPrice();
     }
 
     @PostMapping
@@ -50,15 +59,18 @@ public class StockController {
     public ResponseEntity<List<StockResponse>> getAllStocks() {
         List<Stock> stocks = stockService.getAllStocks();
         List<StockResponse> responses = stocks.stream()
-            .map(s -> new StockResponse(
-                s.getId(),
-                s.getCompanyName(),
-                s.getSymbol(),
-                s.getBidPrice(),
-                s.getAskPrice(),
-                s.getPerformance(),
-                s.getQuantityOwned()
-            ))
+            .map(s -> {
+                java.math.BigDecimal livePrice = getLivePriceOrStored(s.getSymbol(), s.getBidPrice());
+                return new StockResponse(
+                    s.getId(),
+                    s.getCompanyName(),
+                    s.getSymbol(),
+                    livePrice,
+                    s.getAskPrice(),
+                    s.getPerformance(),
+                    s.getQuantityOwned()
+                );
+            })
             .collect(Collectors.toList());
         return ResponseEntity.ok(responses);
     }
@@ -68,11 +80,12 @@ public class StockController {
         Optional<Stock> stock = stockService.getStockById(id);
         if (stock.isPresent()) {
             Stock s = stock.get();
+            java.math.BigDecimal livePrice = getLivePriceOrStored(s.getSymbol(), s.getBidPrice());
             StockResponse response = new StockResponse(
                 s.getId(),
                 s.getCompanyName(),
                 s.getSymbol(),
-                s.getBidPrice(),
+                livePrice,
                 s.getAskPrice(),
                 s.getPerformance(),
                 s.getQuantityOwned()
@@ -88,11 +101,12 @@ public class StockController {
     public ResponseEntity<?> getStockBySymbol(@PathVariable String symbol) {
         Stock stock = stockService.getStockBySymbol(symbol);
         if (stock != null) {
+            java.math.BigDecimal livePrice = getLivePriceOrStored(stock.getSymbol(), stock.getBidPrice());
             StockResponse response = new StockResponse(
                 stock.getId(),
                 stock.getCompanyName(),
                 stock.getSymbol(),
-                stock.getBidPrice(),
+                livePrice,
                 stock.getAskPrice(),
                 stock.getPerformance(),
                 stock.getQuantityOwned()

@@ -25,7 +25,6 @@ public class Portfolio {
     @Column(name = "balance", nullable = false)
     private BigDecimal balance;
 
-    // Constructors, getters, setters
     public Portfolio() {}
 
     public Portfolio(BigDecimal totalValue, BigDecimal totalInvested, BigDecimal totalProfit,
@@ -37,7 +36,6 @@ public class Portfolio {
         this.balance = balance;
     }
 
-    // Getters and setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 

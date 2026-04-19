@@ -26,7 +26,16 @@ public class HoldingsCreateRequest {
         this.profitLoss = profitLoss;
         this.profitPercentageChange = profitPercentageChange;
     }
-
+    public HoldingsCreateRequest(String symbol, BigDecimal bidPrice, Integer quantityOwned) {
+        this.symbol = symbol;
+        this.bidPrice = bidPrice; 
+        this.quantityOwned = quantityOwned;
+        this.companyName = null;
+        this.totalValue = null;
+        this.totalInvested = null;
+        this.profitLoss = null;
+        this.profitPercentageChange = null;
+    }
     public String getCompanyName() { return companyName; }
     public void setCompanyName(String companyName) { this.companyName = companyName; }
 

@@ -2,7 +2,6 @@ package legacy.firstmodel.model;
 
 import jakarta.persistence.*;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "transactions")
@@ -11,8 +10,11 @@ public class Transactions {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "date_time", nullable = false)
-    private LocalDateTime dateTime;
+    @Column(name = "transaction_date", nullable = false)
+    private String date;
+
+    @Column(name = "transaction_time", nullable = false)
+    private String time;
 
     @Column(name = "company_name", nullable = false)
     private String companyName;
@@ -35,9 +37,10 @@ public class Transactions {
     // Constructors, getters, setters
     public Transactions() {}
 
-    public Transactions(LocalDateTime dateTime, String companyName, String symbol, BigDecimal stockPrice,
+    public Transactions(String date, String time, String companyName, String symbol, BigDecimal stockPrice,
                         Integer quantity, BigDecimal totalPrice, String transactionType) {
-        this.dateTime = dateTime;
+        this.date = date;
+        this.time = time;
         this.companyName = companyName;
         this.symbol = symbol;
         this.stockPrice = stockPrice;
@@ -50,8 +53,11 @@ public class Transactions {
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
-    public LocalDateTime getDateTime() { return dateTime; }
-    public void setDateTime(LocalDateTime dateTime) { this.dateTime = dateTime; }
+    public String getDate() { return date; }
+    public void setDate(String date) { this.date = date; }
+
+    public String getTime() { return time; }
+    public void setTime(String time) { this.time = time; }
 
     public String getCompanyName() { return companyName; }
     public void setCompanyName(String companyName) { this.companyName = companyName; }
