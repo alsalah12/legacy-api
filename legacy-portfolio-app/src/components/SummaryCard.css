@@ -1,0 +1,53 @@
+/* Grid of summary stat cards */
+.performance-summary {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(140px, 1fr));
+  gap: 14px;
+  margin-top: 4px;
+}
+
+/* Individual stat card */
+.summary-stat {
+  background: #f8fafc;
+  border: 1px solid #e8eef6;
+  border-radius: 16px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.summary-label {
+  font-size: 0.88rem;
+  color: #6b7890;
+}
+
+.summary-value {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #162844;
+}
+
+/* Green value for positive performance cards */
+.summary-stat.positive .summary-value {
+  color: #14804a;
+}
+
+.summary-detail {
+  font-size: 0.88rem;
+  color: #6b7890;
+}
+
+/* Collapse to 2 columns on tablet */
+@media (max-width: 1050px) {
+  .performance-summary {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Single column on mobile */
+@media (max-width: 760px) {
+  .performance-summary {
+    grid-template-columns: 1fr;
+  }
+}

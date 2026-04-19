@@ -1,0 +1,103 @@
+/* Chart container */
+.chart-card {
+  display: flex;
+  gap: 14px;
+  min-height: 300px;
+  padding: 8px 0 18px;
+}
+
+/* Y-axis labels column */
+.chart-y-axis {
+  width: 52px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  color: #7c899d;
+  font-size: 0.82rem;
+  padding-top: 10px;
+  padding-bottom: 34px;
+}
+
+/* Main drawing area with axis borders */
+.chart-area {
+  position: relative;
+  flex: 1;
+  border-left: 1px solid #dce5f1;
+  border-bottom: 1px solid #dce5f1;
+  min-height: 300px;
+  padding: 0 12px 36px 12px;
+  overflow: hidden;
+}
+
+/* Horizontal grid lines */
+.chart-grid-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: #ebf0f6;
+}
+
+.chart-grid-line:nth-child(1) { top: 18%; }
+.chart-grid-line:nth-child(2) { top: 40%; }
+.chart-grid-line:nth-child(3) { top: 62%; }
+.chart-grid-line:nth-child(4) { top: 84%; }
+
+/* CSS-only line shapes using curved top borders */
+.chart-line {
+  position: absolute;
+  left: 6%;
+  width: 88%;
+  height: 120px;
+  border-radius: 999px;
+  border-top: 3px solid;
+  border-right: 3px solid transparent;
+  border-left: 3px solid transparent;
+  opacity: 0.95;
+}
+
+.chart-line-primary {
+  top: 30%;
+  border-top-color: #2d68aa;
+  transform: rotate(8deg);
+}
+
+.chart-line-secondary {
+  top: 20%;
+  border-top-color: #3aa7b4;
+  transform: rotate(-2deg);
+}
+
+.chart-line-tertiary {
+  top: 45%;
+  border-top-color: #6d8d5d;
+  transform: rotate(-10deg);
+}
+
+/* X-axis month label row */
+.chart-x-axis {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: 0;
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  font-size: 0.84rem;
+  color: #7c899d;
+  padding-top: 12px;
+}
+
+.chart-x-axis span {
+  text-align: center;
+}
+
+/* Reduce height on small screens */
+@media (max-width: 760px) {
+  .chart-card {
+    min-height: 240px;
+  }
+
+  .chart-area {
+    min-height: 240px;
+  }
+}
