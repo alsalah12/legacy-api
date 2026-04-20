@@ -4,122 +4,44 @@ import React, { useMemo, useState } from "react";
 import "./BuySell.css";
 import AppSidebar from "./components/AppSidebar";
 import AppTopBar from "./components/AppTopBar";
-
-// Static placeholder stock data.
-// This shape is easy to replace later with API data from a backend service.
-const mockStocks = [
-  {
-    id: 1,
-    ticker: "AAPL",
-    company: "Apple Inc.",
-    bidPrice: 189.35,
-    performance: 2.4,
-    owned: 120,
-    sector: "Technology",
-  },
-  {
-    id: 2,
-    ticker: "MSFT",
-    company: "Microsoft Corp.",
-    bidPrice: 421.9,
-    performance: 3.1,
-    owned: 80,
-    sector: "Technology",
-  },
-  {
-    id: 3,
-    ticker: "JPM",
-    company: "JPMorgan Chase",
-    bidPrice: 198.45,
-    performance: -0.8,
-    owned: 24,
-    sector: "Financials",
-  },
-  {
-    id: 4,
-    ticker: "XOM",
-    company: "Exxon Mobil",
-    bidPrice: 116.72,
-    performance: 1.2,
-    owned: 0,
-    sector: "Energy",
-  },
-  {
-    id: 5,
-    ticker: "NVDA",
-    company: "NVIDIA",
-    bidPrice: 906.55,
-    performance: 4.9,
-    owned: 16,
-    sector: "Technology",
-  },
-  {
-    id: 6,
-    ticker: "PFE",
-    company: "Pfizer",
-    bidPrice: 27.14,
-    performance: -1.1,
-    owned: 44,
-    sector: "Healthcare",
-  },
-  {
-    id: 7,
-    ticker: "KO",
-    company: "Coca-Cola",
-    bidPrice: 63.08,
-    performance: 0.7,
-    owned: 0,
-    sector: "Consumer Staples",
-  },
-  {
-    id: 8,
-    ticker: "BA",
-    company: "Boeing",
-    bidPrice: 181.32,
-    performance: -2.3,
-    owned: 10,
-    sector: "Industrials",
-  },
-];
+import { formatCurrency, formatPercent, usePortfolioData } from "./services/holdingsData";
 
 // Small page size keeps the table compact and consistent with the reference page density.
 const PAGE_SIZE = 4;
 
-// Shared currency formatting helper.
-function formatCurrency(value) {
-  return new Intl.NumberFormat("en-GB", {
-    style: "currency",
-    currency: "USD",
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(value);
-}
-
-// Small helper to render positive and negative performance values consistently.
-function formatPerformance(value) {
-  const prefix = value > 0 ? "+" : "";
-  return `${prefix}${value.toFixed(1)}%`;
-}
-
 // Buy & Sell page reuses the same shell and visual rhythm as Transaction History.
 export default function BuySell() {
-  // Filter state for the controls row.
+  const {
+    holdings: stocksToUse,
+    totals,
+    loading,
+    fallbackMessage,
+    livePriceWarning,
+    actionMessage,
+    actionError,
+    ensureLivePrices,
+    buyStock,
+    sellStock,
+  } = usePortfolioData();
   const [sectorFilter, setSectorFilter] = useState("ALL");
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const [refreshTick, setRefreshTick] = useState(0);
+
+  React.useEffect(() => {
+    ensureLivePrices(undefined, { includeBackendFallback: true });
+  }, [ensureLivePrices]);
 
   // Generate the sector dropdown options from the available stock list.
   const sectorOptions = useMemo(() => {
     return [
       "ALL",
-      ...new Set(mockStocks.map((stock) => stock.sector)),
+      ...new Set(stocksToUse.map((stock) => stock.sector)),
     ];
-  }, []);
+  }, [stocksToUse]);
 
   // Filter the stock data based on search text and selected sector.
   const filteredStocks = useMemo(() => {
-    let results = [...mockStocks];
+    let results = [...stocksToUse];
 
     if (sectorFilter !== "ALL") {
       results = results.filter((stock) => stock.sector === sectorFilter);
@@ -129,18 +51,14 @@ export default function BuySell() {
       const query = searchTerm.toLowerCase();
       results = results.filter(
         (stock) =>
-          stock.ticker.toLowerCase().includes(query) ||
-          stock.company.toLowerCase().includes(query) ||
+          stock.symbol.toLowerCase().includes(query) ||
+          stock.name.toLowerCase().includes(query) ||
           stock.sector.toLowerCase().includes(query)
       );
     }
 
-    // refreshTick is included so the component can later re-request data.
-    // For now it simply re-runs the memo with the current placeholder dataset.
-    void refreshTick;
-
     return results;
-  }, [sectorFilter, searchTerm, refreshTick]);
+  }, [sectorFilter, searchTerm, stocksToUse]);
 
   // Total page count is derived from the filtered dataset.
   const totalPages = Math.max(1, Math.ceil(filteredStocks.length / PAGE_SIZE));
@@ -170,11 +88,10 @@ export default function BuySell() {
 
       {/* Main content uses the same page shell pattern as Transaction History. */}
       <main className="main-content app-page-main">
-        {/* Page heading follows the same hierarchy and spacing rhythm as the reference. */}
+        {/* Keep the heading compact so the table remains the visual focus. */}
         <header className="topbar">
           <div>
             <h1>Buy &amp; Sell Stocks</h1>
-            <p className="subtitle">Review available stocks and place buy or sell actions from one compact table.</p>
           </div>
         </header>
 
@@ -210,11 +127,22 @@ export default function BuySell() {
             <button
               type="button"
               className="refresh-button"
-              onClick={() => setRefreshTick((value) => value + 1)}
+              onClick={() => ensureLivePrices(undefined, { forceRefresh: true, includeBackendFallback: true })}
             >
-              Refresh
+              Refresh live prices
             </button>
           </div>
+
+          {/* Keep a single alert region directly under the available stocks controls. */}
+          {(fallbackMessage || livePriceWarning || actionError || actionMessage || loading) && (
+            <div className="status-stack" aria-live="polite">
+              {fallbackMessage && <p className="subtitle status-pill">{fallbackMessage}</p>}
+              {livePriceWarning && <p className="subtitle status-pill status-pill-warning">{livePriceWarning}</p>}
+              {actionError && <p className="subtitle status-pill status-pill-error">{actionError}</p>}
+              {!actionError && actionMessage && <p className="subtitle status-pill status-pill-success">{actionMessage}</p>}
+              {loading && <p className="subtitle status-pill">Loading stocks...</p>}
+            </div>
+          )}
 
           {/* Table wrapper preserves the same approach used on Transaction History. */}
           <div className="table-wrapper">
@@ -233,31 +161,44 @@ export default function BuySell() {
               <tbody>
                 {/* Rows are easy to replace later with API-fed stock data. */}
                 {paginatedStocks.map((stock, index) => (
-                  <tr key={stock.id}>
+                  <tr key={stock.id || `${stock.symbol}-${index}`}>
                     <td>{(currentPage - 1) * PAGE_SIZE + index + 1}</td>
                     <td>
                       <div className="stock-cell">
-                        <strong>{stock.ticker}</strong>
-                        <span>{stock.company}</span>
+                        <strong>{stock.symbol}</strong>
+                        <span>{stock.name}</span>
                       </div>
                     </td>
-                    <td>{formatCurrency(stock.bidPrice)}</td>
+                    <td>{formatCurrency(stock.currentBidPrice)}</td>
                     <td>
-                      <span className={stock.performance >= 0 ? "positive-text" : "negative-text"}>
-                        {formatPerformance(stock.performance)}
+                      <span className={stock.profitLossPercent > 0 ? "positive-text" : stock.profitLossPercent < 0 ? "negative-text" : ""}>
+                        {formatPercent(stock.profitLossPercent)}
                       </span>
                     </td>
-                    <td>{stock.owned}</td>
+                    <td>{stock.quantityOwned}</td>
                     <td>{stock.sector}</td>
                     <td>
                       <div className="action-group">
-                        <button type="button" className="action-button buy-button">
+                        <button
+                          type="button"
+                          className="action-button buy-button"
+                          onClick={async () => {
+                            const rawQty = window.prompt(`Buy quantity for ${stock.symbol}:`);
+                            if (rawQty === null) return;
+                            await buyStock(stock.symbol, rawQty);
+                          }}
+                        >
                           Buy
                         </button>
                         <button
                           type="button"
                           className="action-button sell-button"
-                          disabled={stock.owned === 0}
+                          disabled={stock.quantityOwned === 0}
+                          onClick={async () => {
+                            const rawQty = window.prompt(`Sell quantity for ${stock.symbol}:`);
+                            if (rawQty === null) return;
+                            await sellStock(stock.symbol, rawQty);
+                          }}
                         >
                           Sell
                         </button>

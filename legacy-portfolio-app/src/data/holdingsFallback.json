@@ -1,0 +1,26 @@
+[
+  {
+    "id": 1,
+    "companyName": "Apple Inc.",
+    "symbol": "AAPL",
+    "quantityOwned": 7,
+    "bidPrice": 150.0,
+    "totalValue": 1050.0,
+    "totalInvested": 1050.0,
+    "profitLoss": 0.0,
+    "profitPercentageChange": 0.0,
+    "sector": "Technology"
+  },
+  {
+    "id": 2,
+    "companyName": "Microsoft Corporation",
+    "symbol": "MSFT",
+    "quantityOwned": 5,
+    "bidPrice": 300.0,
+    "totalValue": 1500.0,
+    "totalInvested": 1500.0,
+    "profitLoss": 0.0,
+    "profitPercentageChange": 0.0,
+    "sector": "Technology"
+  }
+]

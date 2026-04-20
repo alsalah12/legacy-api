@@ -4,70 +4,7 @@ import React, { useMemo, useState } from "react";
 import "./TransactionHistoryPage.css";
 import AppSidebar from "./components/AppSidebar";
 import AppTopBar from "./components/AppTopBar";
-
-// Static sample transaction data used to populate the table.
-const mockTransactions = [
-	{
-		id: 1,
-		date: "2025-03-01",
-		ticker: "GOOGL",
-		company: "Google",
-		type: "BUY",
-		pricePerShare: 200,
-		quantity: 3,
-		totalValue: 600,
-		sector: "Tech",
-		status: "Completed",
-	},
-	{
-		id: 2,
-		date: "2025-03-11",
-		ticker: "AAPL",
-		company: "Apple",
-		type: "SELL",
-		pricePerShare: 190,
-		quantity: 1,
-		totalValue: 190,
-		sector: "Tech",
-		status: "Completed",
-	},
-	{
-		id: 3,
-		date: "2025-03-14",
-		ticker: "AAPL",
-		company: "Apple",
-		type: "BUY",
-		pricePerShare: 185,
-		quantity: 5,
-		totalValue: 925,
-		sector: "Tech",
-		status: "Pending",
-	},
-	{
-		id: 4,
-		date: "2025-03-21",
-		ticker: "NVDA",
-		company: "NVIDIA",
-		type: "BUY",
-		pricePerShare: 300,
-		quantity: 2,
-		totalValue: 600,
-		sector: "Tech",
-		status: "Completed",
-	},
-	{
-		id: 5,
-		date: "2025-03-25",
-		ticker: "TSLA",
-		company: "Tesla",
-		type: "SELL",
-		pricePerShare: 210,
-		quantity: 2,
-		totalValue: 420,
-		sector: "Auto",
-		status: "Completed",
-	},
-];
+import { usePortfolioData } from "./services/holdingsData";
 
 // Helper to show currency values in a readable format.
 function formatCurrency(value) {
@@ -78,38 +15,53 @@ function formatCurrency(value) {
 	}).format(value);
 }
 
-// Helper to convert an ISO-style date string into a UK display date.
+// Backend transactions store date/time separately as dd/MM/yyyy and HH:mm strings,
+// so we parse them together here instead of relying on browser ISO parsing.
+function parseTransactionTimestamp(dateString, timeString = "00:00") {
+	const [day, month, year] = String(dateString || "").split("/").map(Number);
+	const [hours, minutes] = String(timeString || "00:00").split(":").map(Number);
+
+	if (!day || !month || !year) return 0;
+	return new Date(year, month - 1, day, hours || 0, minutes || 0).getTime();
+}
+
 function formatDate(dateString) {
-	return new Date(dateString).toLocaleDateString("en-GB");
+	if (!dateString) return "N/A";
+	return dateString;
+}
+
+function formatTime(timeString) {
+	if (!timeString) return "--:--";
+	return timeString;
 }
 
 // This page shows a searchable, filterable transaction history table.
 export default function TransactionHistoryPage() {
-	// Each piece of state stores one active filter value from the controls panel.
+	const { transactions: transactionsToUse, loading, fallbackMessage, actionError } = usePortfolioData();
 	const [searchTerm, setSearchTerm] = useState("");
 	const [typeFilter, setTypeFilter] = useState("ALL");
 	const [statusFilter, setStatusFilter] = useState("ALL");
 	const [sortOrder, setSortOrder] = useState("MOST_RECENT");
 
-	// useMemo recalculates only when the relevant filters change.
+	// The backend transactions table is the source of truth for every row on this screen.
 	const filteredTransactions = useMemo(() => {
 		// Start with a copy so sorting/filtering does not mutate the original array.
-		let results = [...mockTransactions];
+		let results = [...transactionsToUse];
 
 		// Search matches against ticker, company, or sector text.
 		if (searchTerm.trim()) {
 			const lower = searchTerm.toLowerCase();
 			results = results.filter(
 				(transaction) =>
-					transaction.ticker.toLowerCase().includes(lower) ||
-					transaction.company.toLowerCase().includes(lower) ||
+					transaction.symbol.toLowerCase().includes(lower) ||
+					transaction.companyName.toLowerCase().includes(lower) ||
 					transaction.sector.toLowerCase().includes(lower)
 			);
 		}
 
 		// Type filter narrows the list to BUY or SELL records.
 		if (typeFilter !== "ALL") {
-			results = results.filter((transaction) => transaction.type === typeFilter);
+			results = results.filter((transaction) => transaction.transactionType === typeFilter);
 		}
 
 		// Status filter narrows the list to Completed or Pending records.
@@ -122,39 +74,39 @@ export default function TransactionHistoryPage() {
 		// Sorting changes the order the rows appear in the table.
 		results.sort((a, b) => {
 			if (sortOrder === "MOST_RECENT") {
-				return new Date(b.date) - new Date(a.date);
+				return parseTransactionTimestamp(b.date, b.time) - parseTransactionTimestamp(a.date, a.time);
 			}
 
 			if (sortOrder === "OLDEST") {
-				return new Date(a.date) - new Date(b.date);
+				return parseTransactionTimestamp(a.date, a.time) - parseTransactionTimestamp(b.date, b.time);
 			}
 
 			if (sortOrder === "HIGHEST_VALUE") {
-				return b.totalValue - a.totalValue;
+				return b.totalPrice - a.totalPrice;
 			}
 
 			if (sortOrder === "LOWEST_VALUE") {
-				return a.totalValue - b.totalValue;
+				return a.totalPrice - b.totalPrice;
 			}
 
 			return 0;
 		});
 
 		return results;
-	}, [searchTerm, typeFilter, statusFilter, sortOrder]);
+	}, [searchTerm, typeFilter, statusFilter, sortOrder, transactionsToUse]);
 
-	// Analytics values are derived once from the mock data because the base data is static.
+	// Analytics values are derived once from the API data because the base data is static.
 	const analytics = useMemo(() => {
 		// Split the data into buys and sells for separate totals.
-		const buys = mockTransactions.filter((transaction) => transaction.type === "BUY");
-		const sells = mockTransactions.filter((transaction) => transaction.type === "SELL");
+		const buys = transactionsToUse.filter((transaction) => transaction.transactionType === "BUY");
+		const sells = transactionsToUse.filter((transaction) => transaction.transactionType === "SELL");
 
 		// Add up the value of each buy and sell set.
-		const totalBought = buys.reduce((sum, transaction) => sum + transaction.totalValue, 0);
-		const totalSold = sells.reduce((sum, transaction) => sum + transaction.totalValue, 0);
+		const totalBought = buys.reduce((sum, transaction) => sum + transaction.totalPrice, 0);
+		const totalSold = sells.reduce((sum, transaction) => sum + transaction.totalPrice, 0);
 
 		// Count how many transactions belong to each sector.
-		const sectorCounts = mockTransactions.reduce((accumulator, transaction) => {
+		const sectorCounts = transactionsToUse.reduce((accumulator, transaction) => {
 			accumulator[transaction.sector] =
 				(accumulator[transaction.sector] || 0) + 1;
 			return accumulator;
@@ -165,9 +117,9 @@ export default function TransactionHistoryPage() {
 			Object.entries(sectorCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || "N/A";
 
 		// Count how many times each stock ticker appears.
-		const stockCounts = mockTransactions.reduce((accumulator, transaction) => {
-			accumulator[transaction.ticker] =
-				(accumulator[transaction.ticker] || 0) + 1;
+		const stockCounts = transactionsToUse.reduce((accumulator, transaction) => {
+			accumulator[transaction.symbol] =
+				(accumulator[transaction.symbol] || 0) + 1;
 			return accumulator;
 		}, {});
 
@@ -181,7 +133,7 @@ export default function TransactionHistoryPage() {
 			mostActiveSector,
 			mostTradedStock,
 		};
-	}, []);
+	}, [transactionsToUse]);
 
 	return (
 		// Main two-column page wrapper.
@@ -197,6 +149,9 @@ export default function TransactionHistoryPage() {
 				<header className="topbar">
 					<div>
 						<h1>Transaction History</h1>
+						{fallbackMessage && <p className="subtitle">{fallbackMessage}</p>}
+						{actionError && <p className="subtitle negative-text">{actionError}</p>}
+						{loading && <p className="subtitle">Loading transactions...</p>}
 					</div>
 				</header>
 
@@ -256,7 +211,7 @@ export default function TransactionHistoryPage() {
 							<table>
 								<thead>
 									<tr>
-										<th>Date</th>
+										<th>Date / Time</th>
 										<th>Stock</th>
 										<th>Type</th>
 										<th>Price / Share</th>
@@ -270,31 +225,36 @@ export default function TransactionHistoryPage() {
 									{/* One row is rendered for every transaction left after filtering. */}
 									{filteredTransactions.map((transaction) => (
 										<tr key={transaction.id}>
-											<td>{formatDate(transaction.date)}</td>
+											<td>
+												<div className="date-time-cell">
+													<strong>{formatDate(transaction.date)}</strong>
+													<span>{formatTime(transaction.time)}</span>
+												</div>
+											</td>
 											<td>
 												<div className="stock-cell">
-													<strong>{transaction.ticker}</strong>
-													<span>{transaction.company}</span>
+													<strong>{transaction.symbol}</strong>
+													<span>{transaction.companyName}</span>
 												</div>
 											</td>
 											<td>
 												<span
 													className={`pill ${
-														transaction.type === "BUY" ? "pill-buy" : "pill-sell"
+														transaction.transactionType === "BUY" ? "pill-buy" : "pill-sell"
 													}`}
 												>
-													{transaction.type}
+													{transaction.transactionType}
 												</span>
 											</td>
-											<td>{formatCurrency(transaction.pricePerShare)}</td>
+											<td>{formatCurrency(transaction.stockPrice)}</td>
 											<td>{transaction.quantity}</td>
 											<td
 												className={
-													transaction.type === "BUY" ? "negative-text" : "positive-text"
+													transaction.transactionType === "BUY" ? "negative-text" : "positive-text"
 												}
 											>
-												{transaction.type === "BUY" ? "-" : "+"}
-												{formatCurrency(transaction.totalValue)}
+												{transaction.transactionType === "BUY" ? "-" : "+"}
+												{formatCurrency(transaction.totalPrice)}
 											</td>
 											<td>{transaction.sector}</td>
 											<td>

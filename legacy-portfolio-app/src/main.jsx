@@ -6,6 +6,7 @@ import ReactDOM from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 // App is the top-level component that decides which page to render.
 import App from "./App";
+import { PortfolioDataProvider } from "./services/holdingsData";
 // Global styles apply shared fonts, colours, and layout defaults.
 import "./index.css";
 
@@ -14,10 +15,12 @@ import "./index.css";
 ReactDOM.createRoot(document.getElementById("root")).render(
   // StrictMode only runs in development and helps catch unsafe patterns early.
   <React.StrictMode>
-    {/* BrowserRouter watches the browser URL and keeps React Router in sync. */}
-    <BrowserRouter>
-      {/* App contains the route definitions for the different screens. */}
-      <App />
-    </BrowserRouter>
+    <PortfolioDataProvider>
+      {/* BrowserRouter watches the browser URL and keeps React Router in sync. */}
+      <BrowserRouter>
+        {/* App contains the route definitions for the different screens. */}
+        <App />
+      </BrowserRouter>
+    </PortfolioDataProvider>
   </React.StrictMode>
 );

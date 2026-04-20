@@ -2,94 +2,45 @@
 import React from 'react';
 // Import the table styles for the holdings list.
 import './HoldingsTable.css';
+import { formatPercent } from '../services/holdingsData';
 
-// Static holdings data. Later replace with props or a fetch() call
-// to GET /api/stocks from the Spring Boot backend.
-const HOLDINGS = [
-  {
-    symbol: 'AZN',
-    company: 'AstraZeneca',
-    sector: 'Healthcare',
-    quantity: 245,
-    avgCost: '£96.20',
-    price: '£102.52',
-    marketValue: '£25,117.40',
-    performance: '+4.12%',
-    positive: true,
-  },
-  {
-    symbol: 'SHEL',
-    company: 'Shell plc',
-    sector: 'Energy',
-    quantity: 390,
-    avgCost: '£25.84',
-    price: '£26.16',
-    marketValue: '£20,044.05',
-    performance: '+1.22%',
-    positive: true,
-  },
-  {
-    symbol: 'BARC',
-    company: 'Barclays',
-    sector: 'Finance',
-    quantity: 4200,
-    avgCost: '£1.71',
-    price: '£1.70',
-    marketValue: '£16,196.40',
-    performance: '-0.64%',
-    positive: false,
-  },
-  {
-    symbol: 'VOD',
-    company: 'Vodafone Group',
-    sector: 'Telecom',
-    quantity: 8100,
-    avgCost: '£0.68',
-    price: '£0.67',
-    marketValue: '£13,025.70',
-    performance: '-1.14%',
-    positive: false,
-  },
-];
+function formatCurrency(value) {
+  return new Intl.NumberFormat('en-GB', {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(Number(value || 0));
+}
 
-function HoldingsTable() {
+function HoldingsTable({ holdings = [] }) {
   return (
     <div className="table-wrapper">
       {/* Table element groups the holdings into rows and columns. */}
       <table className="holdings-table">
         <thead>
           <tr>
-            <th>Asset</th>
+            <th>Name</th>
+            <th>Symbol</th>
+            <th>Bid Price</th>
+            <th>Performance % Change</th>
+            <th>Amount Owned</th>
             <th>Sector</th>
-            <th>Qty</th>
-            <th>Avg Cost</th>
-            <th>Current Price</th>
-            <th>Market Value</th>
-            <th>Return</th>
           </tr>
         </thead>
         <tbody>
-          {HOLDINGS.map((holding) => (
-            <tr key={holding.symbol}>
+          {holdings.map((holding) => (
+            <tr key={holding.id || holding.symbol}>
+              <td>{holding.name}</td>
+              <td><span className="table-symbol">{holding.symbol}</span></td>
+              <td>{formatCurrency(holding.bidPrice)}</td>
               <td>
-                {/* Symbol and company name grouped together */}
-                <span className="table-symbol">{holding.symbol}</span>
-                <br />
-                <span className="table-company">
-                  {holding.company}
+                <span className={holding.performancePercent > 0 ? 'text-positive' : holding.performancePercent < 0 ? 'text-negative' : ''}>
+                  {formatPercent(holding.performancePercent)}
                 </span>
               </td>
+              <td>{holding.amountOwned}</td>
               <td>{holding.sector}</td>
-              <td>{holding.quantity.toLocaleString()}</td>
-              <td>{holding.avgCost}</td>
-              <td>{holding.price}</td>
-              <td>{holding.marketValue}</td>
-              <td>
-                {/* Green for positive, red for negative */}
-                <span className={holding.positive ? 'text-positive' : 'text-negative'}>
-                  {holding.performance}
-                </span>
-              </td>
             </tr>
           ))}
         </tbody>

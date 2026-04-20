@@ -151,6 +151,60 @@ a:hover {
   text-decoration: underline;
 }
 
+/* ─── Shared status banner utilities ───────────────────────────────────────
+   Used by Holdings, BuySell, Dashboard and Transaction pages.
+   Per-page scoped copies of these classes are no longer needed.
+   ──────────────────────────────────────────────────────────────────────── */
+.status-stack {
+  display: grid;
+  gap: 8px;
+}
+
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  max-width: 100%;
+  padding: 8px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(124, 93, 214, 0.16);
+  background: rgba(245, 243, 255, 0.88);
+  color: var(--accent-purple-active);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.status-pill-warning {
+  border-color: rgba(217, 119, 6, 0.18);
+  background: rgba(255, 247, 237, 0.92);
+  color: #9a5a06;
+}
+
+.status-pill-error {
+  border-color: rgba(220, 38, 38, 0.18);
+  background: rgba(254, 242, 242, 0.96);
+  color: var(--negative-red);
+}
+
+.status-pill-success {
+  border-color: rgba(22, 163, 74, 0.18);
+  background: rgba(236, 253, 243, 0.96);
+  color: var(--positive-green);
+}
+
+/* ─── Shared profit / loss text colours ────────────────────────────────────
+   Centralised here so every page uses the same green / red pair.
+   ──────────────────────────────────────────────────────────────────────── */
+.positive-text {
+  color: var(--positive-green);
+  font-weight: 600;
+}
+
+.negative-text {
+  color: var(--negative-red);
+  font-weight: 600;
+}
+
 /* Shared card utilities used by reusable dashboard components. */
 .card {
   background: var(--card-bg);

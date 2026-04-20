@@ -1,4 +1,12 @@
-/* Sticky top bar — clean white with subtle bottom border. */
+/* ─── LEGACY Brand Purple Palette ───────────────────────────────────────────
+   Updated to align with the official LEGACY logo colour system.
+   Primary:     #6F2DBD  — the main logo purple
+   Deep:        #4B1D8F  — hover / pressed states
+   Soft accent: #A06CD5  — muted highlights, labels
+   Lavender:    #F4EEFF  — gentle tint for backgrounds, hover fills
+   ─────────────────────────────────────────────────────────────────────────── */
+
+/* Sticky top bar — clean white with a refined LEGACY purple bottom accent. */
 .app-topbar {
   position: fixed;
   top: 0;
@@ -6,9 +14,11 @@
   right: 0;
   z-index: 1200;
   height: var(--app-topbar-height);
+  /* Subtle gradient tint at top of page that nods to the LEGACY palette */
   background: #ffffff;
-  border-bottom: 1px solid var(--border-color);
-  box-shadow: 0 1px 0 0 rgba(13, 17, 23, 0.04);
+  /* Bottom border updated to LEGACY primary purple for brand cohesion */
+  border-bottom: 2px solid #6F2DBD;
+  box-shadow: 0 2px 8px rgba(111, 45, 189, 0.08);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -18,31 +28,44 @@
 .app-topbar-left {
   display: flex;
   align-items: center;
-  gap: 8px;
+  /* Slightly wider gap so the logo has breathing room beside the menu button */
+  gap: 12px;
 }
 
+/* Menu / hamburger toggle — updated with LEGACY lavender hover tint */
 .app-topbar-menu-btn {
-  border: 1px solid var(--border-color);
-  background: var(--app-bg);
-  color: var(--text-secondary);
+  border: 1px solid #e2d9f3;
+  background: #ffffff;
+  /* Icon colour uses the soft accent purple */
+  color: #A06CD5;
   border-radius: var(--radius-sm);
   width: 28px;
   height: 28px;
   font-size: 14px;
   line-height: 1;
   cursor: pointer;
-  transition: background 0.15s ease;
+  transition: background 0.15s ease, border-color 0.15s ease;
 }
 
 .app-topbar-menu-btn:hover {
-  background: var(--border-color);
+  /* Lavender tint on hover — stays premium, not neon */
+  background: #F4EEFF;
+  border-color: #A06CD5;
 }
 
-/* Left side title area. */
-.app-topbar-title {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--text-primary);
+/* ── LEGACY horizontal logo ─────────────────────────────────────────────────
+   Fixed height so the logo never overflows the navbar.
+   Width is auto so the aspect ratio is always preserved.
+   object-fit: contain guards against any accidental stretching.
+   ─────────────────────────────────────────────────────────────────────────── */
+.app-topbar-logo {
+  /* Height is intentionally set below the navbar height to give it breathing room */
+  height: 30px;
+  width: auto;
+  object-fit: contain;
+  display: block;
+  /* Subtle vertical alignment refinement so the logo feels optically centred */
+  margin-top: 1px;
 }
 
 /* Right side metric container. */
@@ -72,9 +95,10 @@
   color: var(--text-primary);
 }
 
+/* Add Funds CTA — uses LEGACY primary purple for the brand-consistent primary action */
 .app-topbar-add-funds-btn {
-  border: 1px solid var(--accent-purple);
-  background: var(--accent-purple);
+  border: 1px solid #6F2DBD;
+  background: #6F2DBD;
   color: #ffffff;
   border-radius: var(--radius-sm);
   padding: 7px 10px;
@@ -85,8 +109,28 @@
 }
 
 .app-topbar-add-funds-btn:hover {
-  background: var(--accent-purple-hover);
-  border-color: var(--accent-purple-hover);
+  /* Deep LEGACY purple on hover — maintains a premium pressed feel */
+  background: #4B1D8F;
+  border-color: #4B1D8F;
+}
+
+.app-topbar-message {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: -26px;
+  font-size: 12px;
+  color: var(--positive-green);
+  background: #ecfdf3;
+  border: 1px solid #bbf7d0;
+  border-radius: var(--radius-sm);
+  padding: 4px 8px;
+}
+
+.app-topbar-message-error {
+  color: var(--negative-red);
+  background: #fef2f2;
+  border-color: #fecaca;
 }
 
 @media (max-width: 760px) {
@@ -99,12 +143,9 @@
     gap: 8px;
   }
 
-  .app-topbar-title {
-    max-width: 145px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    font-size: 13px;
+  /* Logo scales down on mobile so it never overflows the navbar */
+  .app-topbar-logo {
+    height: 22px;
   }
 
   .app-topbar-right {
@@ -134,12 +175,19 @@
     padding: 6px 8px;
     font-size: 11px;
   }
+
+  .app-topbar-message {
+    left: 12px;
+    right: 12px;
+    transform: none;
+    bottom: -24px;
+  }
 }
 
 @media (max-width: 460px) {
-  .app-topbar-title {
-    max-width: 112px;
-    font-size: 12px;
+  /* Logo stays visible at minimal height even on the smallest screens */
+  .app-topbar-logo {
+    height: 18px;
   }
 
   .app-topbar-value {
