@@ -36,10 +36,6 @@ function RouteTitleManager() {
 // App acts like the traffic controller for the frontend.
 // It does not draw the full UI itself; instead, it chooses which page to show.
 function App() {
-  // Temporary app-level user state.
-  // Later this can come from login/auth API data.
-  const [currentUser] = React.useState({ firstName: "Steve" });
-
   return (
     // Routes looks at the current URL and renders the first matching Route.
     <>
@@ -50,7 +46,7 @@ function App() {
         {/* The root path shows the sign-up / landing page. */}
         <Route path="/" element={<UserSignUp />} />
         {/* The dashboard path shows the main portfolio overview screen. */}
-        <Route path="/dashboard" element={<Dashboard userName={currentUser.firstName} />} />
+        <Route path="/dashboard" element={<Dashboard />} />
         {/* The holdings path shows the portfolio holdings summary and allocation view. */}
         <Route path="/holdings" element={<Holdings />} />
         {/* The buy and sell path shows the stock trading table and actions. */}

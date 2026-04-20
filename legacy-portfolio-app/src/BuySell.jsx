@@ -14,11 +14,6 @@ export default function BuySell() {
   const {
     holdings: stocksToUse,
     totals,
-    loading,
-    fallbackMessage,
-    livePriceWarning,
-    actionMessage,
-    actionError,
     ensureLivePrices,
     buyStock,
     sellStock,
@@ -132,17 +127,6 @@ export default function BuySell() {
               Refresh live prices
             </button>
           </div>
-
-          {/* Keep a single alert region directly under the available stocks controls. */}
-          {(fallbackMessage || livePriceWarning || actionError || actionMessage || loading) && (
-            <div className="status-stack" aria-live="polite">
-              {fallbackMessage && <p className="subtitle status-pill">{fallbackMessage}</p>}
-              {livePriceWarning && <p className="subtitle status-pill status-pill-warning">{livePriceWarning}</p>}
-              {actionError && <p className="subtitle status-pill status-pill-error">{actionError}</p>}
-              {!actionError && actionMessage && <p className="subtitle status-pill status-pill-success">{actionMessage}</p>}
-              {loading && <p className="subtitle status-pill">Loading stocks...</p>}
-            </div>
-          )}
 
           {/* Table wrapper preserves the same approach used on Transaction History. */}
           <div className="table-wrapper">

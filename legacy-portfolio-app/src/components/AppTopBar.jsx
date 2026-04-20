@@ -12,7 +12,6 @@ export default function AppTopBar() {
     totals,
     addFunds,
     actionMessage,
-    actionError,
   } = usePortfolioData();
 
   // Toggle sidebar visibility (for fully hidden mode).
@@ -69,9 +68,7 @@ export default function AppTopBar() {
         </button>
 
       </div>
-
-      {actionError && <div className="app-topbar-message app-topbar-message-error">{actionError}</div>}
-      {!actionError && actionMessage && <div className="app-topbar-message">{actionMessage}</div>}
+      {actionMessage && <div className="app-topbar-message">{actionMessage}</div>}
     </header>
   );
 }

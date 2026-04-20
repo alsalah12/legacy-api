@@ -37,7 +37,7 @@ function formatTime(timeString) {
 
 // This page shows a searchable, filterable transaction history table.
 export default function TransactionHistoryPage() {
-	const { transactions: transactionsToUse, loading, fallbackMessage, actionError } = usePortfolioData();
+	const { transactions: transactionsToUse } = usePortfolioData();
 	const [searchTerm, setSearchTerm] = useState("");
 	const [typeFilter, setTypeFilter] = useState("ALL");
 	const [statusFilter, setStatusFilter] = useState("ALL");
@@ -149,9 +149,6 @@ export default function TransactionHistoryPage() {
 				<header className="topbar">
 					<div>
 						<h1>Transaction History</h1>
-						{fallbackMessage && <p className="subtitle">{fallbackMessage}</p>}
-						{actionError && <p className="subtitle negative-text">{actionError}</p>}
-						{loading && <p className="subtitle">Loading transactions...</p>}
 					</div>
 				</header>
 

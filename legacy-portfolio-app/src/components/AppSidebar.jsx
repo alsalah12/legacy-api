@@ -2,6 +2,7 @@
 import React from "react";
 // NavLink lets the sidebar know which route is currently active.
 import { NavLink, useLocation } from "react-router-dom";
+import { usePortfolioData } from "../services/holdingsData";
 // Shared sidebar styles used across all authenticated pages.
 import "./AppSidebar.css";
 
@@ -16,6 +17,15 @@ const sidebarItems = [
 // AppSidebar renders the same enterprise navigation on every page.
 export default function AppSidebar() {
   const location = useLocation();
+  const {
+    users,
+    activeUser,
+    activeUserId,
+    setActiveUserId,
+    portfoliosForActiveUser,
+    activePortfolioId,
+    setActivePortfolioId,
+  } = usePortfolioData();
 
   // Sidebar starts from saved preference if present.
   const [collapsed, setCollapsed] = React.useState(() => {
@@ -116,6 +126,46 @@ export default function AppSidebar() {
           );
         })}
       </nav>
+
+      {/* Anchored profile area near sidebar bottom center.
+          This keeps identity/context controls separate from navigation links. */}
+      <div className={`app-sidebar-profile ${collapsed ? "collapsed" : ""}`}>
+        <div className="app-sidebar-profile-avatar" aria-hidden="true">
+          {(activeUser?.name || "U").charAt(0).toUpperCase()}
+        </div>
+        {!collapsed && (
+          <>
+            <div className="app-sidebar-profile-name">{activeUser?.name || "User"}</div>
+            <div className="app-sidebar-profile-email">{activeUser?.email || "No email"}</div>
+
+            <div className="app-sidebar-profile-controls">
+              <select
+                className="app-sidebar-profile-select"
+                value={activeUserId}
+                onChange={(event) => setActiveUserId(event.target.value)}
+                aria-label="Select user"
+              >
+                {users.map((user) => (
+                  <option key={user.id} value={user.id}>{user.name}</option>
+                ))}
+              </select>
+
+              <select
+                className="app-sidebar-profile-select"
+                value={activePortfolioId}
+                onChange={(event) => setActivePortfolioId(event.target.value)}
+                aria-label="Select portfolio"
+              >
+                {portfoliosForActiveUser.map((portfolioItem, index) => (
+                  <option key={portfolioItem.id || index} value={portfolioItem.id || ""}>
+                    Portfolio {portfolioItem.id || index + 1}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </>
+        )}
+      </div>
 
       {/* Footer timestamp fixed to bottom center of sidebar. */}
       <div className="app-sidebar-updated">Last updated: {sidebarUpdatedText}</div>

@@ -59,6 +59,21 @@ function UserSignUp() {
         email: formData.email,
       }));
 
+      // Keep shared multi-user model in sync so dashboard greeting/profile updates immediately.
+      const existingUsers = JSON.parse(localStorage.getItem('legacy.users') || '[]');
+      const newUser = {
+        id: `user-${(formData.email || formData.fullName).toLowerCase().replace(/\s+/g, '-')}`,
+        name: formData.fullName,
+        email: formData.email,
+        portfolioIds: [],
+      };
+      const mergedUsers = Array.isArray(existingUsers)
+        ? [newUser, ...existingUsers.filter((user) => user?.id !== newUser.id)]
+        : [newUser];
+      localStorage.setItem('legacy.users', JSON.stringify(mergedUsers));
+      localStorage.setItem('legacy.activeUserId', newUser.id);
+      window.dispatchEvent(new CustomEvent('legacy-user-updated'));
+
       navigate("/dashboard");
     } catch (err) {
       console.error('Signup error:', err);
@@ -80,9 +95,6 @@ function UserSignUp() {
 
         {/* Form wrapper; submitting it runs handleSubmit above. */}
         <form className="signup-form" onSubmit={handleSubmit}>
-          {/* Error message display */}
-          {error && <div style={{color: '#d32f2f', marginBottom: '10px', fontSize: '14px'}}>{error}</div>}
-
           {/* Full name field. */}
           <label>
             Full name

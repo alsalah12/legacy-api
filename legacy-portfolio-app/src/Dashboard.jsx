@@ -3,6 +3,7 @@ import "./Dashboard.css";
 import AppSidebar from "./components/AppSidebar";
 import AppTopBar from "./components/AppTopBar";
 import { formatCurrency, formatPercent, usePortfolioData } from "./services/holdingsData";
+import { getTimeBasedGreeting } from "./utils/greeting";
 
 const NEWS_STORIES = [
   {
@@ -161,22 +162,18 @@ function RotatingNewsCard({ stories }) {
   );
 }
 
-export default function Dashboard({ userName = "Steve" }) {
+export default function Dashboard() {
   const {
     holdings,
     totals,
     portfolioSummary,
-    loading,
-    fallbackMessage,
-    livePriceWarning,
+    activeUser,
     ensureLivePrices,
     lastLiveRefreshAt,
     performanceRange,
     performanceRangeOptions,
     setPerformanceRange,
     performanceSeries,
-    performanceHistoryLoading,
-    performanceHistoryWarning,
     refreshPerformanceHistory,
   } = usePortfolioData();
 
@@ -249,6 +246,9 @@ export default function Dashboard({ userName = "Steve" }) {
     ? new Date(lastLiveRefreshAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
     : "Not refreshed yet";
 
+  const greetingText = getTimeBasedGreeting();
+  const displayName = activeUser?.name?.trim() || "User";
+
   return (
     <div className="db-page">
       <AppTopBar />
@@ -258,43 +258,40 @@ export default function Dashboard({ userName = "Steve" }) {
           1) KPI summary row, 2) hero performance chart, 3) supporting insights row, 4) holdings preview.
           This removes the previous stacked/competing card hierarchy and keeps one clear visual flow. */}
       <main className="db-main app-page-main">
-        {(fallbackMessage || livePriceWarning || loading) && (
-          <div className="db-status-stack" aria-live="polite">
-            {fallbackMessage && <div className="db-status-banner">{fallbackMessage}</div>}
-            {livePriceWarning && <div className="db-status-banner db-status-banner-warning">{livePriceWarning}</div>}
-            {loading && <div className="db-status-banner db-status-banner-muted">Loading portfolio data...</div>}
-          </div>
-        )}
-
-        <div className="db-welcome">
-          <div>
-            <h1 className="db-welcome-title">Good morning, {userName}</h1>
-            <p className={`db-welcome-sub ${totals.holdingsProfit >= 0 ? "db-positive" : "db-negative"}`}>
-              Portfolio is performing {totals.holdingsProfit >= 0 ? "above" : "below"} benchmark.
+        {/* Top row: greeting hero on the left, three KPI cards on the right — single above-fold band. */}
+        <div className="db-top-row">
+          {/* Hero greeting — clean static text, no controls, no dropdowns. */}
+          <div className="db-welcome">
+            <p className="db-welcome-kicker">Portfolio Overview</p>
+            <h1 className="db-welcome-title">{greetingText}, {displayName}</h1>
+            <p className={`db-welcome-sub ${totals.holdingsProfit >= 0 ? "db-benchmark-positive" : "db-benchmark-negative"}`}>
+              Your portfolio is {totals.holdingsProfit >= 0 ? "outperforming" : "underperforming"} benchmark
+              &nbsp;&mdash;&nbsp;{totals.holdingsProfit >= 0 ? "+" : ""}{formatCurrency(totals.holdingsProfit)} total return.
             </p>
+            <button
+              type="button"
+              className="db-refresh-btn"
+              onClick={async () => {
+                await ensureLivePrices(undefined, { forceRefresh: true, includeBackendFallback: true });
+                await refreshPerformanceHistory();
+              }}
+              title={`Last refreshed ${formattedLiveRefresh}`}
+            >
+              ↻ Refresh prices
+            </button>
           </div>
-          <button
-            type="button"
-            className="db-refresh-btn"
-            onClick={async () => {
-              await ensureLivePrices(undefined, { forceRefresh: true, includeBackendFallback: true });
-              await refreshPerformanceHistory();
-            }}
-          >
-            Refresh live prices
-          </button>
-        </div>
 
-        <div className="db-summary-row">
-          {summaryStats.map((stat) => (
-            <div className="card db-kpi-card" key={stat.label}>
-              <span className="db-kpi-label">{stat.label}</span>
-              <span className={`db-kpi-value${stat.positive === false ? " db-negative" : stat.positive ? " db-positive" : ""}`}>
-                {stat.value}
-              </span>
-              <span className="db-kpi-sub">{stat.sub}</span>
-            </div>
-          ))}
+          <div className="db-summary-row">
+            {summaryStats.map((stat) => (
+              <div className="card db-kpi-card" key={stat.label}>
+                <span className="db-kpi-label">{stat.label}</span>
+                <span className={`db-kpi-value${stat.positive === false ? " db-negative" : stat.positive ? " db-positive" : ""}`}>
+                  {stat.value}
+                </span>
+                <span className="db-kpi-sub">{stat.sub}</span>
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* Hero portfolio performance section: primary focus area of the page. */}
@@ -318,9 +315,6 @@ export default function Dashboard({ userName = "Steve" }) {
                 ))}
               </div>
             </div>
-
-            {performanceHistoryWarning && <div className="db-inline-note">{performanceHistoryWarning}</div>}
-            {performanceHistoryLoading && <div className="db-inline-note">Loading historical performance data...</div>}
 
             <div className="db-chart-area">
               <div className="db-chart-panel">
@@ -469,8 +463,6 @@ export default function Dashboard({ userName = "Steve" }) {
               <h2 className="db-card-title">Holdings Overview</h2>
               <a href="/holdings" className="db-view-all">View all</a>
             </div>
-
-            {livePriceWarning && <div className="db-inline-note">Showing cached or saved values where live pricing is unavailable.</div>}
 
             <div className="db-table-wrap">
               <table className="db-table">

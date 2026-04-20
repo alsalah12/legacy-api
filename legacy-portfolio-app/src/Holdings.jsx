@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import "./Holdings.css";
 import AppSidebar from "./components/AppSidebar";
 import AppTopBar from "./components/AppTopBar";
@@ -8,13 +8,11 @@ import { formatCurrency, formatPercent, usePortfolioData } from "./services/hold
 
 export default function Holdings() {
   const PAGE_SIZE = 10;
+  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
 
   const {
     holdings,
-    loading,
-    fallbackMessage,
-    livePriceWarning,
     totals,
     ensureLivePrices,
     portfolioSummary,
@@ -64,10 +62,20 @@ export default function Holdings() {
           <header className="topbar">
             <h1>Holdings</h1>
 
-            {/* Premium feature-action button requested for optimisation workflow entry point. */}
-            <button type="button" className="holdings-quantum-btn">
-              Quantum Portfolio Optimisation
-            </button>
+            {/* Header actions keep primary optimisation and stock-entry workflows together. */}
+            <div className="holdings-header-actions">
+              <button
+                type="button"
+                className="holdings-add-stock-btn"
+                onClick={() => navigate("/buy-sell")}
+              >
+                Add Stocks
+              </button>
+
+              <button type="button" className="holdings-quantum-btn">
+                Quantum Portfolio Optimisation
+              </button>
+            </div>
           </header>
 
           {/* This mirrors the sidebar category list inside the page content for clearer handoff on smaller screens. */}
@@ -87,14 +95,6 @@ export default function Holdings() {
               </button>
             ))}
           </div>
-
-          {(loading || fallbackMessage || livePriceWarning) && (
-            <div className="status-stack" aria-live="polite">
-              {loading && <p className="subtitle status-pill">Loading holdings...</p>}
-              {fallbackMessage && <p className="subtitle status-pill">{fallbackMessage}</p>}
-              {livePriceWarning && <p className="subtitle status-pill status-pill-warning">{livePriceWarning}</p>}
-            </div>
-          )}
 
           {!showingPlaceholder && (
             <div className="table-actions" aria-label="Holdings search controls">
