@@ -119,15 +119,7 @@ public class PortfolioController {
             Portfolio portfolio = portfolioOpt.get();
             portfolio.setBalance(portfolio.getBalance().add(amount));
             Portfolio updated = portfolioService.updatePortfolio(portfolio);
-            PortfolioResponse response = new PortfolioResponse(
-                updated.getId(),
-                updated.getTotalValue(),
-                updated.getTotalInvested(),
-                updated.getTotalProfit(),
-                updated.getTotalReturnPercent(),
-                updated.getBalance()
-            );
-            return ResponseEntity.ok(response);
+            return ResponseEntity.ok(buildResponse(updated));
         } else {
             return ResponseEntity.notFound().build();
         }
@@ -144,15 +136,7 @@ public class PortfolioController {
             }
             portfolio.setBalance(portfolio.getBalance().subtract(amount));
             Portfolio updated = portfolioService.updatePortfolio(portfolio);
-            PortfolioResponse response = new PortfolioResponse(
-                updated.getId(),
-                updated.getTotalValue(),
-                updated.getTotalInvested(),
-                updated.getTotalProfit(),
-                updated.getTotalReturnPercent(),
-                updated.getBalance()
-            );
-            return ResponseEntity.ok(response);
+            return ResponseEntity.ok(buildResponse(updated));
         } else {
             return ResponseEntity.notFound().build();
         }

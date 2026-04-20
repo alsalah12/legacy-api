@@ -1616,86 +1616,144 @@ body,
   min-height: 100vh;
 }
 
-/* Main content uses one clean vertical flow to avoid stacked/overlapping visual layers. */
+/* Main content: single vertical flow, locked to viewport height so nothing scrolls off-screen on desktop. */
 .db-main {
-  padding: var(--space-page);
+  padding: 14px 18px 14px 18px;
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  align-content: start;
+  gap: 12px;
+  height: calc(100vh - var(--app-topbar-height));
+  overflow: hidden;
 }
 
-/* ── Welcome strip — no card, no border ─────────────────────────────────── */
+/* Top row: greeting hero (left) + 3 KPI cards (right) in one tight above-fold band. */
+.db-top-row {
+  display: grid;
+  grid-template-columns: minmax(260px, 0.85fr) minmax(0, 1.15fr);
+  gap: 12px;
+  align-items: stretch;
+  flex-shrink: 0;
+}
+
+/* ── Greeting hero card — clean, static, premium. No dropdowns or controls inside. ── */
 .db-welcome {
   display: flex;
-  align-items: baseline;
-  gap: 14px;
-  padding: 2px 0 0;
+  flex-direction: column;
+  justify-content: center;
+  gap: 6px;
+  padding: 18px 20px;
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  background: linear-gradient(135deg, #ffffff 60%, #f5f3ff 100%);
+  box-shadow: 0 2px 12px rgba(85, 72, 200, 0.07);
+  border-left: 4px solid #5548c8;
 }
 
-.db-welcome-title {
-  font-size: var(--fs-page-title);
-  font-weight: var(--fw-page-title);
-  color: var(--text-primary);
+/* Small uppercase label above the greeting. */
+.db-welcome-kicker {
   margin: 0;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #9399a6;
 }
 
+/* Main greeting line — the only prominent text in this area. */
+.db-welcome-title {
+  font-size: 22px;
+  font-weight: 800;
+  color: #0d1117;
+  margin: 0;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+
+/* One concise portfolio summary sentence. Inherits positive/negative colour. */
 .db-welcome-sub {
   font-size: 12px;
-  color: var(--text-muted, #9399a6);
+  color: #5b6270;
   margin: 0;
+  line-height: 1.4;
 }
 
-/* ── KPI Summary Row ─────────────────────────────────────────────────────── */
+/* Benchmark colours are explicit so they don’t rely on shared db-positive/db-negative overrides. */
+.db-benchmark-positive { color: #1a7a4a !important; font-weight: 600; }
+.db-benchmark-negative { color: #b91c1c !important; font-weight: 600; }
+
+/* ── KPI Summary Row: three cards, uniform height, perfectly aligned. ────── */
 .db-summary-row {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 10px;
-}
-
-/* Large allocation section is a visual anchor between KPI row and lower supporting panels. */
-.db-allocation-section {
   min-height: 0;
+  align-items: stretch;
 }
 
-/* Each KPI card — uses global .card for border/shadow, db-kpi-card for layout */
+/* Each KPI card — clean white panel, subtle left accent, no visual noise. */
 .db-kpi-card {
-  padding: 13px 16px;
-  display: grid;
-  gap: 3px;
-  border-left: 3px solid transparent;
-  transition: border-color 0.15s ease;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  border-left: 3px solid #ece9f8;
+  border-radius: 14px;
+  background: #ffffff;
+  box-shadow: 0 1px 4px rgba(13,17,23,0.07);
+  border: 1px solid #dce0e8;
+  border-left: 3px solid #5548c8;
+  transition: box-shadow 0.15s ease;
 }
 
 .db-kpi-card:hover {
-  border-left-color: var(--accent-purple-border, #bfb9ec);
+  box-shadow: 0 4px 16px rgba(85, 72, 200, 0.1);
 }
 
+/* Uppercase label — quiet and readable. */
 .db-kpi-label {
   font-size: 10px;
-  font-weight: 500;
-  color: var(--text-secondary);
+  font-weight: 600;
+  color: #9399a6;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.07em;
 }
 
+/* Main figure — prominent, monospaced for alignment. */
 .db-kpi-value {
-  font-size: 22px;
+  font-size: 20px;
   font-weight: 700;
-  color: var(--text-primary);
+  color: #0d1117;
   font-variant-numeric: tabular-nums;
-  line-height: 1.15;
+  line-height: 1.1;
 }
 
+/* Supporting sub-label below value. */
 .db-kpi-sub {
   font-size: 11px;
-  color: var(--text-muted, #9399a6);
+  color: #9399a6;
+  margin-top: 2px;
 }
 
-/* ── Supporting insight row under hero chart ─────────────────────────────── */
+/* Vertical flex ratios ensure chart is the hero, with secondary and holdings sharing what remains. */
+.db-hero-section {
+  flex: 1.4;
+  min-height: 0;
+}
+
+.db-grid-secondary {
+  flex: 1;
+  min-height: 0;
+}
+
+.db-holdings-section {
+  flex: 0.65;
+  min-height: 0;
+}
+
+/* ── Supporting insight row: performers + news side by side, equal height. ── */
 .db-grid-secondary {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(280px, 0.9fr);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 12px;
   min-height: 0;
 }
@@ -1707,8 +1765,8 @@ body,
 
 /* Hero chart gets primary emphasis and extra breathing room. */
 .db-perf-card-hero {
-  min-height: 520px;
-  gap: 14px;
+  min-height: 0;
+  gap: 10px;
 }
 
 /* ── All dashboard cards share this flex column layout ───────────────────── */
@@ -1716,7 +1774,7 @@ body,
 .db-performers-card,
 .db-holdings-card,
 .db-news-card {
-  padding: 14px 16px;
+  padding: 12px 14px;
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -1732,10 +1790,11 @@ body,
   flex-shrink: 0;
 }
 
+/* Card title — consistent 13px semibold across all cards. */
 .db-card-title {
-  font-size: var(--fs-card-title);
-  font-weight: var(--fw-card-title);
-  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: 700;
+  color: #0d1117;
   margin: 0;
 }
 
@@ -2096,18 +2155,25 @@ body,
 
 /* ── Responsive breakpoints ──────────────────────────────────────────────── */
 
-/* Below 1200px — stack both grids to a single column */
-@media (max-width: 1200px) {
+/* ── Responsive breakpoints ─────────────────────────────────────────────── */
+
+/* Below 1280px — allow scrolling, stack greeting+KPI */
+@media (max-width: 1280px) {
+  .db-main {
+    height: auto;
+    overflow: visible;
+  }
+
+  .db-top-row {
+    grid-template-columns: 1fr;
+  }
+
   .db-grid-secondary {
     grid-template-columns: 1fr;
   }
 
   .db-asset-row {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .db-perf-card-hero {
-    min-height: 460px;
   }
 }
 
@@ -2126,9 +2192,7 @@ body,
   }
 
   .db-welcome {
-    flex-direction: column;
-    gap: 2px;
-    align-items: flex-start;
+    border-left-width: 3px;
   }
 
   .db-summary-row {
@@ -2137,7 +2201,7 @@ body,
   }
 
   .db-kpi-value {
-    font-size: 18px;
+    font-size: 17px;
   }
 
   .db-asset-row {
@@ -2149,10 +2213,6 @@ body,
   .db-holdings-card,
   .db-news-card {
     padding: 12px;
-  }
-
-  .db-perf-card-hero {
-    min-height: 420px;
   }
 }
 
@@ -2190,24 +2250,23 @@ body,
   color: var(--text-secondary);
 }
 
-.db-welcome {
-  justify-content: space-between;
-}
-
+/* Refresh button sits at the bottom of the greeting card, small and unobtrusive. */
 .db-refresh-btn {
-  border: 1px solid var(--accent-purple-border);
-  background: #ffffff;
-  color: var(--accent-purple-active);
-  border-radius: 10px;
-  padding: 10px 14px;
-  font-size: 12px;
+  align-self: flex-start;
+  margin-top: 4px;
+  border: 1px solid #bfb9ec;
+  background: transparent;
+  color: #5548c8;
+  border-radius: 8px;
+  padding: 5px 12px;
+  font-size: 11px;
   font-weight: 600;
   cursor: pointer;
-  box-shadow: 0 10px 28px rgba(85, 72, 200, 0.08);
+  transition: background 0.15s ease;
 }
 
 .db-refresh-btn:hover {
-  background: var(--accent-purple-tint);
+  background: #ece9f8;
 }
 
 .db-card-meta {
@@ -2216,24 +2275,23 @@ body,
   color: var(--text-secondary);
 }
 
-.db-chart-area {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 176px;
-  gap: 20px;
-  align-items: stretch;
-}
-
+/* Chart panel: the visual anchor of the page. Tall enough to read, wide enough to dominate. */
 .db-chart-panel {
-  border: 1px solid rgba(191, 185, 236, 0.56);
-  background: linear-gradient(180deg, rgba(245, 243, 255, 0.55), #ffffff 72%);
-  border-radius: 18px;
-  padding: 18px 18px 10px;
-  min-height: 360px;
+  border: 1px solid rgba(191, 185, 236, 0.45);
+  background: linear-gradient(180deg, rgba(245, 243, 255, 0.4), #ffffff 70%);
+  border-radius: 16px;
+  padding: 16px 16px 8px;
+  min-height: 0;
+  flex: 1;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
+/* SVG fills the chart panel cleanly. */
 .db-chart-svg {
-  min-height: 320px;
+  flex: 1;
+  min-height: 120px;
 }
 
 /* Axis labels for rebuilt dynamic chart. */
@@ -2261,28 +2319,31 @@ body,
   align-content: start;
 }
 
+/* Sidebar legend stat boxes: compact and aligned. */
 .db-legend-stat {
   display: grid;
-  gap: 6px;
-  padding: 14px 12px;
-  border: 1px solid var(--border-subtle);
-  border-radius: 14px;
+  gap: 4px;
+  padding: 10px 12px;
+  border: 1px solid #eaedf3;
+  border-radius: 12px;
   background: #fbfaff;
 }
 
 .db-legend-stat strong {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 700;
-  color: var(--text-primary);
+  color: #0d1117;
 }
 
+/* Asset summary row sits at the foot of the chart card. Three equal cells. */
 .db-asset-row {
   grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
 }
 
 .db-asset-cell {
-  border-radius: 14px;
-  padding: 12px 14px;
+  border-radius: 10px;
+  padding: 9px 12px;
 }
 
 /* Hide side legend when horizontal space is constrained.
@@ -2302,30 +2363,34 @@ body,
   overflow: hidden;
 }
 
+/* Performer rows: vertically aligned, clean separation. */
 .db-performer-row {
   align-items: flex-start;
-  padding: 14px 0;
+  padding: 11px 0;
 }
 
 .db-performer-metric {
   display: grid;
   justify-items: end;
-  gap: 4px;
+  gap: 3px;
 }
 
 .db-performer-profit {
-  font-size: 11px;
-  color: var(--text-secondary);
+  font-size: 10px;
+  color: #9399a6;
 }
 
+/* Inline note for warnings inside cards. */
 .db-inline-note {
-  padding: 9px 12px;
+  padding: 8px 12px;
   border-radius: 10px;
   background: rgba(236, 233, 248, 0.68);
-  color: var(--accent-purple-active);
+  color: #3a3096;
   font-size: 11px;
+  flex-shrink: 0;
 }
 
+/* Table alignment overrides. */
 .db-table th,
 .db-table td {
   text-align: left;
@@ -2336,30 +2401,22 @@ body,
   font-variant-numeric: tabular-nums;
 }
 
-@media (max-width: 1200px) {
+/* Chart area: SVG panel on left, legend on right at wide widths. */
+.db-chart-area {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 168px;
+  gap: 14px;
+  align-items: stretch;
+  flex: 1;
+  min-height: 0;
+}
+
+@media (max-width: 1280px) {
   .db-chart-area {
     grid-template-columns: 1fr;
   }
 
-  .db-chart-panel {
-    min-height: 240px;
-  }
-
-  .db-chart-svg {
-    min-height: 200px;
-  }
-}
-
-@media (max-width: 760px) {
-  .db-welcome {
-    align-items: flex-start;
-  }
-
-  .db-refresh-btn {
-    width: 100%;
-  }
-
-  .db-asset-row {
-    grid-template-columns: 1fr;
+  .db-chart-legend-side {
+    display: none;
   }
 }

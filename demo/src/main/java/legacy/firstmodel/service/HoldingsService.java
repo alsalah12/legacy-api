@@ -44,8 +44,9 @@ public class HoldingsService {
             throw new IllegalArgumentException("Stock symbol not found: " + request.getSymbol());
         }
 
-        BigDecimal livePrice = getLivePriceOrStored(request.getSymbol(), request.getBidPrice());
-        BigDecimal totalInvested = request.getBidPrice().multiply(BigDecimal.valueOf(request.getQuantityOwned()));
+        BigDecimal storedPrice = request.getBidPrice() == null ? BigDecimal.ZERO : request.getBidPrice();
+        BigDecimal livePrice = getLivePriceOrStored(request.getSymbol(), storedPrice);
+        BigDecimal totalInvested = storedPrice.multiply(BigDecimal.valueOf(request.getQuantityOwned()));
         BigDecimal totalValue = livePrice.multiply(BigDecimal.valueOf(request.getQuantityOwned()));
         BigDecimal profitLoss = totalValue.subtract(totalInvested);
         BigDecimal profitPercentageChange = totalInvested.compareTo(BigDecimal.ZERO) > 0
@@ -186,7 +187,7 @@ public class HoldingsService {
             throw new InvalidTransactionException("Insufficient holdings for sale");
         }
 
-        BigDecimal price = getLivePriceOrStored(request.getSymbol(), request.getPrice());
+        BigDecimal price = getLivePriceOrStored(request.getSymbol(), request.getPrice() != null ? request.getPrice() : holdings.getBidPrice());
         BigDecimal totalProceeds = price.multiply(BigDecimal.valueOf(request.getQuantity()));
 
         int newQuantity = holdings.getQuantityOwned() - request.getQuantity();
@@ -240,15 +241,21 @@ public class HoldingsService {
     }
 
     private BigDecimal getLivePriceOrStored(String symbol, BigDecimal storedPrice) {
-        return priceService.getLivePrice(symbol).getPrice();
+        try {
+            BigDecimal livePrice = priceService.getLivePrice(symbol).getPrice();
+            return livePrice != null ? livePrice : safePrice(storedPrice);
+        } catch (Exception exception) {
+            return safePrice(storedPrice);
+        }
     }
 
     private HoldingsResponse buildResponse(Holdings holdings) {
-        BigDecimal livePrice = getLivePriceOrStored(holdings.getSymbol(), holdings.getBidPrice());
-        BigDecimal totalValue = livePrice.multiply(BigDecimal.valueOf(holdings.getQuantityOwned()));
-        BigDecimal profitLoss = totalValue.subtract(holdings.getTotalInvested());
-        BigDecimal profitPercentageChange = holdings.getTotalInvested().compareTo(BigDecimal.ZERO) > 0
-            ? profitLoss.divide(holdings.getTotalInvested(), 4, RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(100))
+        BigDecimal storedBidPrice = safePrice(holdings.getBidPrice());
+        BigDecimal totalValue = storedBidPrice.multiply(BigDecimal.valueOf(holdings.getQuantityOwned()));
+        BigDecimal totalInvested = safePrice(holdings.getTotalInvested());
+        BigDecimal profitLoss = totalValue.subtract(totalInvested);
+        BigDecimal profitPercentageChange = totalInvested.compareTo(BigDecimal.ZERO) > 0
+            ? profitLoss.divide(totalInvested, 4, RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(100))
             : BigDecimal.ZERO;
 
         return new HoldingsResponse(
@@ -256,11 +263,15 @@ public class HoldingsService {
             holdings.getCompanyName(),
             holdings.getSymbol(),
             holdings.getQuantityOwned(),
-            livePrice,
+            storedBidPrice,
             totalValue,
-            holdings.getTotalInvested(),
+            totalInvested,
             profitLoss,
             profitPercentageChange
         );
+    }
+
+    private BigDecimal safePrice(BigDecimal value) {
+        return value == null ? BigDecimal.ZERO : value;
     }
 }
