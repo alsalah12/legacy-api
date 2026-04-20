@@ -1,111 +1,182 @@
+/* Import Inter for consistent enterprise typography across all pages. */
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
+
+/* ─── Enterprise Purple Palette ────────────────────────────────────────────
+   Design language: institutional wealth-management. Restrained royal purple
+   accent, deep neutral sidebar, clean off-white surfaces.
+   ──────────────────────────────────────────────────────────────────────── */
 :root {
-  --text: #6b6375;
-  --text-h: #08060d;
-  --bg: #fff;
-  --border: #e5e4e7;
-  --code-bg: #f4f3ec;
-  --accent: #aa3bff;
-  --accent-bg: rgba(170, 59, 255, 0.1);
-  --accent-border: rgba(170, 59, 255, 0.5);
-  --social-bg: rgba(244, 243, 236, 0.5);
-  --shadow:
-    rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
+  /* Page surfaces */
+  --app-bg:          #f1f2f6;   /* cool off-white page fill          */
+  --card-bg:         #ffffff;   /* elevated card / panel             */
+  --card-bg-alt:     #f7f7fb;   /* recessed inset areas              */
+  --sidebar-bg:      #191c29;   /* deep charcoal sidebar             */
 
-  --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --mono: ui-monospace, Consolas, monospace;
+  /* Typography */
+  --text-primary:    #0d1117;   /* near-black ink                    */
+  --text-secondary:  #5b6270;   /* mid-tone descriptive text         */
+  --text-muted:      #9399a6;   /* disabled / placeholder            */
 
-  font: 18px/145% var(--sans);
-  letter-spacing: 0.18px;
-  color-scheme: light dark;
-  color: var(--text);
-  background: var(--bg);
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  /* Borders & dividers */
+  --border-color:    #dce0e8;   /* standard divider                  */
+  --border-subtle:   #eaedf3;   /* intra-card rows                   */
 
-  @media (max-width: 1024px) {
-    font-size: 16px;
-  }
+  /* ── Accent: Restrained Royal Purple ────────────────────────── */
+  --accent-purple:        #5548c8;  /* primary CTA / active nav       */
+  --accent-purple-hover:  #4a3eb5;  /* hover state                    */
+  --accent-purple-active: #3a3096;  /* pressed / deeply active        */
+  --accent-purple-tint:   #ece9f8;  /* selected row / soft highlight  */
+  --accent-purple-border: #bfb9ec;  /* outline rings, chip borders    */
+  --accent-purple-muted:  #7b72d8;  /* secondary badges, chart line   */
+
+  /* Alias so legacy --accent-blue references resolve to purple */
+  --accent-blue: #5548c8;
+
+  /* Status colours */
+  --positive-green:  #1a7a4a;   /* gains, success                    */
+  --negative-red:    #b91c1c;   /* losses, error                     */
+  --warning-amber:   #a06200;   /* caution states                    */
+
+  /* Layout */
+    --app-topbar-height: 56px;
+    --space-page:        20px;
+    --space-grid:        16px;
+
+    /* ─── Shared Typography Scale ──────────────────────────────────────────
+      Every authenticated page MUST use these tokens.
+      Never set font-size / font-weight directly on page-level headings.
+    ──────────────────────────────────────────────────────────────────────── */
+    --fs-page-title:     20px;   /* <h1> on every authenticated page    */
+    --fw-page-title:     600;
+    --fs-page-subtitle:  12px;   /* muted supporting line below title   */
+
+    --fs-section-title:  14px;   /* section headings inside cards       */
+    --fw-section-title:  600;
+
+    --fs-card-title:     13px;   /* card / panel header labels          */
+    --fw-card-title:     600;
+
+    --fs-body:           13px;   /* default body copy                   */
+    --fs-body-sm:        12px;   /* compact body & table cells          */
+    --fs-caption:        11px;   /* supporting labels, sub-text         */
+    --fs-micro:          10px;   /* table headers, badges, timestamps   */
+
+    --fs-metric-lg:      22px;   /* large KPI figures                   */
+    --fw-metric:         700;
+    --fs-metric-md:      14px;   /* mid-size stat numbers               */
+    --fw-metric-md:      600;
+
+    --fs-table-header:   10px;   /* <th> across every table             */
+    --fw-table-header:   600;
+    --ls-table-header:   0.04em; /* letter-spacing for all <th>         */
+
+    --fs-btn:            12px;   /* standard button text                */
+    --fw-btn:            600;
+
+  /* Elevation */
+  --shadow-soft: 0 1px 3px rgba(13, 17, 23, 0.07), 0 1px 2px rgba(13, 17, 23, 0.04);
+  --shadow-card: 0 2px 8px rgba(13, 17, 23, 0.09);
+
+  /* Radius */
+  --radius-sm: 6px;
+  --radius-md: 8px;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --text: #9ca3af;
-    --text-h: #f3f4f6;
-    --bg: #16171d;
-    --border: #2e303a;
-    --code-bg: #1f2028;
-    --accent: #c084fc;
-    --accent-bg: rgba(192, 132, 252, 0.15);
-    --accent-border: rgba(192, 132, 252, 0.5);
-    --social-bg: rgba(47, 48, 58, 0.5);
-    --shadow:
-      rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
-  }
-
-  #social .button-icon {
-    filter: invert(1) brightness(2);
-  }
-}
-
-body {
-  margin: 0;
-}
-
-#root {
-  width: 1126px;
-  max-width: 100%;
-  margin: 0 auto;
-  text-align: center;
-  border-inline: 1px solid var(--border);
-  min-height: 100svh;
-  display: flex;
-  flex-direction: column;
+/* Keep box model predictable for all elements. */
+*,
+*::before,
+*::after {
   box-sizing: border-box;
 }
 
-h1,
-h2 {
-  font-family: var(--heading);
-  font-weight: 500;
-  color: var(--text-h);
+/* Base document styling. */
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+  font-family: "Inter", sans-serif;
+  background: var(--app-bg);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-h1 {
-  font-size: 56px;
-  letter-spacing: -1.68px;
-  margin: 32px 0;
-  @media (max-width: 1024px) {
-    font-size: 36px;
-    margin: 20px 0;
-  }
+/* Ensure form controls use Inter as well (some browsers do not inherit by default). */
+button,
+input,
+select,
+textarea {
+  font-family: inherit;
 }
-h2 {
-  font-size: 24px;
-  line-height: 118%;
-  letter-spacing: -0.24px;
-  margin: 0 0 8px;
-  @media (max-width: 1024px) {
-    font-size: 20px;
-  }
+
+/* Root mount fills the viewport. */
+#root {
+  min-height: 100vh;
 }
+
+/* Compact default type scale for enterprise density. */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
 p {
   margin: 0;
 }
 
-code,
-.counter {
-  font-family: var(--mono);
-  display: inline-flex;
-  border-radius: 4px;
-  color: var(--text-h);
+h1 {
+  font-size: 22px;
+  font-weight: 600;
 }
 
-code {
-  font-size: 15px;
-  line-height: 135%;
-  padding: 4px 8px;
-  background: var(--code-bg);
+h2 {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+p {
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+/* Link defaults — purple accent. */
+a {
+  color: var(--accent-purple);
+  text-decoration: none;
+}
+
+a:hover {
+  color: var(--accent-purple-hover);
+  text-decoration: underline;
+}
+
+/* Shared card utilities used by reusable dashboard components. */
+.card {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-soft);
+  padding: 16px;
+}
+
+.side-card {
+  display: grid;
+  gap: 12px;
+}
+
+.side-card-header {
+  display: grid;
+  gap: 2px;
+}
+
+.card-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.card-subtitle {
+  font-size: 12px;
+  color: var(--text-secondary);
 }

@@ -13,31 +13,37 @@
 .holdings-table th,
 .holdings-table td {
   text-align: left;
-  padding: 15px 12px;
-  border-bottom: 1px solid #edf2f7;
-  font-size: 0.94rem;
+  padding: 10px 12px;
+  border-bottom: 1px solid #f0f2f5;
+  font-size: 12px;
+  white-space: nowrap;
 }
 
 .holdings-table th {
-  color: #6b7890;
-  font-size: 0.82rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 600;
+  background: #f3f4f6;
 }
 
 /* Blue bold ticker symbol */
 .table-symbol {
-  font-weight: 700;
-  color: #173b6b;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.table-company {
+  font-size: 11px;
+  color: var(--text-secondary);
 }
 
 /* Return value colours */
 .text-positive {
-  color: #14804a;
-  font-weight: 700;
+  color: var(--positive-green);
+  font-weight: 600;
 }
 
 .text-negative {
-  color: #bb3a3a;
-  font-weight: 700;
+  color: var(--negative-red);
+  font-weight: 600;
 }

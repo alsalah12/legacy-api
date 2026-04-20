@@ -1,0 +1,293 @@
+/* Main page layout mirrors the Transaction History page shell. */
+.buy-sell-page {
+  display: flex;
+  min-height: 100vh;
+  background: var(--app-bg);
+}
+
+/* Right-side content area keeps the same spacing scale as the reference page. */
+.buy-sell-page .main-content {
+  flex: 1;
+  padding: var(--space-page);
+  display: grid;
+  gap: var(--space-grid);
+}
+
+/* Page heading matches the same hierarchy and density as Transaction History. */
+.buy-sell-page .topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+.buy-sell-page .topbar h1 {
+  margin: 0 0 4px;
+  font-size: var(--fs-page-title);
+  font-weight: var(--fw-page-title);
+  color: var(--text-primary);
+}
+
+.buy-sell-page .subtitle {
+  margin: 0;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+/* Main card uses the same card treatment as the Transaction History cards. */
+.buy-sell-page .stocks-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-soft);
+  padding: 14px;
+  display: grid;
+  gap: 12px;
+}
+
+/* Header row inside the main content card. */
+.buy-sell-page .table-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+.buy-sell-page .table-header h2 {
+  font-size: var(--fs-section-title);
+  font-weight: var(--fw-section-title);
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.buy-sell-page .table-header span {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+/* Controls row mirrors the Transaction History filter bar sizing and spacing. */
+.buy-sell-page .controls-row {
+  display: grid;
+  grid-template-columns: minmax(160px, 0.9fr) minmax(220px, 1.6fr) auto;
+  gap: 10px;
+}
+
+.buy-sell-page .search-input,
+.buy-sell-page .select-input {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  background: #ffffff;
+  color: var(--text-primary);
+}
+
+/* Refresh button uses the same compact control sizing, without introducing a new visual system. */
+.buy-sell-page .refresh-button {
+  padding: 8px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-weight: 500;
+  background: #ffffff;
+  color: var(--text-primary);
+  cursor: pointer;
+  box-shadow: none;
+}
+
+.buy-sell-page .refresh-button:hover {
+  background: #f9fafb;
+}
+
+/* Horizontal overflow remains available on smaller widths, matching the reference. */
+.buy-sell-page .table-wrapper {
+  overflow-x: auto;
+}
+
+/* Base table styling directly follows Transaction History conventions. */
+.buy-sell-page table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.buy-sell-page th,
+.buy-sell-page td {
+  padding: 9px 10px;
+  border-bottom: 1px solid #f0f2f5;
+  text-align: left;
+  vertical-align: middle;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.buy-sell-page th {
+  background: #f3f4f6;
+  color: var(--text-secondary);
+  font-size: var(--fs-table-header);
+  font-weight: var(--fw-table-header);
+  letter-spacing: var(--ls-table-header);
+}
+
+/* Stock cell uses the same stacked ticker/company presentation as Transaction History. */
+.buy-sell-page .stock-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.buy-sell-page .stock-cell strong {
+  font-size: 12px;
+}
+
+.buy-sell-page .stock-cell span {
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+.buy-sell-page .positive-text {
+  color: var(--positive-green);
+  font-weight: 600;
+}
+
+.buy-sell-page .negative-text {
+  color: var(--negative-red);
+  font-weight: 600;
+}
+
+/* Buy and sell actions stay compact and product-like, not flashy. */
+.buy-sell-page .action-group {
+  display: inline-flex;
+  gap: 6px;
+}
+
+.buy-sell-page .action-button {
+  min-width: 54px;
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-color);
+  font-size: 11px;
+  font-weight: 600;
+  background: #ffffff;
+  cursor: pointer;
+}
+
+.buy-sell-page .buy-button {
+  color: var(--positive-green);
+  background: #ecfdf3;
+  border-color: #d1fae5;
+}
+
+.buy-sell-page .sell-button {
+  color: var(--negative-red);
+  background: #fef2f2;
+  border-color: #fee2e2;
+}
+
+.buy-sell-page .action-button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  background: #f9fafb;
+  color: var(--text-secondary);
+  border-color: var(--border-color);
+}
+
+.buy-sell-page .empty-state {
+  text-align: center;
+  padding: 20px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+/* Footer keeps pagination compact and aligned like an internal dashboard table. */
+.buy-sell-page .table-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding-top: 2px;
+}
+
+.buy-sell-page .table-count,
+.buy-sell-page .page-indicator {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.buy-sell-page .pagination-controls {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.buy-sell-page .pagination-button {
+  padding: 7px 10px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  background: #ffffff;
+  color: var(--text-primary);
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.buy-sell-page .pagination-button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* Tablet layout adjustments follow the same responsive behaviour as the reference page. */
+@media (max-width: 1100px) {
+  .buy-sell-page .controls-row {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .buy-sell-page .refresh-button {
+    grid-column: 1 / -1;
+  }
+}
+
+/* Mobile layout keeps the page readable without introducing a new system. */
+@media (max-width: 760px) {
+  .buy-sell-page {
+    flex-direction: column;
+  }
+
+  .buy-sell-page .main-content {
+    padding: 12px;
+    gap: 12px;
+  }
+
+  .buy-sell-page .stocks-card {
+    padding: 12px;
+  }
+
+  .buy-sell-page .controls-row {
+    grid-template-columns: 1fr;
+  }
+
+  .buy-sell-page .table-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .buy-sell-page .topbar,
+  .buy-sell-page .table-footer {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .buy-sell-page .pagination-controls {
+    flex-wrap: wrap;
+  }
+
+  .buy-sell-page .action-group {
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  .buy-sell-page .action-button {
+    min-width: 48px;
+    padding: 5px 8px;
+  }
+}

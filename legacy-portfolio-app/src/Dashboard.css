@@ -1,882 +1,2156 @@
-/* Global reset and base page styling */
-* {
-box-sizing: border-box;
-margin: 0;
-padding: 0;
+/* Dashboard.css */
+/* This stylesheet refactors the dashboard into a professional viewport-based shell. */
+/* The desktop goal is to keep the whole dashboard inside 100vh and avoid page scrolling. */
+
+/* Root-level tokens — enterprise purple palette. */
+:root {
+  --page-bg:       #f1f2f6;
+  --panel-bg:      #ffffff;
+  --sidebar-bg:    #191c29;  /* dark charcoal sidebar */
+  --border-soft:   #dce0e8;
+  --border-muted:  #cfd4de;
+  --text-strong:   #0d1117;
+  --text-main:     #1a2230;
+  --text-muted:    #5b6270;
+  --text-soft:     #9399a6;
+
+  /* Purple accent — restrained royal purple */
+  --blue-main:  #5548c8;   /* kept as --blue-main for existing refs */
+  --blue-deep:  #4a3eb5;
+  --blue-soft:  #ece9f8;
+
+  --shadow-soft: 0 1px 4px rgba(13, 17, 23, 0.07);
+  --shadow-card: 0 2px 10px rgba(13, 17, 23, 0.09);
+  --radius-xl: 22px;
+  --radius-lg: 18px;
+  --radius-md: 14px;
+  --navbar-height: 78px;
+  --sidebar-width: 252px;
+  --content-max-width: 1520px;
 }
 
+/* Border-box sizing makes spacing calculations more predictable. */
+* {
+  box-sizing: border-box;
+}
+
+/* The dashboard page fills the viewport and uses the dashboard palette. */
 html,
 body,
 #root {
-min-height: 100%;
+  margin: 0;
+  height: 100%;
+  min-height: 100%;
+  font-family: "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  background: var(--page-bg);
+  color: var(--text-main);
 }
 
-body {
-font-family: Arial, Helvetica, sans-serif;
-background: #f5f7fb;
-color: #152238;
+/* Form controls inherit the same type styling as surrounding text. */
+button,
+input,
+select,
+textarea {
+  font: inherit;
 }
 
-/* Main app wrapper */
-.app-shell {
-min-height: 100vh;
-background: #f5f7fb;
+/* Links use inherited colour unless a more specific rule overrides them. */
+a {
+  color: inherit;
+  text-decoration: none;
 }
 
-/* Sticky top header */
-.top-header {
-position: sticky;
-top: 0;
-z-index: 1000;
-height: 78px;
-background: #ffffff;
-border-bottom: 1px solid #e4e9f2;
-display: flex;
-align-items: center;
-justify-content: space-between;
-padding: 0 24px;
-gap: 20px;
+/* This outer wrapper is the main viewport shell.
+   It uses column flex layout so the header sits above the body area. */
+.dashboard-page {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--page-bg);
 }
 
-/* Left side brand area */
-.header-left {
-display: flex;
-align-items: center;
-gap: 12px;
-min-width: 180px;
+/* The top navbar has a fixed height and never shrinks.
+   This guarantees the body can calculate its remaining height reliably. */
+.top-navbar {
+  height: var(--navbar-height);
+  flex-shrink: 0;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 0 28px;
+  background: #ffffff;
+  border-bottom: 1px solid var(--border-soft);
+  box-shadow: 0 1px 0 rgba(16, 38, 63, 0.02);
 }
 
-/* Simple custom logo shape built with CSS only */
+/* Brand area groups the logo and the product name. */
+.brand-area {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 210px;
+}
+
+/* Logo container. */
 .brand-mark {
-position: relative;
-width: 32px;
-height: 24px;
+  width: 34px;
+  height: 34px;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.brand-mark-layer {
-position: absolute;
-left: 0;
-bottom: 0;
-border-radius: 4px;
-transform-origin: bottom left;
+/* Shared rotated logo shapes. */
+.brand-shape {
+  position: absolute;
+  border-radius: 10px;
+  transform: rotate(45deg);
 }
 
-.layer-one {
-width: 28px;
-height: 8px;
-background: #9bc4ea;
-transform: skew(-35deg);
+/* Larger purple shape. */
+.brand-shape-one {
+  width: 22px;
+  height: 22px;
+  left: 1px;
+  top: 7px;
+  background: linear-gradient(135deg, #7b6fdd, #5548c8);
 }
 
-.layer-two {
-width: 22px;
-height: 8px;
-left: 6px;
-bottom: 6px;
-background: #4d88c7;
-transform: skew(-35deg);
+/* Smaller accent shape. */
+.brand-shape-two {
+  width: 18px;
+  height: 18px;
+  right: 1px;
+  top: 2px;
+  background: linear-gradient(135deg, #b8b1f2, #5548c8);
 }
 
-.layer-three {
-width: 16px;
-height: 8px;
-left: 12px;
-bottom: 12px;
-background: #1c4f91;
-transform: skew(-35deg);
+/* Brand text styling. */
+.brand-name {
+  font-size: 0.98rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  color: #17304a;
 }
 
-.brand-text {
-font-size: 1.45rem;
-font-weight: 700;
-letter-spacing: 0.04em;
-color: #173b6b;
+/* Top navigation links stay centered and evenly spaced. */
+.top-nav-links {
+  display: flex;
+  align-items: center;
+  gap: 28px;
 }
 
-/* Right side header metrics */
-.header-right {
-display: flex;
-align-items: center;
-gap: 18px;
-flex-wrap: wrap;
-justify-content: flex-end;
+/* Default top nav appearance. */
+.top-nav-link {
+  font-size: 0.93rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  transition: color 0.2s ease;
 }
 
-.header-metric {
-display: flex;
-flex-direction: column;
-gap: 4px;
+/* Active or hovered nav item gets stronger contrast. */
+.top-nav-link:hover,
+.top-nav-link.active {
+  color: var(--text-strong);
+}
+
+/* Right side of the navbar holds balance and CTA. */
+.top-navbar-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 14px;
+}
+
+/* Quick balance text. */
+.top-balance {
+  font-size: 0.98rem;
+  font-weight: 800;
+  color: var(--text-strong);
+  white-space: nowrap;
+}
+
+/* Primary action button. */
+.add-funds-button {
+  border: none;
+  border-radius: 999px;
+  background: var(--blue-main);
+  color: #ffffff;
+  padding: 10px 16px;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 10px 22px rgba(47, 109, 246, 0.2);
+}
+
+/* Plus icon inside the button. */
+.add-icon {
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.16);
+  line-height: 1;
+}
+
+/*
+  FIX APPLIED:
+  The previous refactor accidentally pasted a second copy of this stylesheet inside
+  `.add-icon`, which invalidated the remainder of the file. That caused only top
+  navbar styles to apply while sidebar/main sections looked like raw HTML.
+  The block below restores the expected page wrappers and valid nesting.
+*/
+
+/* Body area consumes all remaining viewport height under the navbar.
+   Overflow is hidden so the page itself does not scroll on desktop. */
+.dashboard-body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  overflow: hidden;
+}
+
+/* Sidebar has a fixed width and its own internal flex layout.
+   Because the whole page is height-constrained, the sidebar must also avoid growing indefinitely. */
+.dashboard-sidebar {
+  width: var(--sidebar-width);
+  min-width: var(--sidebar-width);
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px 18px;
+  background: var(--sidebar-bg);
+  border-right: 1px solid var(--border-soft);
+  overflow: hidden;
+}
+
+/* Sidebar links stack vertically with compact spacing. */
+.sidebar-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Each sidebar button is full width with generous click area but restrained height. */
+.sidebar-item {
+  width: 100%;
+  border: none;
+  border-radius: 14px;
+  background: transparent;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  text-align: left;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* Active sidebar state mirrors modern finance dashboard styling. */
+.sidebar-item.active {
+  background: var(--blue-soft);
+  color: var(--blue-deep);
+}
+
+
+/* Filter card sits lower in the sidebar and uses auto margin to push it down. */
+.sidebar-filter-card {
+  margin-top: auto;
+  padding: 16px;
+  background: #ffffff;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-soft);
+}
+
+/* Small label above the fake sector selector. */
+.sidebar-filter-label {
+  margin: 0 0 10px;
+  color: var(--text-muted);
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+/* Dropdown-like selector button. */
+.sidebar-filter-control {
+  width: 100%;
+  border: 1px solid var(--border-muted);
+  border-radius: 14px;
+  background: #ffffff;
+  color: var(--text-main);
+  padding: 12px 13px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* Muted chevron icon. */
+.sidebar-filter-chevron {
+  color: var(--text-soft);
+  font-size: 0.95rem;
+}
+
+/* Main content fills the rest of the body area.
+   min-height: 0 is critical here because it allows nested flex/grid children to shrink properly. */
+.dashboard-main {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  padding: 18px 20px 20px;
+}
+
+/* Inner wrapper keeps content aligned and contained without creating vertical overflow. */
+.dashboard-main-inner {
+  width: 100%;
+  max-width: var(--content-max-width);
+  height: 100%;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-height: 0;
+}
+
+/* The heading block is intentionally compact to preserve room for the card grid. */
+.dashboard-content-header {
+  flex-shrink: 0;
+}
+
+/* Small uppercase kicker above the main heading. */
+.dashboard-kicker {
+  margin: 0 0 4px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-soft);
+}
+
+/* Main welcome heading. */
+.dashboard-content-header h1 {
+  margin: 0;
+  font-size: 1.55rem;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  font-weight: 800;
+  color: var(--text-strong);
+}
+
+/* This is the primary card grid.
+   It expands to fill the remaining content height and keeps both columns aligned. */
+.dashboard-grid {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1.75fr) minmax(320px, 0.95fr);
+  gap: 20px;
+  align-items: stretch;
+}
+
+/* Both columns must allow children to shrink, otherwise content can force overflow. */
+.dashboard-primary-column,
+.dashboard-secondary-column,
+.dashboard-secondary-panel {
+  min-width: 0;
+  min-height: 0;
+}
+
+/* The right column is a two-row stack.
+   Each row shares the available height instead of growing with content. */
+.dashboard-secondary-column {
+  display: grid;
+  grid-template-rows: minmax(0, 0.92fr) minmax(0, 1.08fr);
+  gap: 20px;
+  overflow: hidden;
+}
+
+/* Wrapper panels allow us to control the layout of existing child components without renaming them. */
+.dashboard-secondary-panel {
+  overflow: hidden;
+}
+
+/* Shared card appearance for portfolio and leaderboard cards. */
+.portfolio-card,
+.leaderboard-card {
+  height: 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--panel-bg);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+}
+
+/* Shared top row inside cards. */
+.card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  flex-shrink: 0;
+}
+
+/* Section eyebrow used in the portfolio hero card. */
+.card-eyebrow {
+  margin: 0 0 4px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-soft);
+}
+
+/* Shared card title styling. */
+.card-header h3 {
+  margin: 0;
+  font-size: 1.02rem;
+  line-height: 1.2;
+  font-weight: 800;
+  color: var(--text-strong);
+}
+
+/* Small badge in the compact leaderboard card header. */
+.card-chip {
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: var(--blue-soft);
+  color: var(--blue-deep);
+  font-size: 0.76rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* Main hero card on the left. Fixed heights are removed so it can scale with the viewport cleanly. */
+.portfolio-card {
+  padding: 18px;
+}
+
+/* Icon-only utility button. */
+.card-icon-button {
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--border-soft);
+  border-radius: 12px;
+  background: #f8fbff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+/* The three dots inside the utility button. */
+.card-icon-button span {
+  width: 4px;
+  height: 4px;
+  border-radius: 999px;
+  background: #7f8da3;
+}
+
+/* Body wrapper lets the chart region flex while the summary region stays compact. */
+.portfolio-card-body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 14px;
+}
+
+/* Chart wrapper is allowed to grow and fill extra vertical space in the hero card. */
+.chart-shell {
+  flex: 1;
+  min-height: 220px;
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(180deg, #fcfdff 0%, #f8fbff 100%);
+  border: 1px solid #edf2f7;
+  border-radius: var(--radius-xl);
+  padding: 16px 16px 12px;
+}
+
+/* Decorative grid lines sit behind the SVG chart. */
+.chart-grid-lines {
+  position: absolute;
+  inset: 16px 16px 40px 16px;
+  display: grid;
+  grid-template-rows: repeat(4, 1fr);
+  pointer-events: none;
+}
+
+/* Each span becomes one dashed guide line. */
+.chart-grid-lines span {
+  border-bottom: 1px dashed #e5ebf4;
+}
+
+/* SVG scales to the available chart height rather than forcing a fixed large card. */
+.portfolio-chart {
+  width: 100%;
+  height: 100%;
+  min-height: 220px;
+  display: block;
+  position: relative;
+  z-index: 2;
+}
+
+/* Shared line styling for all series. */
+.chart-line {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 4.5;
+}
+
+.chart-line-blue {
+  stroke: #5548c8;
+}
+
+.chart-line-slate {
+  stroke: #73839b;
+}
+
+.chart-line-cyan {
+  stroke: #7bc5f8;
+}
+
+.chart-line-lavender {
+  stroke: #b9b0ff;
+}
+
+/* End-point circles help the chart feel more polished. */
+.chart-point {
+  stroke: #ffffff;
+  stroke-width: 3;
+}
+
+.chart-point-blue {
+  fill: #5548c8;
+}
+
+.chart-point-slate {
+  fill: #73839b;
+}
+
+.chart-point-cyan {
+  fill: #7bc5f8;
+}
+
+.chart-point-lavender {
+  fill: #b9b0ff;
+}
+
+/* Bottom axis labels. */
+.chart-axis {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 4px 0;
+  color: var(--text-soft);
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+/* Divider between chart and lower metrics area. */
+.portfolio-divider {
+  height: 1px;
+  flex-shrink: 0;
+  background: var(--border-soft);
+}
+
+/* Lower section balances text metrics with an embedded supporting card. */
+.portfolio-lower {
+  flex-shrink: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(230px, 0.86fr);
+  gap: 16px;
+  align-items: stretch;
+}
+
+/* Metric summary block. */
+.portfolio-summary {
+  min-width: 0;
+}
+
+/* Title line for the summary block. */
+.portfolio-summary-title {
+  margin: 0 0 16px;
+  font-size: 1.08rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+/* Highlighted value in the summary title. */
+.portfolio-summary-title strong {
+  color: var(--text-strong);
+  font-weight: 800;
+}
+
+/* Metrics are stacked vertically with tighter spacing than before to save height. */
+.portfolio-metrics {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* One metric row. */
+.metric-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1px solid #eef2f7;
+  border-radius: var(--radius-md);
+  background: #fbfdff;
+}
+
+/* Label text. */
+.metric-label {
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+/* Main value text. */
+.metric-value {
+  color: var(--text-strong);
+  font-weight: 800;
+}
+
+/* Positive-value variant. */
+.metric-value.positive {
+  color: #1e8c58;
+}
+
+/* Wrapper around the embedded leaderboard. */
+.portfolio-embedded-panel {
+  min-width: 0;
+  min-height: 0;
+}
+
+/* Reusable leaderboard card. */
+.leaderboard-card {
+  padding: 18px;
+}
+
+/* Compact version is used as the top right card and should fill its panel height. */
+.leaderboard-card.compact {
+  min-height: 0;
+}
+
+/* Embedded version looks softer inside the larger portfolio card. */
+.leaderboard-card.embedded {
+  padding: 16px;
+  border-radius: 18px;
+  box-shadow: none;
+  background: #fbfdff;
+}
+
+/* The list area becomes the scrollable region when the card has constrained height. */
+.leaderboard-list {
+  margin-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 0;
+}
+
+/* On the compact card we allow only the inside of the list to scroll. */
+.leaderboard-card.compact .leaderboard-list {
+  flex: 1;
+  overflow: auto;
+  padding-right: 4px;
+}
+
+/* Standard leaderboard row. */
+.leaderboard-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 2px;
+}
+
+/* Left grouping for rank, badge, and name. */
+.leaderboard-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+/* Rank number. */
+.leaderboard-rank {
+  width: 18px;
+  flex: 0 0 auto;
+  color: var(--text-soft);
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+/* Company name text. */
+.leaderboard-name {
+  font-size: 0.93rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+/* Green positive return value on the right. */
+.leaderboard-return {
+  color: #1e8c58;
+  font-size: 0.9rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+/* Shared badge for company initials. */
+.company-badge {
+  width: 34px;
+  height: 34px;
+  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  color: #ffffff;
+  font-size: 0.9rem;
+  font-weight: 800;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.15);
+}
+
+.company-badge.google {
+  background: linear-gradient(135deg, #8b7cf8, #5548c8);
+}
+
+.company-badge.apple {
+  background: linear-gradient(135deg, #8b97a8, #5f6f85);
+}
+
+.company-badge.tesla {
+  background: linear-gradient(135deg, #f36c6c, #dd3f3f);
+}
+
+.company-badge.nvidia {
+  background: linear-gradient(135deg, #5ebb72, #3f9853);
+}
+
+/* The News component is preserved, but the wrapper below lets it behave like a viewport-aware card.
+   The widget fills the panel height, and only its list area scrolls if there are too many stories. */
+.dashboard-news-panel .news-widget {
+  height: 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.dashboard-news-panel .news-widget-header {
+  flex-shrink: 0;
+}
+
+.dashboard-news-panel .news-widget-list {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding-right: 4px;
+}
+
+/* Hide full-page overflow on desktop, but relax layout on narrower screens where stacking is more important. */
+@media (max-width: 1200px) {
+  .dashboard-page {
+    height: auto;
+    min-height: 100vh;
+    overflow: visible;
+  }
+
+  .dashboard-body {
+    overflow: visible;
+    min-height: auto;
+  }
+
+  .dashboard-main {
+    overflow: visible;
+  }
+
+  .dashboard-main-inner {
+    height: auto;
+  }
+
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard-secondary-column {
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: none;
+  }
+
+  .portfolio-lower {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Medium screens: navbar wraps and sidebar becomes a top section. */
+@media (max-width: 980px) {
+  .top-navbar {
+    height: auto;
+    min-height: var(--navbar-height);
+    flex-wrap: wrap;
+    gap: 16px;
+    padding: 14px 18px;
+  }
+
+  .dashboard-body {
+    flex-direction: column;
+  }
+
+  .dashboard-sidebar {
+    width: 100%;
+    min-width: 0;
+    border-right: none;
+    border-bottom: 1px solid var(--border-soft);
+  }
+
+  .sidebar-menu {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .sidebar-filter-card {
+    margin-top: 0;
+  }
+
+  .dashboard-secondary-column {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Small screens: reduce padding and allow the content to breathe vertically. */
+@media (max-width: 720px) {
+  .top-nav-links {
+    order: 3;
+    width: 100%;
+    justify-content: flex-start;
+    gap: 18px;
+  }
+
+  .top-navbar-actions {
+    margin-left: auto;
+  }
+
+  .dashboard-main {
+    padding: 16px;
+  }
+
+  .dashboard-content-header h1 {
+    font-size: 1.4rem;
+  }
+
+  .portfolio-card,
+  .leaderboard-card {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .chart-shell {
+    min-height: 200px;
+    padding: 14px 14px 10px;
+  }
+
+  .portfolio-chart {
+    min-height: 200px;
+  }
+}
+
+/* Very narrow screens: collapse sidebar links to one per row and let actions span full width. */
+@media (max-width: 560px) {
+  .sidebar-menu {
+    grid-template-columns: 1fr;
+  }
+
+  .top-navbar-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .brand-area {
+    min-width: 0;
+  }
+}
+
+/* ============================
+   Enterprise Dashboard Refresh
+   ============================ */
+
+/* Basic tokens requested for the dashboard theme. */
+:root {
+  --page-bg: #f1f2f6;
+  --card-bg: #ffffff;
+  --border: #dce0e8;
+  --text-primary: #0d1117;
+  --text-secondary: #5b6270;
+  --accent-blue: #5548c8;
+  --positive-green: #1a7a4a;
+  --negative-red: #b91c1c;
+  --card-shadow: 0 1px 3px rgba(13, 17, 23, 0.07);
+  --radius: 8px;
+  --main-gap: 16px;
+  --sidebar-width: 220px;
+}
+
+/* Page background and font setup. */
+html,
+body,
+#root {
+  margin: 0;
+  min-height: 100%;
+  background: var(--page-bg);
+  font-family: "Inter", sans-serif;
+  color: var(--text-primary);
+}
+
+/* Overall dashboard wrapper:
+   - fixed sidebar
+   - content on the right */
+.enterprise-dashboard {
+  height: 100vh;
+  overflow: hidden;
+  background: var(--page-bg);
+}
+
+/* Left navigation bar, fixed like enterprise products. */
+.enterprise-sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: var(--sidebar-width);
+  height: 100vh;
+  padding: 20px;
+  border-right: 1px solid var(--border);
+  background: #f3f4f6;
+}
+
+/* Sidebar title style. */
+.sidebar-title {
+  margin: 0 0 14px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  letter-spacing: 0.02em;
+}
+
+/* Sidebar nav list container. */
+.sidebar-nav {
+  display: grid;
+  gap: 8px;
+}
+
+/* Flat navigation item style for non-active state. */
+.sidebar-nav-item {
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text-primary);
+  text-align: left;
+  font-size: 13px;
+  font-weight: 500;
+  border-radius: 6px;
+  padding: 10px 12px;
+  cursor: pointer;
+}
+
+/* Active navigation style: purple background + white text. */
+.sidebar-nav-item.active {
+  background: var(--accent-blue);
+  color: #ffffff;
+  border-color: var(--accent-blue);
+}
+
+/* Main area offset by sidebar width. */
+.enterprise-main {
+  padding: 12px;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 10px;
+  height: calc(100vh - var(--app-topbar-height));
+  overflow: hidden;
+}
+
+/* Shared card shell style for all white cards. */
+.card-shell {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--card-shadow);
+  padding: 10px;
+  min-height: 0;
+}
+
+/* Top row layout with left content and right buttons. */
+.top-row {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 12px;
+}
+
+.dashboard-content-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.7fr) minmax(320px, 1fr);
+  gap: 10px;
+  min-height: 0;
+  height: 100%;
+}
+
+.left-main-stack,
+.right-rail-stack {
+  display: grid;
+  gap: 10px;
+  min-height: 0;
+  height: 100%;
+}
+
+.left-main-stack {
+  grid-template-rows: minmax(170px, 1fr) minmax(170px, 1fr);
+}
+
+.right-rail-stack {
+  grid-template-rows: minmax(170px, 1fr) minmax(170px, 1fr);
+}
+
+.welcome-block {
+  display: grid;
+  gap: 4px;
+}
+
+.welcome-note {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+/* Left side of top row. */
+.top-row-left {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+/* Main page title, intentionally compact. */
+.page-title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* Inline metrics next to the title. */
+.metrics-inline {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+/* Each metric block with label and value. */
+.metric-block {
+  display: grid;
+  gap: 3px;
 }
 
 .metric-label {
-font-size: 0.72rem;
-color: #6b7890;
-text-transform: uppercase;
-letter-spacing: 0.05em;
+  font-size: 12px;
+  color: var(--text-secondary);
 }
 
 .metric-value {
-font-size: 0.96rem;
-font-weight: 700;
-color: #152238;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
 }
 
-/* Primary action in header */
-.add-funds-btn {
-border: 1px solid #cfd8e6;
-background: #ffffff;
-color: #173b6b;
-border-radius: 12px;
-padding: 11px 18px;
-font-size: 0.95rem;
-font-weight: 700;
-cursor: pointer;
-transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+.metric-value.positive {
+  color: var(--positive-green);
 }
 
-.add-funds-btn:hover {
-background: #f3f7fc;
-border-color: #b7c5db;
-transform: translateY(-1px);
+/* Right side actions in top row. */
+.top-row-actions {
+  display: flex;
+  gap: 8px;
 }
 
-.header-updated .metric-value {
-font-size: 0.88rem;
-font-weight: 600;
+/* Shared button look (small, compact enterprise style). */
+.action-btn {
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  padding: 7px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  background: #ffffff;
 }
 
-/* Main layout under header */
-.dashboard-layout {
-display: flex;
-min-height: calc(100vh - 78px);
+/* Primary action button — purple CTA. */
+.action-btn.primary {
+  border-color: var(--accent-blue);
+  background: var(--accent-blue);
+  color: #ffffff;
 }
 
-/* Sidebar */
-.sidebar {
-width: 250px;
-background: #13243b;
-color: #e8eef8;
-border-right: 1px solid #20344f;
-transition: width 0.25s ease;
-display: flex;
-flex-direction: column;
-position: sticky;
-top: 78px;
-height: calc(100vh - 78px);
+/* Secondary action button. */
+.action-btn.secondary {
+  color: var(--text-primary);
+  background: #ffffff;
 }
 
-.sidebar.collapsed {
-width: 84px;
+/* Row 2 with two equal cards. */
+.charts-row {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr 1fr;
+  gap: var(--main-gap);
+  min-height: 0;
 }
 
-.sidebar-top {
-display: flex;
-justify-content: flex-end;
-padding: 16px;
-border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.sidebar-toggle {
-border: 1px solid rgba(255, 255, 255, 0.14);
-background: rgba(255, 255, 255, 0.06);
-color: #ffffff;
-width: 36px;
-height: 36px;
-border-radius: 10px;
-cursor: pointer;
-font-size: 1rem;
-}
-
-.sidebar-nav {
-display: flex;
-flex-direction: column;
-padding: 14px 12px;
-gap: 6px;
-}
-
-.nav-item {
-display: flex;
-align-items: center;
-gap: 12px;
-color: #d7e3f4;
-text-decoration: none;
-padding: 14px 14px;
-border-radius: 12px;
-font-size: 0.98rem;
-transition: background 0.2s ease, color 0.2s ease;
-}
-
-.nav-item:hover {
-background: rgba(255, 255, 255, 0.07);
-color: #ffffff;
-}
-
-.nav-item.active {
-background: linear-gradient(180deg, #2d68aa, #214f85);
-color: #ffffff;
-font-weight: 700;
-}
-
-.nav-icon {
-min-width: 20px;
-text-align: center;
-font-size: 1rem;
-}
-
-.nav-label {
-white-space: nowrap;
-}
-
-.signout-item {
-margin-top: 14px;
-}
-
-/* Main content area with center and right columns */
-.content-area {
-flex: 1;
-display: grid;
-grid-template-columns: minmax(0, 1fr) 340px;
-gap: 24px;
-padding: 24px;
-align-items: start;
-}
-
-/* Center content */
-.main-content {
-display: flex;
-flex-direction: column;
-gap: 24px;
-}
-
-.page-heading-row {
-display: flex;
-align-items: center;
-justify-content: space-between;
-}
-
-.page-title {
-font-size: 2rem;
-color: #162844;
-margin-bottom: 6px;
-}
-
-.page-subtitle {
-font-size: 0.96rem;
-color: #66768f;
-}
-
-/* Shared card styling */
-.card {
-background: #ffffff;
-border: 1px solid #e5ebf4;
-border-radius: 20px;
-box-shadow: 0 10px 30px rgba(17, 35, 61, 0.05);
-padding: 22px;
-}
-
-.large-card {
-padding: 24px;
-}
-
-.card-header {
-display: flex;
-justify-content: space-between;
-align-items: flex-start;
-gap: 16px;
-margin-bottom: 20px;
-}
-
-.card-title {
-font-size: 1.3rem;
-color: #162844;
-margin-bottom: 4px;
-}
-
-.card-subtitle {
-font-size: 0.92rem;
-color: #6b7890;
-}
-
-.ghost-button {
-background: #f5f8fc;
-color: #173b6b;
-border: 1px solid #d7e1ef;
-border-radius: 12px;
-padding: 10px 14px;
-font-size: 0.9rem;
-font-weight: 700;
-cursor: pointer;
-}
-
-/* Portfolio chart placeholder */
+/* Chart card content spacing. */
 .chart-card {
-display: flex;
-gap: 14px;
-min-height: 300px;
-padding: 8px 0 18px;
+  display: grid;
+  gap: 10px;
+  min-height: 0;
+  overflow: visible;
 }
 
-.chart-y-axis {
-width: 52px;
-display: flex;
-flex-direction: column;
-justify-content: space-between;
-color: #7c899d;
-font-size: 0.82rem;
-padding-top: 10px;
-padding-bottom: 34px;
+.performance-merged-card {
+  gap: 6px;
 }
 
-.chart-area {
-position: relative;
-flex: 1;
-border-left: 1px solid #dce5f1;
-border-bottom: 1px solid #dce5f1;
-min-height: 300px;
-padding: 0 12px 36px 12px;
-overflow: hidden;
+.chart-stats-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.8fr) minmax(220px, 1fr);
+  gap: 6px;
+  align-items: stretch;
 }
 
-/* Horizontal grid lines in chart */
-.chart-grid-line {
-position: absolute;
-left: 0;
-right: 0;
-height: 1px;
-background: #ebf0f6;
+/* Shared card title styling. */
+.card-title {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
 }
 
-.chart-grid-line:nth-child(1) {
-top: 18%;
+/* Allocation chart wrapper centers the placeholder shape. */
+.allocation-chart-wrap {
+  display: grid;
+  place-items: center;
+  min-height: 90px;
 }
 
-.chart-grid-line:nth-child(2) {
-top: 40%;
+/* Donut placeholder made with conic gradient. */
+.allocation-donut {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  background: conic-gradient(
+    #5548c8 0deg 200deg,
+    #9b91e8 200deg 285deg,
+    #2ea87a 285deg 330deg,
+    #a0a8b8 330deg 360deg
+  );
+  position: relative;
+  display: grid;
+  place-items: center;
 }
 
-.chart-grid-line:nth-child(3) {
-top: 62%;
+/* Center panel inside donut for better visual hierarchy. */
+.allocation-center {
+  position: absolute;
+  inset: 22px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 1px solid #eef2f7;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 0;
 }
 
-.chart-grid-line:nth-child(4) {
-top: 84%;
+.allocation-center-label {
+  font-size: 9px;
+  color: var(--text-secondary);
+  line-height: 1;
 }
 
-/* Fake chart lines using rounded bordered shapes */
-.chart-line {
-position: absolute;
-left: 6%;
-width: 88%;
-height: 120px;
-border-radius: 999px;
-border-top: 3px solid;
-border-right: 3px solid transparent;
-border-left: 3px solid transparent;
-opacity: 0.95;
+.allocation-center-value {
+  font-size: 12px;
+  color: var(--text-primary);
+  line-height: 1.1;
 }
 
-.chart-line-primary {
-top: 30%;
-border-top-color: #2d68aa;
-transform: rotate(8deg);
+/* Enterprise legend with dots and right-aligned percentages. */
+.allocation-legend {
+  display: grid;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--text-secondary);
 }
 
-.chart-line-secondary {
-top: 20%;
-border-top-color: #3aa7b4;
-transform: rotate(-2deg);
+.allocation-legend-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 4px 6px;
+  border: 1px solid #f1f4f8;
+  border-radius: 6px;
+  background: #fcfdff;
 }
 
-.chart-line-tertiary {
-top: 45%;
-border-top-color: #6d8d5d;
-transform: rotate(-10deg);
+.legend-left {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
 
-/* Bottom labels in chart */
-.chart-x-axis {
-position: absolute;
-left: 12px;
-right: 12px;
-bottom: 0;
-display: grid;
-grid-template-columns: repeat(7, 1fr);
-font-size: 0.84rem;
-color: #7c899d;
-padding-top: 12px;
+.legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
 }
 
-.chart-x-axis span {
-text-align: center;
+.legend-dot.stocks {
+  background: #5548c8; /* royal purple */
 }
 
-/* Summary stats under performance chart */
-.performance-summary {
-display: grid;
-grid-template-columns: repeat(4, minmax(140px, 1fr));
-gap: 14px;
-margin-top: 4px;
+.legend-dot.bonds {
+  background: #9b91e8; /* muted violet */
 }
 
-.summary-stat {
-background: #f8fafc;
-border: 1px solid #e8eef6;
-border-radius: 16px;
-padding: 16px;
-display: flex;
-flex-direction: column;
-gap: 8px;
+.legend-dot.crypto {
+  background: #2ea87a; /* forest green */
 }
 
-.summary-label {
-font-size: 0.88rem;
-color: #6b7890;
+.legend-dot.cash {
+  background: #a0a8b8; /* neutral slate */
 }
 
-.summary-value {
-font-size: 1.1rem;
-font-weight: 700;
-color: #162844;
+.allocation-legend-item strong {
+  color: var(--text-primary);
+  font-size: 11px;
+  font-weight: 600;
 }
 
-.summary-stat.positive .summary-value {
-color: #14804a;
+/* Performance chart area. */
+.performance-chart-wrap {
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px;
+  background: #fafafa;
+  overflow: hidden;
+  display: grid;
+  gap: 8px;
 }
 
-/* Holdings table */
-.table-wrapper {
-width: 100%;
-overflow-x: auto;
+.performance-svg {
+  display: block;
+  width: 100%;
+  height: 80px;
 }
 
+.axis-line {
+  stroke: #d1d5db;
+  stroke-width: 1;
+}
+
+.performance-line {
+  fill: none;
+  stroke-width: 2.2;
+}
+
+.stocks-line {
+  stroke: #5548c8; /* royal purple */
+}
+
+.bonds-line {
+  stroke: #9b91e8; /* muted violet */
+}
+
+.crypto-line {
+  stroke: #2ea87a; /* forest green */
+}
+
+.cash-line {
+  stroke: #a0a8b8; /* neutral slate */
+}
+
+.chart-legend-inline {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.legend-chip {
+  border-radius: 999px;
+  padding: 3px 8px;
+  font-size: 10px;
+  font-weight: 600;
+  border: 1px solid transparent;
+}
+
+.legend-chip.stocks {
+  color: #3a3096;
+  background: #ece9f8;
+  border-color: #bfb9ec;
+}
+
+.legend-chip.bonds {
+  color: #5b50a8;
+  background: #f2f0fd;
+  border-color: #cdc8f0;
+}
+
+.legend-chip.crypto {
+  color: #1a6648;
+  background: #eafaf3;
+  border-color: #a7e8c8;
+}
+
+.legend-chip.cash {
+  color: #4b5263;
+  background: #f3f4f6;
+  border-color: #d1d5db;
+}
+
+.asset-stats-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+}
+
+.asset-stat-card {
+  border: 1px solid #eef2f7;
+  border-radius: 8px;
+  background: #fcfdff;
+  padding: 10px;
+  display: grid;
+  gap: 4px;
+}
+
+.asset-stat-label {
+  margin: 0;
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+.asset-stat-value {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.line-point {
+  fill: #5548c8;
+}
+
+/* Leaderboard card for top-performing portfolio stocks. */
+.leaderboard-card {
+  align-content: stretch;
+}
+
+.leaderboard-list {
+  display: grid;
+  gap: 0;
+}
+
+.leaderboard-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid #f0f2f5;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.leaderboard-row:last-child {
+  border-bottom: none;
+}
+
+.leaderboard-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+}
+
+.leaderboard-rank {
+  min-width: 28px;
+  padding: 3px 6px;
+  border-radius: 999px;
+  background: #ece9f8;
+  color: #3a3096;
+  font-size: 10px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.leaderboard-stock {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.leaderboard-symbol {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.leaderboard-performance {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.leaderboard-performance.up {
+  color: var(--positive-green);
+}
+
+.leaderboard-performance.down {
+  color: var(--negative-red);
+}
+
+.leaderboard-arrow {
+  font-size: 10px;
+  line-height: 1;
+}
+
+/* Square market news card. */
+.news-square-card {
+  aspect-ratio: auto;
+  align-content: start;
+  height: 100%;
+  min-height: 0;
+}
+
+.news-square-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.news-square-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #ecfdf3;
+  color: var(--positive-green);
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.news-square-list {
+  display: grid;
+  gap: 8px;
+  min-height: 0;
+  flex: 1;
+  overflow: hidden;
+}
+
+.news-square-item {
+  padding: 8px 0;
+  border-bottom: 1px solid #f0f2f5;
+  display: grid;
+  gap: 4px;
+}
+
+.news-square-item:last-child {
+  border-bottom: none;
+}
+
+.news-square-headline {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-primary);
+  line-height: 1.35;
+}
+
+.news-square-time {
+  font-size: 10px;
+  color: var(--text-secondary);
+}
+
+.news-square-link {
+  margin-top: auto;
+  border: none;
+  background: transparent;
+  padding: 8px 0 0;
+  border-top: 1px solid #f0f2f5;
+  width: 100%;
+  text-align: right;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--accent-blue);
+  cursor: pointer;
+}
+
+.news-square-link:hover {
+  text-decoration: underline;
+}
+
+/* Holdings table card spacing. */
+.holdings-card {
+  display: grid;
+  gap: 6px;
+  min-height: 0;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* Horizontal safety for smaller widths. */
+.table-wrap {
+  overflow-x: auto;
+  overflow-y: hidden;
+  min-height: 0;
+  flex: 1;
+}
+
+/* Table base style. */
 .holdings-table {
-width: 100%;
-border-collapse: collapse;
-min-width: 760px;
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 100%;
+  font-size: 11px;
 }
 
+/* Header row requested light grey background. */
+.holdings-table thead tr {
+  background: #f4f3fa;
+}
+
+/* Header and cell sizing. */
 .holdings-table th,
 .holdings-table td {
-text-align: left;
-padding: 15px 12px;
-border-bottom: 1px solid #edf2f7;
-font-size: 0.94rem;
+  padding: 6px 8px;
+  border-bottom: 1px solid #f0f2f5;
+  font-size: 10px;
+  text-align: left;
+  white-space: nowrap;
 }
 
 .holdings-table th {
-color: #6b7890;
-font-size: 0.82rem;
-text-transform: uppercase;
-letter-spacing: 0.05em;
+  font-weight: 600;
+  color: var(--text-secondary);
 }
 
-.table-symbol {
-font-weight: 700;
-color: #173b6b;
+.holdings-table td {
+  color: var(--text-primary);
 }
 
-.text-positive {
-color: #14804a;
-font-weight: 700;
+/* Positive and negative P/L styles. */
+.pl-positive {
+  color: var(--positive-green) !important;
+  font-weight: 600;
 }
 
-.text-negative {
-color: #bb3a3a;
-font-weight: 700;
+.pl-negative {
+  color: var(--negative-red) !important;
+  font-weight: 600;
 }
 
-/* Smaller cards below holdings */
-.two-column-cards {
-display: grid;
-grid-template-columns: 1fr 1fr;
-gap: 24px;
+/* Row 4 summary cards in one compact grid. */
+.summary-row {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--main-gap);
+  align-self: end;
 }
 
-/* Allocation snapshot */
-.allocation-list {
-display: flex;
-flex-direction: column;
-gap: 16px;
+.summary-card {
+  padding: 12px;
 }
 
-.allocation-row {
-display: flex;
-flex-direction: column;
-gap: 8px;
+.summary-label {
+  margin: 0 0 6px;
+  font-size: 11px;
+  color: var(--text-secondary);
 }
 
-.allocation-label-row {
-display: flex;
-justify-content: space-between;
-font-size: 0.93rem;
-color: #233550;
+.summary-value {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
 }
 
-.progress-bar {
-width: 100%;
-height: 11px;
-background: #edf2f8;
-border-radius: 999px;
-overflow: hidden;
+/* ═══════════════════════════════════════════════════════════════════════════
+   DASHBOARD — db- scoped styles
+   Enterprise purple palette. Compact, clean, professional.
+   All new classes use the db- prefix to avoid conflicts.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Page shell */
+.db-page {
+  background: var(--app-bg);
+  height: 100vh;
+  overflow: hidden;
 }
 
-.progress-fill {
-height: 100%;
-border-radius: 999px;
+/* Main content area — viewport-locked, no scroll on desktop.
+   Grid rows: welcome | kpi row | main grid | lower grid */
+.db-main {
+  padding: var(--space-page);
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr) minmax(0, 1fr);
+  gap: 10px;
+  height: calc(100vh - var(--app-topbar-height));
+  overflow: hidden;
 }
 
-.tech-fill {
-width: 46%;
-background: #2d68aa;
+/* ── Welcome strip — no card, no border ─────────────────────────────────── */
+.db-welcome {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  padding: 2px 0 0;
 }
 
-.consumer-fill {
-width: 21%;
-background: #4d88c7;
+.db-welcome-title {
+  font-size: var(--fs-page-title);
+  font-weight: var(--fw-page-title);
+  color: var(--text-primary);
+  margin: 0;
 }
 
-.finance-fill {
-width: 14%;
-background: #6aa6d9;
+.db-welcome-sub {
+  font-size: 12px;
+  color: var(--text-muted, #9399a6);
+  margin: 0;
 }
 
-.health-fill {
-width: 11%;
-background: #87bee8;
+/* ── KPI Summary Row ─────────────────────────────────────────────────────── */
+.db-summary-row {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
 }
 
-.cash-fill {
-width: 8%;
-background: #b7d4ee;
+/* Each KPI card — uses global .card for border/shadow, db-kpi-card for layout */
+.db-kpi-card {
+  padding: 13px 16px;
+  display: grid;
+  gap: 3px;
+  border-left: 3px solid transparent;
+  transition: border-color 0.15s ease;
 }
 
-/* Recent activity list */
-.activity-list {
-display: flex;
-flex-direction: column;
-gap: 14px;
+.db-kpi-card:hover {
+  border-left-color: var(--accent-purple-border, #bfb9ec);
 }
 
-.activity-item {
-display: flex;
-justify-content: space-between;
-align-items: flex-start;
-gap: 14px;
-padding: 14px 0;
-border-bottom: 1px solid #edf2f7;
+.db-kpi-label {
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
-.activity-item:last-child {
-border-bottom: none;
-padding-bottom: 0;
+.db-kpi-value {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.15;
 }
 
-.activity-title {
-font-size: 0.97rem;
-font-weight: 700;
-color: #172a44;
-margin-bottom: 5px;
+.db-kpi-sub {
+  font-size: 11px;
+  color: var(--text-muted, #9399a6);
 }
 
-.activity-meta {
-font-size: 0.9rem;
-color: #6b7890;
+/* ── Main grid: performance (left) + performers (right) ─────────────────── */
+.db-grid-main {
+  display: grid;
+  grid-template-columns: minmax(0, 1.75fr) minmax(220px, 1fr);
+  gap: 12px;
+  min-height: 0;
 }
 
-.activity-time {
-font-size: 0.86rem;
-color: #7a879b;
-white-space: nowrap;
+/* ── Lower grid: holdings (left) + news (right) ─────────────────────────── */
+.db-grid-lower {
+  display: grid;
+  grid-template-columns: minmax(0, 1.75fr) minmax(220px, 1fr);
+  gap: 12px;
+  min-height: 0;
 }
 
-/* Right rail */
-.right-rail {
-display: flex;
-flex-direction: column;
-gap: 24px;
+/* ── All dashboard cards share this flex column layout ───────────────────── */
+.db-perf-card,
+.db-performers-card,
+.db-holdings-card,
+.db-news-card {
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-height: 0;
+  height: 100%;
 }
 
-.side-card {
-padding: 20px;
+/* ── Card header row: title left, controls right ─────────────────────────── */
+.db-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
 }
 
-.side-card-header {
-margin-bottom: 18px;
+.db-card-title {
+  font-size: var(--fs-card-title);
+  font-weight: var(--fw-card-title);
+  color: var(--text-primary);
+  margin: 0;
 }
 
-/* Watchlist movers panel */
-.watchlist-list {
-display: flex;
-flex-direction: column;
-gap: 12px;
+/* ── Period selector tabs ────────────────────────────────────────────────── */
+.db-period-tabs {
+  display: flex;
+  gap: 2px;
 }
 
-.watchlist-item {
-display: flex;
-justify-content: space-between;
-align-items: center;
-gap: 12px;
-padding: 14px;
-border: 1px solid #ebf0f6;
-border-radius: 16px;
-background: #fafcfe;
+.db-period-btn {
+  border: 1px solid transparent;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text-muted, #9399a6);
+  font-size: 10px;
+  font-weight: 600;
+  padding: 3px 7px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  font-family: inherit;
 }
 
-.watchlist-left {
-display: flex;
-align-items: center;
-gap: 12px;
+.db-period-btn:hover {
+  background: var(--app-bg);
+  color: var(--text-secondary);
 }
 
-.ticker-badge {
-min-width: 56px;
-height: 40px;
-border-radius: 12px;
-background: #eaf1fa;
-color: #173b6b;
-display: flex;
-align-items: center;
-justify-content: center;
-font-size: 0.82rem;
-font-weight: 700;
+/* Active period tab gets a soft purple tint */
+.db-period-btn.active {
+  background: var(--accent-purple-tint, #ece9f8);
+  border-color: var(--accent-purple-border, #bfb9ec);
+  color: var(--accent-purple-active, #3a3096);
 }
 
-.watchlist-name {
-font-size: 0.96rem;
-font-weight: 700;
-color: #172a44;
-margin-bottom: 4px;
+/* ── SVG chart area ──────────────────────────────────────────────────────── */
+.db-chart-area {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
-.watchlist-price {
-font-size: 0.88rem;
-color: #6b7890;
+.db-chart-svg {
+  width: 100%;
+  flex: 1;
+  display: block;
+  min-height: 80px;
 }
 
-.watchlist-move {
-font-size: 0.92rem;
-font-weight: 700;
+/* ── Legend chips below the chart ────────────────────────────────────────── */
+.db-chart-legend {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  flex-shrink: 0;
 }
 
-/* News carousel style block */
-.news-carousel {
-display: flex;
-flex-direction: column;
-gap: 16px;
+.db-legend-chip {
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 600;
+  border: 1px solid transparent;
 }
 
-.news-wheel-indicators {
-display: flex;
-align-items: center;
-justify-content: space-between;
+.db-lc-stocks { color: #3a3096; background: #ece9f8; border-color: #bfb9ec; }
+.db-lc-bonds  { color: #5b50a8; background: #f2f0fd; border-color: #cdc8f0; }
+.db-lc-crypto { color: #1a6648; background: #eafaf3; border-color: #a7e8c8; }
+.db-lc-cash   { color: #4b5263; background: #f3f4f6; border-color: #d1d5db; }
+
+/* ── Asset class value row ────────────────────────────────────────────────── */
+.db-asset-row {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+  flex-shrink: 0;
 }
 
-.wheel-arrow {
-width: 36px;
-height: 36px;
-border: 1px solid #d9e3ef;
-background: #f7fafe;
-border-radius: 50%;
-cursor: pointer;
-font-size: 1.2rem;
-color: #173b6b;
+.db-asset-cell {
+  padding: 8px 10px;
+  border: 1px solid var(--border-subtle, #eaedf3);
+  border-radius: var(--radius-sm, 6px);
+  background: var(--card-bg-alt, #f7f7fb);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
-.wheel-dots {
-display: flex;
-align-items: center;
-gap: 8px;
+/* Colour dot for each asset class */
+.db-asset-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  display: inline-block;
 }
 
-.wheel-dot {
-width: 10px;
-height: 10px;
-background: #d0d9e7;
-border-radius: 50%;
+.db-dot-stocks { background: #5548c8; }
+.db-dot-bonds  { background: #9b91e8; }
+.db-dot-crypto { background: #2ea87a; }
+.db-dot-cash   { background: #a0a8b8; }
+
+.db-asset-label {
+  font-size: 10px;
+  color: var(--text-secondary);
 }
 
-.wheel-dot.active {
-background: #2d68aa;
+.db-asset-value {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
 }
 
-/* News cards stack */
-.news-cards-stack {
-display: flex;
-flex-direction: column;
-gap: 14px;
+/* ── Top Performers card ─────────────────────────────────────────────────── */
+.db-performers-list {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
 }
 
-.news-card {
-border: 1px solid #e7edf5;
-border-radius: 18px;
-padding: 18px;
-background: #fbfcfe;
-transition: transform 0.2s ease, opacity 0.2s ease;
+.db-performer-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--border-subtle, #eaedf3);
 }
 
-.news-card-active {
-background: linear-gradient(180deg, #ffffff, #f8fbff);
-border-color: #d8e5f5;
+.db-performer-row:last-child {
+  border-bottom: none;
 }
 
-.news-card-muted {
-opacity: 0.72;
+/* Purple pill badge for rank numbers */
+.db-performer-rank {
+  min-width: 26px;
+  padding: 2px 5px;
+  border-radius: 999px;
+  background: var(--accent-purple-tint, #ece9f8);
+  color: var(--accent-purple-active, #3a3096);
+  font-size: 10px;
+  font-weight: 600;
+  text-align: center;
+  flex-shrink: 0;
 }
 
-.news-tag {
-display: inline-block;
-font-size: 0.75rem;
-font-weight: 700;
-letter-spacing: 0.06em;
-color: #2d68aa;
-background: #ebf3fb;
-padding: 7px 10px;
-border-radius: 999px;
-margin-bottom: 12px;
+.db-performer-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
 }
 
-.news-title {
-font-size: 1rem;
-line-height: 1.45;
-color: #172a44;
-margin-bottom: 12px;
+.db-performer-symbol {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-primary);
 }
 
-.news-meta {
-display: flex;
-justify-content: space-between;
-gap: 12px;
-font-size: 0.85rem;
-color: #77869b;
-margin-bottom: 12px;
+.db-performer-name {
+  font-size: 10px;
+  color: var(--text-muted, #9399a6);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.news-link {
-text-decoration: none;
-color: #173b6b;
-font-weight: 700;
-font-size: 0.92rem;
+.db-performer-perf {
+  font-size: 12px;
+  font-weight: 600;
+  flex-shrink: 0;
 }
 
-/* Responsive behaviour */
-@media (max-width: 1300px) {
-.content-area {
-grid-template-columns: minmax(0, 1fr);
+/* ── Holdings card ───────────────────────────────────────────────────────── */
+.db-view-all {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--accent-purple, #5548c8);
+  text-decoration: none;
+  flex-shrink: 0;
 }
 
-.right-rail {
-display: grid;
-grid-template-columns: 1fr 1fr;
-gap: 24px;
-}
+.db-view-all:hover {
+  text-decoration: underline;
 }
 
-@media (max-width: 1050px) {
-.top-header {
-height: auto;
-align-items: flex-start;
-padding-top: 16px;
-padding-bottom: 16px;
-flex-direction: column;
+.db-table-wrap {
+  overflow-x: auto;
+  flex: 1;
+  min-height: 0;
 }
 
-.dashboard-layout {
-min-height: auto;
+.db-table {
+  width: 100%;
+  border-collapse: collapse;
 }
 
-.sidebar {
-top: 0;
-height: auto;
-position: relative;
+.db-table th,
+.db-table td {
+  padding: 8px 10px;
+  text-align: left;
+  white-space: nowrap;
+  vertical-align: middle;
 }
 
-.performance-summary {
-grid-template-columns: repeat(2, 1fr);
+/* Purple-tinted table header */
+.db-table th {
+  background: #f4f3fa;
+  color: var(--text-secondary);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  border-bottom: 1px solid var(--border-color, #dce0e8);
 }
 
-.two-column-cards {
-grid-template-columns: 1fr;
+.db-table td {
+  color: var(--text-primary);
+  font-size: 12px;
+  border-bottom: 1px solid var(--border-subtle, #eaedf3);
 }
 
-.right-rail {
-grid-template-columns: 1fr;
-}
+.db-table tbody tr:last-child td {
+  border-bottom: none;
 }
 
+.db-table tbody tr:hover td {
+  background: var(--card-bg-alt, #f7f7fb);
+}
+
+/* Company name is displayed smaller and muted */
+.db-company-cell {
+  color: var(--text-secondary) !important;
+  font-size: 11px !important;
+}
+
+/* ── Shared positive / negative colour ───────────────────────────────────── */
+.db-positive {
+  color: var(--positive-green, #1a7a4a) !important;
+  font-weight: 600;
+}
+
+.db-negative {
+  color: var(--negative-red, #b91c1c) !important;
+  font-weight: 600;
+}
+
+/* ── Rotating News Card ──────────────────────────────────────────────────── */
+.db-news-card {
+  justify-content: space-between;
+}
+
+/* Card header inherits from db-card-header — live badge sits on the right */
+.db-news-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.db-news-live {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--positive-green, #1a7a4a);
+  letter-spacing: 0.03em;
+}
+
+/* Story body — opacity transition creates the fade effect.
+   .db-news-fading drops opacity to 0 (fade out), then content swaps,
+   then the class is removed and opacity returns to 1 (fade in). */
+.db-news-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  opacity: 1;
+  transition: opacity 0.28s ease;
+  min-height: 0;
+}
+
+.db-news-body.db-news-fading {
+  opacity: 0;
+}
+
+/* Category badge — purple tint pill */
+.db-news-category {
+  display: inline-block;
+  padding: 2px 9px;
+  border-radius: 999px;
+  background: var(--accent-purple-tint, #ece9f8);
+  border: 1px solid var(--accent-purple-border, #bfb9ec);
+  color: var(--accent-purple-active, #3a3096);
+  font-size: 10px;
+  font-weight: 600;
+  align-self: flex-start;
+  flex-shrink: 0;
+}
+
+/* Main headline — medium weight, comfortable reading size */
+.db-news-headline {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary);
+  line-height: 1.55;
+}
+
+/* Source + time footer inside the story body */
+.db-news-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: auto;
+  flex-shrink: 0;
+}
+
+.db-news-source {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.db-news-time {
+  font-size: 10px;
+  color: var(--text-muted, #9399a6);
+}
+
+/* Indicator dots row */
+.db-news-dots {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding-top: 6px;
+  flex-shrink: 0;
+}
+
+/* Each dot is a small circular button */
+.db-news-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  border: none;
+  background: var(--border-color, #dce0e8);
+  cursor: pointer;
+  padding: 0;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+/* Active dot: purple and slightly enlarged */
+.db-news-dot.active {
+  background: var(--accent-purple, #5548c8);
+  transform: scale(1.4);
+}
+
+/* ── Responsive breakpoints ──────────────────────────────────────────────── */
+
+/* Below 1200px — stack both grids to a single column */
+@media (max-width: 1200px) {
+  .db-grid-main,
+  .db-grid-lower {
+    grid-template-columns: 1fr;
+  }
+
+  .db-asset-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  /* Content stacks vertically on tablet — unlock height and allow scrolling */
+  .db-main {
+    grid-template-rows: auto auto auto auto;
+    height: auto;
+    overflow-y: auto;
+  }
+}
+
+/* Below 900px — 2-column KPI row */
+@media (max-width: 900px) {
+  .db-summary-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* Below 760px — mobile layout */
 @media (max-width: 760px) {
-.dashboard-layout {
-flex-direction: column;
+  .db-main {
+    padding: 12px;
+    gap: 10px;
+  }
+
+  .db-welcome {
+    flex-direction: column;
+    gap: 2px;
+    align-items: flex-start;
+  }
+
+  .db-summary-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .db-kpi-value {
+    font-size: 18px;
+  }
+
+  .db-asset-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .db-perf-card,
+  .db-performers-card,
+  .db-holdings-card,
+  .db-news-card {
+    padding: 12px;
+  }
 }
 
-.sidebar {
-width: 100%;
-height: auto;
-position: relative;
-top: 0;
-}
-
-.sidebar.collapsed {
-width: 100%;
-}
-
-.sidebar-nav {
-flex-direction: row;
-flex-wrap: wrap;
-}
-
-.nav-item {
-flex: 1 1 calc(50% - 8px);
-justify-content: center;
-}
-
-.content-area {
-padding: 16px;
-}
-
-.page-title {
-font-size: 1.6rem;
-}
-
-.performance-summary {
-grid-template-columns: 1fr;
-}
-
-.chart-card {
-min-height: 240px;
-}
-
-.chart-area {
-min-height: 240px;
-}
-}
-
-@media (max-width: 560px) {
-.top-header {
-padding-left: 16px;
-padding-right: 16px;
-}
-
-.header-right {
-width: 100%;
-align-items: stretch;
-}
-
-.header-metric,
-.add-funds-btn {
-width: 100%;
-}
-
-.nav-item {
-flex: 1 1 100%;
-}
-
-.card {
-padding: 18px;
-border-radius: 16px;
-}
-
-.card-header {
-flex-direction: column;
-align-items: flex-start;
-}
+/* Below 480px — single column KPIs */
+@media (max-width: 480px) {
+  .db-summary-row {
+    grid-template-columns: 1fr;
+  }
 }

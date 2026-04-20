@@ -1,420 +1,338 @@
-import React, { useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
-import './Dashboard.css';
+// Dashboard.jsx
+// Enterprise portfolio management dashboard.
+// Layout: welcome strip → KPI row → main grid (chart + performers) → lower grid (holdings + news)
+import React, { useState, useEffect, useRef } from "react";
+import "./Dashboard.css";
+import AppSidebar from "./components/AppSidebar";
+import AppTopBar from "./components/AppTopBar";
 
-import Header from './components/Header';
-import Sidebar from './components/Sidebar';
-import SummaryCard from './components/SummaryCard';
-import PerformanceChart from './components/PerformanceChart';
-import HoldingsTable from './components/HoldingsTable';
-import WatchlistPanel from './components/WatchlistPanel';
-import NewsCarousel from './components/NewsCarousel';
-
-const SUMMARY_DATA = [
-  { label: 'Day Change',      value: '+£3,842.18',  detail: '+1.86%',             trend: 'positive' },
-  { label: 'YTD Return',      value: '+£28,440.67', detail: '+12.48% since Jan',  trend: 'positive' },
-  { label: 'Total Invested',  value: '£108,042.07', detail: 'Across 4 positions', trend: 'neutral'  },
-  { label: 'Risk Level',      value: 'Moderate',    detail: 'Diversified',        trend: 'neutral'  },
+// ── Portfolio summary KPIs ─────────────────────────────────────────────────
+const SUMMARY_STATS = [
+  { label: "Total Portfolio Value", value: "$152,431.25", sub: "Updated just now" },
+  { label: "Available Funds",       value: "$12,450.00",  sub: "Cash & equivalents" },
+  { label: "Today's Gain / Loss",   value: "+$1,284.60",  sub: "+0.85% today",     positive: true },
+  { label: "Total Return",          value: "+$18,431.25", sub: "+13.76% all time", positive: true },
 ];
 
-const ALLOCATIONS = [
-  { label: 'Technology',   fill: 'tech-fill',     pct: 26 },
-  { label: 'Consumer',     fill: 'consumer-fill', pct: 20 },
-  { label: 'Finance',      fill: 'finance-fill',  pct: 21 },
-  { label: 'Healthcare',   fill: 'health-fill',   pct: 22 },
-  { label: 'Cash & Other', fill: 'cash-fill',     pct: 11 },
+// ── Asset class breakdown ─────────────────────────────────────────────────
+const ASSET_STATS = [
+  { label: "Stocks", value: "$96,200.40", dotClass: "db-dot-stocks" },
+  { label: "Bonds",  value: "$28,920.10", dotClass: "db-dot-bonds"  },
+  { label: "Crypto", value: "$14,859.75", dotClass: "db-dot-crypto" },
+  { label: "Cash",   value: "$12,450.00", dotClass: "db-dot-cash"   },
 ];
 
-const ACTIVITY = [
-  { title: 'Bought 45 ULVR',    meta: 'Market order',  time: 'Today, 09:32'     },
-  { title: 'Sold 200 SHEL',     meta: 'Limit order',   time: 'Yesterday, 14:11' },
-  { title: 'Dividend received', meta: 'AstraZeneca',   time: '14 Apr'           },
-  { title: 'Added funds',       meta: 'Bank transfer', time: '10 Apr'           },
+// ── Top equity performers ─────────────────────────────────────────────────
+const TOP_PERFORMERS = [
+  { rank: 1, symbol: "MSFT", name: "Microsoft Corp.",    perf: "+7.8%", positive: true  },
+  { rank: 2, symbol: "AAPL", name: "Apple Inc.",         perf: "+5.4%", positive: true  },
+  { rank: 3, symbol: "VTI",  name: "Vanguard Total ETF", perf: "+3.2%", positive: true  },
+  { rank: 4, symbol: "NVDA", name: "NVIDIA Corp.",       perf: "+2.1%", positive: true  },
+  { rank: 5, symbol: "TSLA", name: "Tesla, Inc.",        perf: "-1.8%", positive: false },
 ];
 
-function Dashboard() {
-  const navigate = useNavigate();
-  const location = useLocation();
+// ── Holdings preview (top 4 positions) ───────────────────────────────────
+const HOLDINGS_PREVIEW = [
+  { symbol: "AAPL", company: "Apple Inc.",               shares: 120, price: "$189.35", value: "$22,722.00", pl: "+$3,496.80", positive: true  },
+  { symbol: "MSFT", company: "Microsoft Corp.",          shares: 80,  price: "$421.90", value: "$33,752.00", pl: "+$5,312.00", positive: true  },
+  { symbol: "VTI",  company: "Vanguard Total Stock ETF", shares: 95,  price: "$273.10", value: "$25,944.50", pl: "+$2,308.50", positive: true  },
+  { symbol: "TSLA", company: "Tesla, Inc.",              shares: 35,  price: "$172.65", value: "$6,042.75",  pl: "-$610.75",   positive: false },
+];
 
-  // Controls whether the left sidebar is collapsed or expanded
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+// ── Rotating news stories ─────────────────────────────────────────────────
+// Each story has a category badge, headline, source name, and relative time.
+const NEWS_STORIES = [
+  {
+    category: "Macro",
+    headline: "Fed signals potential rate pause as inflation data softens for the second consecutive month",
+    source: "Reuters",
+    time: "12 min ago",
+  },
+  {
+    category: "Technology",
+    headline: "NVIDIA reports record quarterly revenue driven by AI infrastructure demand from global hyperscalers",
+    source: "Bloomberg",
+    time: "38 min ago",
+  },
+  {
+    category: "Markets",
+    headline: "S&P 500 closes above 5,400 for the first time this quarter on broad earnings surprises",
+    source: "WSJ",
+    time: "1 hr ago",
+  },
+  {
+    category: "Energy",
+    headline: "Oil prices stabilise near $84 per barrel as OPEC production cut compliance improves significantly",
+    source: "FT",
+    time: "2 hr ago",
+  },
+  {
+    category: "Equities",
+    headline: "Apple surges 3.4% after analysts raise price targets citing resilient services revenue growth",
+    source: "CNBC",
+    time: "3 hr ago",
+  },
+];
 
-  // Example summary data shown in the sticky top header and overview cards
-  const portfolioSummary = {
-    totalValue: "£128,452.76",
-    availableBalance: "£14,820.00",
-    dailyChange: "+£1,284.12",
-    dailyChangePercent: "+1.01%",
-    lastUpdated: "17 Apr 2026, 11:24 AM",
-  };
+// ── Rotating News Card Component ─────────────────────────────────────────
+// Shows one story at a time. Auto-advances every 5 seconds.
+// Fade transition: fades out → swaps content → fades in.
+// indexRef keeps the interval callback in sync with current index without staleness.
+function RotatingNewsCard({ stories }) {
+  const [index, setIndex]   = useState(0);
+  const [fading, setFading] = useState(false);
+  const indexRef            = useRef(0);
 
-  // Example holdings data for the main holdings table
-  const holdings = [
-    {
-      symbol: "AAPL",
-      company: "Apple Inc.",
-      shares: 32,
-      avgPrice: "£142.10",
-      currentPrice: "£151.48",
-      marketValue: "£4,847.36",
-      change: "+6.60%",
-      positive: true,
-    },
-    {
-      symbol: "MSFT",
-      company: "Microsoft Corp.",
-      shares: 18,
-      avgPrice: "£298.45",
-      currentPrice: "£312.20",
-      marketValue: "£5,619.60",
-      change: "+4.61%",
-      positive: true,
-    },
-    {
-      symbol: "NVDA",
-      company: "NVIDIA Corp.",
-      shares: 14,
-      avgPrice: "£724.30",
-      currentPrice: "£702.90",
-      marketValue: "£9,840.60",
-      change: "-2.95%",
-      positive: false,
-    },
-    {
-      symbol: "V",
-      company: "Visa Inc.",
-      shares: 20,
-      avgPrice: "£226.50",
-      currentPrice: "£232.10",
-      marketValue: "£4,642.00",
-      change: "+2.47%",
-      positive: true,
-    },
-  ];
+  // Navigate to a story by index with a smooth fade transition.
+  function navigateTo(nextIdx) {
+    setFading(true);
+    setTimeout(() => {
+      indexRef.current = nextIdx;
+      setIndex(nextIdx);
+      setFading(false);
+    }, 280);
+  }
 
-  // Example watchlist data for the right-hand side panel
-  const watchlistMovers = [
-    { symbol: "TSLA", price: "£168.44", move: "+4.82%", positive: true },
-    { symbol: "AMZN", price: "£142.18", move: "+2.14%", positive: true },
-    { symbol: "META", price: "£391.60", move: "-1.43%", positive: false },
-    { symbol: "NFLX", price: "£478.25", move: "+3.07%", positive: true },
-    { symbol: "GOOGL", price: "£132.91", move: "-0.94%", positive: false },
-  ];
+  // Auto-advance: fires every 5 seconds, cleaned up on unmount.
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const next = (indexRef.current + 1) % stories.length;
+      navigateTo(next);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [stories.length]);
 
-  // Example news data for holdings-related stories
-  const newsItems = [
-    {
-      source: "Financial Times",
-      time: "2 hours ago",
-      title: "Apple expands enterprise AI partnerships as cloud demand grows",
-      summary:
-        "Apple shares moved higher after reports of expanded AI-led enterprise collaboration and stronger institutional demand.",
-    },
-    {
-      source: "Bloomberg",
-      time: "4 hours ago",
-      title: "Microsoft earnings outlook lifts sentiment across large-cap tech",
-      summary:
-        "Investors responded positively to cloud margin resilience and stronger forward guidance across core business units.",
-    },
-    {
-      source: "Reuters",
-      time: "6 hours ago",
-      title: "NVIDIA faces short-term volatility as chip supply expectations reset",
-      summary:
-        "Analysts remain constructive on long-term growth, although near-term supply assumptions created some price pressure.",
-    },
-  ];
-
-  // Sidebar navigation items
-  const navItems = [
-    { label: "Dashboard", path: "/dashboard" },
-    { label: "Holdings Performance", path: null },
-    { label: "Buy and Sell", path: null },
-    { label: "Transaction History", path: "/transactions" },
-    { label: "Settings", path: null },
-    { label: "Sign Out", path: "/" },
-  ];
+  const story = stories[index];
 
   return (
-    <div className="app-shell">
-      {/* Sticky top utility header */}
-      <header className="top-header">
-        <div className="header-left">
-          <div className="brand-logo">LEGACY</div>
+    <article className="card db-news-card">
+      {/* Header: title + live indicator */}
+      <div className="db-card-header">
+        <h2 className="db-card-title">Market News</h2>
+        <span className="db-news-live">&#9679; Live</span>
+      </div>
+
+      {/* Story body — opacity toggles produce the fade effect */}
+      <div className={`db-news-body${fading ? " db-news-fading" : ""}`}>
+        <span className="db-news-category">{story.category}</span>
+        <p className="db-news-headline">{story.headline}</p>
+        <div className="db-news-meta">
+          <span className="db-news-source">{story.source}</span>
+          <span className="db-news-time">{story.time}</span>
+        </div>
+      </div>
+
+      {/* Dot indicators — one per story, active dot is purple */}
+      <div className="db-news-dots">
+        {stories.map((_, i) => (
+          <button
+            key={i}
+            type="button"
+            className={`db-news-dot${i === index ? " active" : ""}`}
+            onClick={() => navigateTo(i)}
+            aria-label={`View story ${i + 1}`}
+          />
+        ))}
+      </div>
+    </article>
+  );
+}
+
+// ── Main Dashboard Export ─────────────────────────────────────────────────
+// Dummy data for old names — kept so nothing below this line is removed accidentally.
+const holdings = [
+  {
+    symbol: "AAPL",
+    company: "Apple Inc.",
+    shares: 120,
+    currentPrice: "$189.35",
+    costBasis: "$160.20",
+    marketValue: "$22,722.00",
+    pl: "+$3,496.80",
+    positive: true,
+  },
+  {
+    symbol: "MSFT",
+    company: "Microsoft Corp.",
+    shares: 80,
+    currentPrice: "$421.90",
+    costBasis: "$355.50",
+    marketValue: "$33,752.00",
+    pl: "+$5,312.00",
+    positive: true,
+  },
+  {
+    symbol: "VTI",
+    company: "Vanguard Total Stock ETF",
+    shares: 95,
+    currentPrice: "$273.10",
+    costBasis: "$248.80",
+    marketValue: "$25,944.50",
+    pl: "+$2,308.50",
+    positive: true,
+  },
+  {
+    symbol: "TSLA",
+    company: "Tesla, Inc.",
+    shares: 35,
+    currentPrice: "$172.65",
+    costBasis: "$190.10",
+    marketValue: "$6,042.75",
+    pl: "-$610.75",
+    positive: false,
+  },
+];
+
+// Leaderboard data for top stock performance in the portfolio.
+const leaderboard = [
+  { rank: 1, symbol: "MSFT", performance: "+7.8%", positive: true },
+  { rank: 2, symbol: "AAPL", performance: "+5.4%", positive: true },
+  { rank: 3, symbol: "VTI", performance: "+3.2%", positive: true },
+];
+
+// Compact market headlines for the square news card.
+const marketNews = [
+  { id: 1, headline: "Tech stocks rise as rates outlook improves", time: "10m ago" },
+  { id: 2, headline: "Energy sector mixed after inventory report", time: "34m ago" },
+  { id: 3, headline: "S&P 500 edges higher in midday trading", time: "1h ago" },
+];
+
+export default function Dashboard({ userName = "Steve" }) {
+  return (
+    <div className="db-page">
+      <AppTopBar />
+      <AppSidebar />
+
+      {/* Main content — app-page-main handles sidebar + topbar offset */}
+      <main className="db-main app-page-main">
+
+        {/* Welcome strip — plain text, no card, no border */}
+        <div className="db-welcome">
+          <h1 className="db-welcome-title">Good morning, {userName}</h1>
+          <p className="db-welcome-sub">
+            Monday, 20 April 2026&ensp;&middot;&ensp;Portfolio is performing above benchmark.
+          </p>
         </div>
 
-        <div className="header-right">
-          <div className="header-metric">
-            <span className="metric-label">Total Portfolio Value</span>
-            <span className="metric-value">{portfolioSummary.totalValue}</span>
-          </div>
-
-          <div className="header-metric">
-            <span className="metric-label">Available Balance</span>
-            <span className="metric-value">
-              {portfolioSummary.availableBalance}
-            </span>
-          </div>
-
-          <button className="add-funds-button">Add Funds</button>
-
-          <div className="header-updated">
-            <span className="metric-label">Last Updated</span>
-            <span className="updated-time">{portfolioSummary.lastUpdated}</span>
-          </div>
+        {/* KPI Summary Row */}
+        <div className="db-summary-row">
+          {SUMMARY_STATS.map((stat) => (
+            <div className="card db-kpi-card" key={stat.label}>
+              <span className="db-kpi-label">{stat.label}</span>
+              <span className={`db-kpi-value${stat.positive ? " db-positive" : ""}`}>
+                {stat.value}
+              </span>
+              <span className="db-kpi-sub">{stat.sub}</span>
+            </div>
+          ))}
         </div>
-      </header>
 
-      {/* Main dashboard layout */}
-      <div className="dashboard-layout">
-        {/* Left sidebar */}
-        <aside
-          className={`sidebar ${sidebarCollapsed ? "collapsed" : "expanded"}`}
-        >
-          <div className="sidebar-top">
-            <button
-              className="sidebar-toggle"
-              onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-              aria-label="Toggle sidebar"
-            >
-              {sidebarCollapsed ? "☰" : "←"}
-            </button>
-          </div>
-
-          <nav className="sidebar-nav">
-            {navItems.map((item) => (
-              <button
-                key={item.label}
-                type="button"
-                onClick={() => item.path && navigate(item.path)}
-                className={`sidebar-link ${location.pathname === item.path ? "active" : ""}`}
-              >
-                <span className="sidebar-icon">•</span>
-                {!sidebarCollapsed && (
-                  <span className="sidebar-text">{item.label}</span>
-                )}
-              </button>
-            ))}
-          </nav>
-        </aside>
-
-        {/* Main content column */}
-        <main className="main-content">
-          {/* Top overview cards */}
-          <section className="summary-grid">
-            <article className="card summary-card">
-              <p className="section-kicker">Portfolio Overview</p>
-              <h2 className="section-title">Current Position</h2>
-              <div className="summary-main-value">
-                {portfolioSummary.totalValue}
-              </div>
-              <div className="summary-change positive">
-                {portfolioSummary.dailyChange} ({portfolioSummary.dailyChangePercent}) today
-              </div>
-            </article>
-
-            <article className="card summary-card">
-              <p className="section-kicker">Cash Position</p>
-              <h2 className="section-title">Available to Invest</h2>
-              <div className="summary-main-value">
-                {portfolioSummary.availableBalance}
-              </div>
-              <p className="supporting-text">
-                Available balance for new trades, recurring investments, or
-                withdrawals.
-              </p>
-            </article>
-
-            <article className="card summary-card">
-              <p className="section-kicker">Asset Allocation</p>
-              <h2 className="section-title">Diversification Snapshot</h2>
-
-              <div className="allocation-bars">
-                <div className="allocation-row">
-                  <span>Equities</span>
-                  <div className="allocation-track">
-                    <div className="allocation-fill equities"></div>
-                  </div>
-                  <span>68%</span>
-                </div>
-
-                <div className="allocation-row">
-                  <span>ETFs</span>
-                  <div className="allocation-track">
-                    <div className="allocation-fill etfs"></div>
-                  </div>
-                  <span>19%</span>
-                </div>
-
-                <div className="allocation-row">
-                  <span>Cash</span>
-                  <div className="allocation-track">
-                    <div className="allocation-fill cash"></div>
-                  </div>
-                  <span>13%</span>
-                </div>
-              </div>
-            </article>
-          </section>
-
-          {/* Portfolio performance */}
-          <section className="card performance-card">
-            <div className="card-header">
-              <div>
-                <p className="section-kicker">Portfolio Performance</p>
-                <h2 className="section-title">Value Trend</h2>
-              </div>
-
-              <div className="time-filter-group">
-                <button className="time-filter active">1D</button>
-                <button className="time-filter">1W</button>
-                <button className="time-filter">1M</button>
-                <button className="time-filter">1Y</button>
+        {/* Main grid: Performance chart left, Top Performers right */}
+        <div className="db-grid-main">
+          <article className="card db-perf-card">
+            <div className="db-card-header">
+              <h2 className="db-card-title">Portfolio Performance</h2>
+              <div className="db-period-tabs" role="group" aria-label="Chart time period">
+                {["1M", "3M", "6M", "1Y", "All"].map((p) => (
+                  <button key={p} type="button" className={`db-period-btn${p === "1Y" ? " active" : ""}`}>
+                    {p}
+                  </button>
+                ))}
               </div>
             </div>
 
-            {/* Beginner-friendly visual chart placeholder */}
-            <div className="chart-placeholder">
-              <div className="chart-grid-lines">
-                <span></span>
-                <span></span>
-                <span></span>
-                <span></span>
-              </div>
-
-              <div className="fake-chart-line">
-                <div className="point p1"></div>
-                <div className="point p2"></div>
-                <div className="point p3"></div>
-                <div className="point p4"></div>
-                <div className="point p5"></div>
-                <div className="point p6"></div>
-                <div className="point p7"></div>
-              </div>
-
-              <div className="chart-x-axis">
-                <span>09:00</span>
-                <span>10:30</span>
-                <span>12:00</span>
-                <span>13:30</span>
-                <span>15:00</span>
-                <span>16:30</span>
-                <span>Close</span>
+            <div className="db-chart-area">
+              <svg viewBox="0 0 560 120" className="db-chart-svg" aria-label="Asset class performance" role="img">
+                <line x1="0" y1="20"  x2="560" y2="20"  stroke="#eaedf3" strokeWidth="1" />
+                <line x1="0" y1="60"  x2="560" y2="60"  stroke="#eaedf3" strokeWidth="1" />
+                <line x1="0" y1="100" x2="560" y2="100" stroke="#eaedf3" strokeWidth="1" />
+                <polyline points="0,98 70,84 140,72 210,58 280,44 350,32 430,20 560,10"
+                  fill="none" stroke="#5548c8" strokeWidth="2.2" strokeLinejoin="round" strokeLinecap="round" />
+                <polyline points="0,102 70,96 140,90 210,84 280,76 350,70 430,64 560,58"
+                  fill="none" stroke="#9b91e8" strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />
+                <polyline points="0,106 70,112 140,94 210,102 280,80 350,88 430,64 560,48"
+                  fill="none" stroke="#2ea87a" strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />
+                <polyline points="0,108 70,107 140,106 210,105 280,104 350,103 430,102 560,101"
+                  fill="none" stroke="#a0a8b8" strokeWidth="1.6" strokeLinejoin="round" strokeLinecap="round"
+                  strokeDasharray="4 3" />
+              </svg>
+              <div className="db-chart-legend">
+                <span className="db-legend-chip db-lc-stocks">Stocks</span>
+                <span className="db-legend-chip db-lc-bonds">Bonds</span>
+                <span className="db-legend-chip db-lc-crypto">Crypto</span>
+                <span className="db-legend-chip db-lc-cash">Cash</span>
               </div>
             </div>
-          </section>
 
-          {/* Holdings overview table */}
-          <section className="card holdings-card">
-            <div className="card-header">
-              <div>
-                <p className="section-kicker">Holdings Overview</p>
-                <h2 className="section-title">Current Positions</h2>
-              </div>
-
-              <button className="secondary-button">View All Holdings</button>
+            <div className="db-asset-row">
+              {ASSET_STATS.map((a) => (
+                <div className="db-asset-cell" key={a.label}>
+                  <span className={`db-asset-dot ${a.dotClass}`} />
+                  <span className="db-asset-label">{a.label}</span>
+                  <span className="db-asset-value">{a.value}</span>
+                </div>
+              ))}
             </div>
+          </article>
 
-            <div className="table-wrapper">
-              <table className="holdings-table">
+          <article className="card db-performers-card">
+            <h2 className="db-card-title">Top Equity Performers</h2>
+            <div className="db-performers-list">
+              {TOP_PERFORMERS.map((p) => (
+                <div className="db-performer-row" key={p.symbol}>
+                  <span className="db-performer-rank">#{p.rank}</span>
+                  <div className="db-performer-info">
+                    <span className="db-performer-symbol">{p.symbol}</span>
+                    <span className="db-performer-name">{p.name}</span>
+                  </div>
+                  <span className={`db-performer-perf${p.positive ? " db-positive" : " db-negative"}`}>
+                    {p.positive ? "▲" : "▼"}&thinsp;{p.perf}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </article>
+        </div>
+
+        {/* Lower grid: Holdings preview left, Rotating news right */}
+        <div className="db-grid-lower">
+          <section className="card db-holdings-card">
+            <div className="db-card-header">
+              <h2 className="db-card-title">Holdings Overview</h2>
+              <a href="/holdings" className="db-view-all">View all →</a>
+            </div>
+            <div className="db-table-wrap">
+              <table className="db-table">
                 <thead>
                   <tr>
                     <th>Symbol</th>
                     <th>Company</th>
                     <th>Shares</th>
-                    <th>Avg. Price</th>
-                    <th>Current Price</th>
+                    <th>Price</th>
                     <th>Market Value</th>
-                    <th>Change</th>
+                    <th>P / L</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {holdings.map((holding) => (
-                    <tr key={holding.symbol}>
-                      <td className="ticker-cell">{holding.symbol}</td>
-                      <td>{holding.company}</td>
-                      <td>{holding.shares}</td>
-                      <td>{holding.avgPrice}</td>
-                      <td>{holding.currentPrice}</td>
-                      <td>{holding.marketValue}</td>
-                      <td
-                        className={holding.positive ? "positive" : "negative"}
-                      >
-                        {holding.change}
-                      </td>
+                  {HOLDINGS_PREVIEW.map((h) => (
+                    <tr key={h.symbol}>
+                      <td><strong>{h.symbol}</strong></td>
+                      <td className="db-company-cell">{h.company}</td>
+                      <td>{h.shares}</td>
+                      <td>{h.price}</td>
+                      <td>{h.value}</td>
+                      <td className={h.positive ? "db-positive" : "db-negative"}>{h.pl}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
           </section>
-        </main>
 
-        {/* Right side column */}
-        <aside className="right-panel">
-          <section className="card side-card">
-            <div className="card-header side-header">
-              <div>
-                <p className="section-kicker">Watchlist Movers</p>
-                <h2 className="section-title">Market Watch</h2>
-              </div>
-            </div>
+          <RotatingNewsCard stories={NEWS_STORIES} />
+        </div>
 
-            <div className="watchlist-list">
-              {watchlistMovers.map((stock) => (
-                <div className="watchlist-item" key={stock.symbol}>
-                  <div>
-                    <div className="watchlist-symbol">{stock.symbol}</div>
-                    <div className="watchlist-price">{stock.price}</div>
-                  </div>
-                  <div className={stock.positive ? "positive" : "negative"}>
-                    {stock.move}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </section>
-
-          <section className="card side-card">
-            <div className="card-header side-header">
-              <div>
-                <p className="section-kicker">Holdings News</p>
-                <h2 className="section-title">Latest Stories</h2>
-              </div>
-            </div>
-
-            {/* Manual carousel-style structure */}
-            <div className="news-carousel">
-              <div className="news-track">
-                {newsItems.map((news, index) => (
-                  <article className="news-card" key={index}>
-                    <div className="news-meta">
-                      <span>{news.source}</span>
-                      <span>{news.time}</span>
-                    </div>
-                    <h3 className="news-title">{news.title}</h3>
-                    <p className="news-summary">{news.summary}</p>
-                    <button className="text-button">Read Story</button>
-                  </article>
-                ))}
-              </div>
-            </div>
-
-            <div className="carousel-controls">
-              <button className="carousel-button">←</button>
-              <div className="carousel-dots">
-                <span className="dot active"></span>
-                <span className="dot"></span>
-                <span className="dot"></span>
-              </div>
-              <button className="carousel-button">→</button>
-            </div>
-          </section>
-        </aside>
-      </div>
+      </main>
     </div>
   );
 }
-
-export default Dashboard;

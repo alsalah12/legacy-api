@@ -1,4 +1,6 @@
+// React is needed because this component returns JSX.
 import React from 'react';
+// Import the styles for this reusable header component.
 import './Header.css';
 
 // Header receives account summary data as props so it can later

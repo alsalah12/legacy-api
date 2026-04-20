@@ -1,4 +1,6 @@
+// React and useState are needed because this component tracks which story is active.
 import React, { useState } from 'react';
+// Import the styles that control the card stack and carousel controls.
 import './NewsCarousel.css';
 
 // Static news stories. Later replace with a fetch() to a news API
@@ -31,12 +33,14 @@ function NewsCarousel() {
   // activeIndex controls which story is shown as the primary card.
   const [activeIndex, setActiveIndex] = useState(0);
 
+  // Move one story backward, looping to the end if already at the first story.
   const handlePrevious = () => {
     setActiveIndex((current) =>
       current === 0 ? STORIES.length - 1 : current - 1,
     );
   };
 
+  // Move one story forward, looping back to the start when needed.
   const handleNext = () => {
     setActiveIndex((current) =>
       current === STORIES.length - 1 ? 0 : current + 1,
@@ -46,7 +50,7 @@ function NewsCarousel() {
   return (
     <section className="card side-card">
       <div className="side-card-header">
-        <p className="card-title" style={{ fontSize: '1.1rem' }}>Holdings News</p>
+        <p className="card-title">Holdings News</p>
         <p className="card-subtitle">Latest related coverage</p>
       </div>
 
