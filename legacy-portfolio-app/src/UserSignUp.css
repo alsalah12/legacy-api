@@ -1,81 +1,92 @@
+/* Full-page wrapper — cool off-white surface matches app shell. */
 .signup-page {
 	min-height: 100vh;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	padding: 24px;
-	box-sizing: border-box;
+	display: grid;
+	place-items: center;
+	padding: var(--space-page);
+	background: var(--app-bg);
 }
 
+/* Enterprise card styling with compact radius and subtle shadow. */
 .signup-card {
 	width: 100%;
 	max-width: 420px;
-	background: #ffffff;
-	border: 1px solid #e5e7eb;
-	border-radius: 12px;
-	padding: 24px;
-	box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+	background: var(--card-bg);
+	border: 1px solid var(--border-color);
+	border-radius: var(--radius-md);
+	padding: 20px;
+	box-shadow: var(--shadow-soft);
 	text-align: left;
 }
 
+/* Compact title and subtitle hierarchy. */
 .signup-card h1 {
-	margin: 0 0 8px;
-	font-size: 28px;
-	color: #111827;
+	margin: 0 0 6px;
+	font-size: 20px;
+	font-weight: 600;
+	color: var(--text-primary);
 }
 
 .signup-subtitle {
-	margin: 0 0 20px;
-	color: #6b7280;
+	margin: 0 0 14px;
+	font-size: 13px;
+	color: var(--text-secondary);
 }
 
+/* Form controls stack with compact spacing. */
 .signup-form {
 	display: flex;
 	flex-direction: column;
-	gap: 12px;
+	gap: 10px;
 }
 
 .signup-form label {
 	display: flex;
 	flex-direction: column;
-	gap: 6px;
-	font-size: 14px;
-	color: #374151;
+	gap: 5px;
+	font-size: 12px;
+	font-weight: 500;
+	color: var(--text-secondary);
 }
 
 .signup-form input {
-	border: 1px solid #d1d5db;
-	border-radius: 8px;
-	padding: 10px 12px;
-	font-size: 14px;
+	border: 1px solid var(--border-color);
+	border-radius: var(--radius-sm);
+	padding: 9px 10px;
+	font-size: 13px;
+	background: #ffffff;
+	color: var(--text-primary);
 }
 
+.signup-form input:focus {
+	outline: none;
+        border-color: var(--accent-purple);
+        box-shadow: 0 0 0 3px rgba(85, 72, 200, 0.14);
+/* Primary action button — restrained purple CTA. */
 .signup-form button {
-	margin-top: 8px;
-	border: 0;
-	border-radius: 8px;
-	padding: 11px 14px;
-	background: #2563eb;
-	color: #ffffff;
-	font-weight: 600;
-	cursor: pointer;
+        margin-top: 4px;
+        border: 1px solid var(--accent-purple);
+        border-radius: var(--radius-sm);
+        padding: 9px 12px;
+        font-size: 13px;
+        font-weight: 600;
+        background: var(--accent-purple);
+        color: #ffffff;
+        cursor: pointer;
+        transition: background 0.15s ease, border-color 0.15s ease;
 }
 
 .signup-form button:hover {
-	background: #1d4ed8;
+        background: var(--accent-purple-hover);
+        border-color: var(--accent-purple-hover);
 }
 
 .signup-footnote {
-	margin: 16px 0 0;
-	font-size: 14px;
-	color: #6b7280;
+	margin: 12px 0 0;
+	font-size: 12px;
+	color: var(--text-secondary);
 }
 
 .signup-footnote a {
-	color: #2563eb;
-	text-decoration: none;
-}
-
-.signup-footnote a:hover {
-	text-decoration: underline;
+	font-weight: 500;
 }

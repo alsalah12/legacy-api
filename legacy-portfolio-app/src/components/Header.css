@@ -1,31 +1,31 @@
-/* Sticky top header */
+/* Sticky top header using compact enterprise styling. */
 .top-header {
   position: sticky;
   top: 0;
   z-index: 1000;
-  height: 78px;
-  background: #ffffff;
-  border-bottom: 1px solid #e4e9f2;
+  min-height: 62px;
+  background: var(--card-bg);
+  border-bottom: 1px solid var(--border-color);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 24px;
-  gap: 20px;
+  padding: 10px 16px;
+  gap: 14px;
 }
 
 /* Left brand area */
 .header-left {
   display: flex;
   align-items: center;
-  gap: 12px;
-  min-width: 180px;
+  gap: 10px;
+  min-width: 150px;
 }
 
 /* CSS-only stacked bar logo */
 .brand-mark {
   position: relative;
-  width: 32px;
-  height: 24px;
+  width: 28px;
+  height: 20px;
 }
 
 .brand-mark-layer {
@@ -62,17 +62,17 @@
 }
 
 .brand-text {
-  font-size: 1.45rem;
+  font-size: 14px;
   font-weight: 700;
   letter-spacing: 0.04em;
-  color: #173b6b;
+  color: var(--text-primary);
 }
 
 /* Right side metric group */
 .header-right {
   display: flex;
   align-items: center;
-  gap: 18px;
+  gap: 12px;
   flex-wrap: wrap;
   justify-content: flex-end;
 }
@@ -80,40 +80,38 @@
 .header-metric {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 2px;
 }
 
 .metric-label {
-  font-size: 0.72rem;
-  color: #6b7890;
+  font-size: 10px;
+  color: var(--text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
 
 .metric-value {
-  font-size: 0.96rem;
-  font-weight: 700;
-  color: #152238;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-primary);
 }
 
 /* Add Funds button */
 .add-funds-btn {
-  border: 1px solid #cfd8e6;
+  border: 1px solid var(--accent-blue);
   background: #ffffff;
-  color: #173b6b;
-  border-radius: 12px;
-  padding: 11px 18px;
-  font-size: 0.95rem;
-  font-weight: 700;
+  color: var(--accent-blue);
+  border-radius: var(--radius-sm);
+  padding: 7px 10px;
+  font-size: 12px;
+  font-weight: 600;
   cursor: pointer;
   font-family: inherit;
-  transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+  transition: background 0.2s ease;
 }
 
 .add-funds-btn:hover {
-  background: #f3f7fc;
-  border-color: #b7c5db;
-  transform: translateY(-1px);
+  background: #eff6ff;
 }
 
 .add-funds-btn:focus-visible {
@@ -123,7 +121,7 @@
 
 /* Smaller text for timestamp field */
 .header-updated .metric-value {
-  font-size: 0.88rem;
+  font-size: 11px;
   font-weight: 600;
 }
 

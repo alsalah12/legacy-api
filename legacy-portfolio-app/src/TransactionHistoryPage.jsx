@@ -1,333 +1,364 @@
+// React hooks power the page state and memoised calculations.
 import React, { useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+// Page-specific styles for the transaction history screen.
 import "./TransactionHistoryPage.css";
+import AppSidebar from "./components/AppSidebar";
+import AppTopBar from "./components/AppTopBar";
 
+// Static sample transaction data used to populate the table.
 const mockTransactions = [
-{
-id: 1,
-date: "2025-03-01",
-ticker: "GOOGL",
-company: "Google",
-type: "BUY",
-pricePerShare: 200,
-quantity: 3,
-totalValue: 600,
-sector: "Tech",
-status: "Completed",
-},
-{
-id: 2,
-date: "2025-03-11",
-ticker: "AAPL",
-company: "Apple",
-type: "SELL",
-pricePerShare: 190,
-quantity: 1,
-totalValue: 190,
-sector: "Tech",
-status: "Completed",
-},
-{
-id: 3,
-date: "2025-03-14",
-ticker: "AAPL",
-company: "Apple",
-type: "BUY",
-pricePerShare: 185,
-quantity: 5,
-totalValue: 925,
-sector: "Tech",
-status: "Pending",
-},
-{
-id: 4,
-date: "2025-03-21",
-ticker: "NVDA",
-company: "NVIDIA",
-type: "BUY",
-pricePerShare: 300,
-quantity: 2,
-totalValue: 600,
-sector: "Tech",
-status: "Completed",
-},
-{
-id: 5,
-date: "2025-03-25",
-ticker: "TSLA",
-company: "Tesla",
-type: "SELL",
-pricePerShare: 210,
-quantity: 2,
-totalValue: 420,
-sector: "Auto",
-status: "Completed",
-},
+	{
+		id: 1,
+		date: "2025-03-01",
+		ticker: "GOOGL",
+		company: "Google",
+		type: "BUY",
+		pricePerShare: 200,
+		quantity: 3,
+		totalValue: 600,
+		sector: "Tech",
+		status: "Completed",
+	},
+	{
+		id: 2,
+		date: "2025-03-11",
+		ticker: "AAPL",
+		company: "Apple",
+		type: "SELL",
+		pricePerShare: 190,
+		quantity: 1,
+		totalValue: 190,
+		sector: "Tech",
+		status: "Completed",
+	},
+	{
+		id: 3,
+		date: "2025-03-14",
+		ticker: "AAPL",
+		company: "Apple",
+		type: "BUY",
+		pricePerShare: 185,
+		quantity: 5,
+		totalValue: 925,
+		sector: "Tech",
+		status: "Pending",
+	},
+	{
+		id: 4,
+		date: "2025-03-21",
+		ticker: "NVDA",
+		company: "NVIDIA",
+		type: "BUY",
+		pricePerShare: 300,
+		quantity: 2,
+		totalValue: 600,
+		sector: "Tech",
+		status: "Completed",
+	},
+	{
+		id: 5,
+		date: "2025-03-25",
+		ticker: "TSLA",
+		company: "Tesla",
+		type: "SELL",
+		pricePerShare: 210,
+		quantity: 2,
+		totalValue: 420,
+		sector: "Auto",
+		status: "Completed",
+	},
 ];
 
+// Helper to show currency values in a readable format.
 function formatCurrency(value) {
-return new Intl.NumberFormat("en-GB", {
-style: "currency",
-currency: "USD",
-maximumFractionDigits: 0,
-}).format(value);
+	return new Intl.NumberFormat("en-GB", {
+		style: "currency",
+		currency: "USD",
+		maximumFractionDigits: 0,
+	}).format(value);
 }
 
+// Helper to convert an ISO-style date string into a UK display date.
 function formatDate(dateString) {
-return new Date(dateString).toLocaleDateString("en-GB");
+	return new Date(dateString).toLocaleDateString("en-GB");
 }
 
+// This page shows a searchable, filterable transaction history table.
 export default function TransactionHistoryPage() {
-const navigate = useNavigate();
-const [searchTerm, setSearchTerm] = useState("");
-const [typeFilter, setTypeFilter] = useState("ALL");
-const [statusFilter, setStatusFilter] = useState("ALL");
-const [sortOrder, setSortOrder] = useState("MOST_RECENT");
+	// Each piece of state stores one active filter value from the controls panel.
+	const [searchTerm, setSearchTerm] = useState("");
+	const [typeFilter, setTypeFilter] = useState("ALL");
+	const [statusFilter, setStatusFilter] = useState("ALL");
+	const [sortOrder, setSortOrder] = useState("MOST_RECENT");
 
-const filteredTransactions = useMemo(() => {
-let results = [...mockTransactions];
+	// useMemo recalculates only when the relevant filters change.
+	const filteredTransactions = useMemo(() => {
+		// Start with a copy so sorting/filtering does not mutate the original array.
+		let results = [...mockTransactions];
 
-if (searchTerm.trim()) {
-const lower = searchTerm.toLowerCase();
-results = results.filter(
-(transaction) =>
-transaction.ticker.toLowerCase().includes(lower) ||
-transaction.company.toLowerCase().includes(lower) ||
-transaction.sector.toLowerCase().includes(lower)
-);
-}
+		// Search matches against ticker, company, or sector text.
+		if (searchTerm.trim()) {
+			const lower = searchTerm.toLowerCase();
+			results = results.filter(
+				(transaction) =>
+					transaction.ticker.toLowerCase().includes(lower) ||
+					transaction.company.toLowerCase().includes(lower) ||
+					transaction.sector.toLowerCase().includes(lower)
+			);
+		}
 
-if (typeFilter !== "ALL") {
-results = results.filter((transaction) => transaction.type === typeFilter);
-}
+		// Type filter narrows the list to BUY or SELL records.
+		if (typeFilter !== "ALL") {
+			results = results.filter((transaction) => transaction.type === typeFilter);
+		}
 
-if (statusFilter !== "ALL") {
-results = results.filter(
-(transaction) => transaction.status === statusFilter
-);
-}
+		// Status filter narrows the list to Completed or Pending records.
+		if (statusFilter !== "ALL") {
+			results = results.filter(
+				(transaction) => transaction.status === statusFilter
+			);
+		}
 
-results.sort((a, b) => {
-if (sortOrder === "MOST_RECENT") {
-return new Date(b.date) - new Date(a.date);
-}
-if (sortOrder === "OLDEST") {
-return new Date(a.date) - new Date(b.date);
-}
-if (sortOrder === "HIGHEST_VALUE") {
-return b.totalValue - a.totalValue;
-}
-if (sortOrder === "LOWEST_VALUE") {
-return a.totalValue - b.totalValue;
-}
-return 0;
-});
+		// Sorting changes the order the rows appear in the table.
+		results.sort((a, b) => {
+			if (sortOrder === "MOST_RECENT") {
+				return new Date(b.date) - new Date(a.date);
+			}
 
-return results;
-}, [searchTerm, typeFilter, statusFilter, sortOrder]);
+			if (sortOrder === "OLDEST") {
+				return new Date(a.date) - new Date(b.date);
+			}
 
-const analytics = useMemo(() => {
-const buys = mockTransactions.filter((t) => t.type === "BUY");
-const sells = mockTransactions.filter((t) => t.type === "SELL");
+			if (sortOrder === "HIGHEST_VALUE") {
+				return b.totalValue - a.totalValue;
+			}
 
-const totalBought = buys.reduce((sum, t) => sum + t.totalValue, 0);
-const totalSold = sells.reduce((sum, t) => sum + t.totalValue, 0);
+			if (sortOrder === "LOWEST_VALUE") {
+				return a.totalValue - b.totalValue;
+			}
 
-const sectorCounts = mockTransactions.reduce((acc, transaction) => {
-acc[transaction.sector] = (acc[transaction.sector] || 0) + 1;
-return acc;
-}, {});
+			return 0;
+		});
 
-const mostActiveSector =
-Object.entries(sectorCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || "N/A";
+		return results;
+	}, [searchTerm, typeFilter, statusFilter, sortOrder]);
 
-const stockCounts = mockTransactions.reduce((acc, transaction) => {
-acc[transaction.ticker] = (acc[transaction.ticker] || 0) + 1;
-return acc;
-}, {});
+	// Analytics values are derived once from the mock data because the base data is static.
+	const analytics = useMemo(() => {
+		// Split the data into buys and sells for separate totals.
+		const buys = mockTransactions.filter((transaction) => transaction.type === "BUY");
+		const sells = mockTransactions.filter((transaction) => transaction.type === "SELL");
 
-const mostTradedStock =
-Object.entries(stockCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || "N/A";
+		// Add up the value of each buy and sell set.
+		const totalBought = buys.reduce((sum, transaction) => sum + transaction.totalValue, 0);
+		const totalSold = sells.reduce((sum, transaction) => sum + transaction.totalValue, 0);
 
-return {
-totalBought,
-totalSold,
-mostActiveSector,
-mostTradedStock,
-};
-}, []);
+		// Count how many transactions belong to each sector.
+		const sectorCounts = mockTransactions.reduce((accumulator, transaction) => {
+			accumulator[transaction.sector] =
+				(accumulator[transaction.sector] || 0) + 1;
+			return accumulator;
+		}, {});
 
-return (
-<div className="transaction-page">
-<aside className="sidebar">
-<div className="brand">LEGACY</div>
+		// Pick the sector with the highest count, or fall back to N/A.
+		const mostActiveSector =
+			Object.entries(sectorCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || "N/A";
 
-<nav className="sidebar-nav">
-<button type="button" className="nav-item" onClick={() => navigate("/dashboard")}>Dashboard</button>
-<button type="button" className="nav-item">Performance</button>
-<button type="button" className="nav-item">Buy & Sell</button>
-<button type="button" className="nav-item active">Transaction History</button>
-</nav>
-</aside>
+		// Count how many times each stock ticker appears.
+		const stockCounts = mockTransactions.reduce((accumulator, transaction) => {
+			accumulator[transaction.ticker] =
+				(accumulator[transaction.ticker] || 0) + 1;
+			return accumulator;
+		}, {});
 
-<main className="main-content">
-<header className="topbar">
-<div>
-<h1>Transaction History</h1>
-<p className="subtitle">Review your buys, sells, and pending orders</p>
-</div>
+		// Pick the most frequently traded stock.
+		const mostTradedStock =
+			Object.entries(stockCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || "N/A";
 
-<div className="balance-card">
-<span className="balance-label">Balance</span>
-<strong>$1bn ADA</strong>
-</div>
-</header>
+		return {
+			totalBought,
+			totalSold,
+			mostActiveSector,
+			mostTradedStock,
+		};
+	}, []);
 
-<section className="controls-card">
-<div className="controls-row">
-<input
-type="text"
-placeholder="Search by ticker, company, or sector"
-value={searchTerm}
-onChange={(e) => setSearchTerm(e.target.value)}
-className="search-input"
-/>
+	return (
+		// Main two-column page wrapper.
+		<div className="transaction-page">
+			{/* Sticky top bar shared across authenticated pages. */}
+			<AppTopBar />
 
-<select
-value={typeFilter}
-onChange={(e) => setTypeFilter(e.target.value)}
-className="select-input"
->
-<option value="ALL">All Types</option>
-<option value="BUY">Buy</option>
-<option value="SELL">Sell</option>
-</select>
+			{/* Shared sidebar keeps navigation identical on every page. */}
+			<AppSidebar />
 
-<select
-value={statusFilter}
-onChange={(e) => setStatusFilter(e.target.value)}
-className="select-input"
->
-<option value="ALL">All Statuses</option>
-<option value="Completed">Completed</option>
-<option value="Pending">Pending</option>
-</select>
+			{/* Right content column that contains the header, filters, table, and insights. */}
+			<main className="main-content app-page-main">
+				<header className="topbar">
+					<div>
+						<h1>Transaction History</h1>
+					</div>
+				</header>
 
-<select
-value={sortOrder}
-onChange={(e) => setSortOrder(e.target.value)}
-className="select-input"
->
-<option value="MOST_RECENT">Most Recent</option>
-<option value="OLDEST">Oldest</option>
-<option value="HIGHEST_VALUE">Highest Value</option>
-<option value="LOWEST_VALUE">Lowest Value</option>
-</select>
-</div>
-</section>
+				{/* Filter controls update React state, which then recalculates filteredTransactions. */}
+				<section className="controls-card">
+					<div className="controls-row">
+						<input
+							type="text"
+							placeholder="Search by ticker, company, or sector"
+							value={searchTerm}
+							onChange={(event) => setSearchTerm(event.target.value)}
+							className="search-input"
+						/>
 
-<div className="content-grid">
-<section className="table-card">
-<div className="table-header">
-<h2>Transactions</h2>
-<span>{filteredTransactions.length} results</span>
-</div>
+						<select
+							value={typeFilter}
+							onChange={(event) => setTypeFilter(event.target.value)}
+							className="select-input"
+						>
+							<option value="ALL">All Types</option>
+							<option value="BUY">Buy</option>
+							<option value="SELL">Sell</option>
+						</select>
 
-<div className="table-wrapper">
-<table>
-<thead>
-<tr>
-<th>Date</th>
-<th>Stock</th>
-<th>Type</th>
-<th>Price / Share</th>
-<th>Quantity</th>
-<th>Total Value</th>
-<th>Sector</th>
-<th>Status</th>
-</tr>
-</thead>
-<tbody>
-{filteredTransactions.map((transaction) => (
-<tr key={transaction.id}>
-<td>{formatDate(transaction.date)}</td>
-<td>
-<div className="stock-cell">
-<strong>{transaction.ticker}</strong>
-<span>{transaction.company}</span>
-</div>
-</td>
-<td>
-<span
-className={`pill ${
-transaction.type === "BUY" ? "pill-buy" : "pill-sell"
-}`}
->
-{transaction.type}
-</span>
-</td>
-<td>{formatCurrency(transaction.pricePerShare)}</td>
-<td>{transaction.quantity}</td>
-<td
-className={
-transaction.type === "BUY" ? "positive-text" : "negative-text"
-}
->
-{transaction.type === "BUY" ? "+" : "-"}
-{formatCurrency(transaction.totalValue)}
-</td>
-<td>{transaction.sector}</td>
-<td>
-<span
-className={`pill ${
-transaction.status === "Completed"
-? "pill-completed"
-: "pill-pending"
-}`}
->
-{transaction.status}
-</span>
-</td>
-</tr>
-))}
+						<select
+							value={statusFilter}
+							onChange={(event) => setStatusFilter(event.target.value)}
+							className="select-input"
+						>
+							<option value="ALL">All Statuses</option>
+							<option value="Completed">Completed</option>
+							<option value="Pending">Pending</option>
+						</select>
 
-{filteredTransactions.length === 0 && (
-<tr>
-<td colSpan="8" className="empty-state">
-No transactions match your filters.
-</td>
-</tr>
-)}
-</tbody>
-</table>
-</div>
-</section>
+						<select
+							value={sortOrder}
+							onChange={(event) => setSortOrder(event.target.value)}
+							className="select-input"
+						>
+							<option value="MOST_RECENT">Most Recent</option>
+							<option value="OLDEST">Oldest</option>
+							<option value="HIGHEST_VALUE">Highest Value</option>
+							<option value="LOWEST_VALUE">Lowest Value</option>
+						</select>
+					</div>
+				</section>
 
-<aside className="analytics-card">
-<h2>Investment Insights</h2>
+				{/* Main content splits into the table area and a smaller insights card. */}
+				<div className="content-grid">
+					<section className="table-card">
+						<div className="table-header">
+							<h2>Transactions</h2>
+							<span>{filteredTransactions.length} results</span>
+						</div>
 
-<div className="insight-block">
-<span className="insight-label">Total bought</span>
-<strong>{formatCurrency(analytics.totalBought)}</strong>
-</div>
+						<div className="table-wrapper">
+							<table>
+								<thead>
+									<tr>
+										<th>Date</th>
+										<th>Stock</th>
+										<th>Type</th>
+										<th>Price / Share</th>
+										<th>Quantity</th>
+										<th>Total Value</th>
+										<th>Sector</th>
+										<th>Status</th>
+									</tr>
+								</thead>
+								<tbody>
+									{/* One row is rendered for every transaction left after filtering. */}
+									{filteredTransactions.map((transaction) => (
+										<tr key={transaction.id}>
+											<td>{formatDate(transaction.date)}</td>
+											<td>
+												<div className="stock-cell">
+													<strong>{transaction.ticker}</strong>
+													<span>{transaction.company}</span>
+												</div>
+											</td>
+											<td>
+												<span
+													className={`pill ${
+														transaction.type === "BUY" ? "pill-buy" : "pill-sell"
+													}`}
+												>
+													{transaction.type}
+												</span>
+											</td>
+											<td>{formatCurrency(transaction.pricePerShare)}</td>
+											<td>{transaction.quantity}</td>
+											<td
+												className={
+													transaction.type === "BUY" ? "negative-text" : "positive-text"
+												}
+											>
+												{transaction.type === "BUY" ? "-" : "+"}
+												{formatCurrency(transaction.totalValue)}
+											</td>
+											<td>{transaction.sector}</td>
+											<td>
+												<span
+													className={`pill ${
+														transaction.status === "Completed"
+															? "pill-completed"
+															: "pill-pending"
+													}`}
+												>
+													{transaction.status}
+												</span>
+											</td>
+										</tr>
+									))}
 
-<div className="insight-block">
-<span className="insight-label">Total sold</span>
-<strong>{formatCurrency(analytics.totalSold)}</strong>
-</div>
+									{/* Fallback row shown when no data matches the chosen filters. */}
+									{filteredTransactions.length === 0 && (
+										<tr>
+											<td colSpan="8" className="empty-state">
+												No transactions match your filters.
+											</td>
+										</tr>
+									)}
+								</tbody>
+							</table>
+						</div>
+					</section>
 
-<div className="insight-block">
-<span className="insight-label">Most active sector</span>
-<strong>{analytics.mostActiveSector}</strong>
-</div>
+					{/* Right-hand card showing summary insights derived from the full dataset. */}
+					<aside className="analytics-card">
+						<div className="analytics-header">
+							<h2>Investment Insights</h2>
+							<span className="analytics-range">Last 30 days</span>
+						</div>
 
-<div className="insight-block">
-<span className="insight-label">Most traded stock</span>
-<strong>{analytics.mostTradedStock}</strong>
-</div>
-</aside>
-</div>
-</main>
-</div>
-);
+						<div className="insight-grid">
+							<div className="insight-block">
+								<span className="insight-label">Total bought</span>
+								<strong className="insight-value negative-text">{formatCurrency(analytics.totalBought)}</strong>
+							</div>
+
+							<div className="insight-block">
+								<span className="insight-label">Total sold</span>
+								<strong className="insight-value positive-text">{formatCurrency(analytics.totalSold)}</strong>
+							</div>
+
+							<div className="insight-block">
+								<span className="insight-label">Most active sector</span>
+								<strong className="insight-value">{analytics.mostActiveSector}</strong>
+							</div>
+
+							<div className="insight-block">
+								<span className="insight-label">Most traded stock</span>
+								<strong className="insight-value">{analytics.mostTradedStock}</strong>
+							</div>
+						</div>
+
+						<button type="button" className="analytics-footer-link">
+							View all reports ...
+						</button>
+					</aside>
+				</div>
+			</main>
+		</div>
+	);
 }

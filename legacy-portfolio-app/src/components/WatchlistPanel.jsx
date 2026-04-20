@@ -1,4 +1,6 @@
+// React is needed because this component returns JSX.
 import React from 'react';
+// Import the panel styles for the watchlist area.
 import './WatchlistPanel.css';
 
 // Static watchlist data. Later replace with a fetch() to GET /api/watchlist.
@@ -13,7 +15,7 @@ function WatchlistPanel() {
   return (
     <section className="card side-card">
       <div className="side-card-header">
-        <p className="card-title" style={{ fontSize: '1.1rem' }}>Watchlist Movers</p>
+        <p className="card-title">Watchlist Movers</p>
         <p className="card-subtitle">Today&apos;s movement</p>
       </div>
 

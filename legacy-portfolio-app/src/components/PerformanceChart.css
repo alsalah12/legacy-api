@@ -1,31 +1,31 @@
 /* Chart container */
 .chart-card {
   display: flex;
-  gap: 14px;
-  min-height: 300px;
-  padding: 8px 0 18px;
+  gap: 10px;
+  min-height: 240px;
+  padding: 4px 0 10px;
 }
 
 /* Y-axis labels column */
 .chart-y-axis {
-  width: 52px;
+  width: 44px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  color: #7c899d;
-  font-size: 0.82rem;
-  padding-top: 10px;
-  padding-bottom: 34px;
+  color: var(--text-secondary);
+  font-size: 11px;
+  padding-top: 8px;
+  padding-bottom: 28px;
 }
 
 /* Main drawing area with axis borders */
 .chart-area {
   position: relative;
   flex: 1;
-  border-left: 1px solid #dce5f1;
-  border-bottom: 1px solid #dce5f1;
-  min-height: 300px;
-  padding: 0 12px 36px 12px;
+  border-left: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border-color);
+  min-height: 240px;
+  padding: 0 10px 30px 10px;
   overflow: hidden;
 }
 
@@ -35,7 +35,7 @@
   left: 0;
   right: 0;
   height: 1px;
-  background: #ebf0f6;
+  background: #f0f2f5;
 }
 
 .chart-grid-line:nth-child(1) { top: 18%; }
@@ -48,29 +48,29 @@
   position: absolute;
   left: 6%;
   width: 88%;
-  height: 120px;
+  height: 92px;
   border-radius: 999px;
-  border-top: 3px solid;
-  border-right: 3px solid transparent;
-  border-left: 3px solid transparent;
+  border-top: 2px solid;
+  border-right: 2px solid transparent;
+  border-left: 2px solid transparent;
   opacity: 0.95;
 }
 
 .chart-line-primary {
   top: 30%;
-  border-top-color: #2d68aa;
+  border-top-color: var(--accent-blue);
   transform: rotate(8deg);
 }
 
 .chart-line-secondary {
   top: 20%;
-  border-top-color: #3aa7b4;
+  border-top-color: #14b8a6;
   transform: rotate(-2deg);
 }
 
 .chart-line-tertiary {
   top: 45%;
-  border-top-color: #6d8d5d;
+  border-top-color: #a855f7;
   transform: rotate(-10deg);
 }
 
@@ -82,9 +82,9 @@
   bottom: 0;
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  font-size: 0.84rem;
-  color: #7c899d;
-  padding-top: 12px;
+  font-size: 11px;
+  color: var(--text-secondary);
+  padding-top: 8px;
 }
 
 .chart-x-axis span {
@@ -94,10 +94,10 @@
 /* Reduce height on small screens */
 @media (max-width: 760px) {
   .chart-card {
-    min-height: 240px;
+    min-height: 210px;
   }
 
   .chart-area {
-    min-height: 240px;
+    min-height: 210px;
   }
 }

@@ -1,4 +1,6 @@
+// React is needed because this component returns JSX.
 import React from 'react';
+// Import the card styles for the summary stat component.
 import './SummaryCard.css';
 
 // A single stat card shown in the performance summary row.

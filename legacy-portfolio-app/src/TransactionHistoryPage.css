@@ -1,272 +1,341 @@
-* {
-box-sizing: border-box;
-}
-
-body {
-margin: 0;
-font-family: Arial, sans-serif;
-background: #f5f7fb;
-color: #16213e;
-}
-
+/* Main page layout: fixed-width sidebar and content section. */
 .transaction-page {
 display: flex;
 min-height: 100vh;
+background: var(--app-bg);
 }
 
-.sidebar {
-width: 240px;
-background: #ffffff;
-border-right: 1px solid #e4e8f0;
-padding: 24px 16px;
-}
-
-.brand {
-font-size: 28px;
-font-weight: 700;
-margin-bottom: 32px;
-}
-
-.sidebar-nav {
-display: flex;
-flex-direction: column;
-gap: 12px;
-}
-
-.nav-item {
-background: transparent;
-border: none;
-text-align: left;
-padding: 14px 16px;
-border-radius: 10px;
-font-size: 16px;
-cursor: pointer;
-color: #274060;
-}
-
-.nav-item.active,
-.nav-item:hover {
-background: #e9f0ff;
-color: #123a7a;
-}
-
-.main-content {
+/* Left navigation column with enterprise styling. */
+/* Right-side content area. */
+.transaction-page .main-content {
 flex: 1;
-padding: 28px;
+padding: var(--space-page);
+display: grid;
+gap: var(--space-grid);
 }
 
-.topbar {
+/* Top row containing page title and balance card. */
+.transaction-page .topbar {
 display: flex;
 justify-content: space-between;
 align-items: center;
-gap: 24px;
-margin-bottom: 24px;
+gap: 16px;
 }
 
-.topbar h1 {
-margin: 0 0 6px;
-font-size: 34px;
+/* Main page title. */
+.transaction-page .topbar h1 {
+margin: 0 0 4px;
+font-size: var(--fs-page-title);
+font-weight: var(--fw-page-title);
+color: var(--text-primary);
 }
 
-.subtitle {
+/* Subtitle under the page title. */
+.transaction-page .subtitle {
 margin: 0;
-color: #5f6c85;
+font-size: 12px;
+color: var(--text-secondary);
 }
 
-.balance-card {
-background: #ffffff;
-border: 1px solid #e4e8f0;
-border-radius: 14px;
-padding: 16px 20px;
-min-width: 180px;
+/* Small card showing the current balance. */
+.transaction-page .balance-card {
+background: var(--card-bg);
+border: 1px solid var(--border-color);
+border-radius: var(--radius-md);
+padding: 10px 12px;
+min-width: 165px;
 text-align: right;
+box-shadow: var(--shadow-soft);
 }
 
-.balance-label {
+/* Label inside the balance card. */
+.transaction-page .balance-label {
 display: block;
-font-size: 13px;
-color: #6c7891;
-margin-bottom: 6px;
+font-size: 11px;
+color: var(--text-secondary);
+margin-bottom: 2px;
 }
 
-.controls-card,
-.table-card,
-.analytics-card {
-background: #ffffff;
-border: 1px solid #e4e8f0;
-border-radius: 16px;
-box-shadow: 0 8px 24px rgba(20, 36, 70, 0.05);
+/* Shared card appearance for controls, table, and insights. */
+.transaction-page .controls-card,
+.transaction-page .table-card,
+.transaction-page .analytics-card {
+background: var(--card-bg);
+border: 1px solid var(--border-color);
+border-radius: var(--radius-md);
+box-shadow: var(--shadow-soft);
 }
 
-.controls-card {
-padding: 18px;
-margin-bottom: 24px;
+/* Filter control card spacing. */
+.transaction-page .controls-card {
+padding: 14px;
 }
 
-.controls-row {
+/* Grid layout for the search box and selects. */
+.transaction-page .controls-row {
 display: grid;
 grid-template-columns: 2fr 1fr 1fr 1fr;
-gap: 12px;
+gap: 10px;
 }
 
-.search-input,
-.select-input {
+/* Shared appearance for the search input and dropdowns. */
+.transaction-page .search-input,
+.transaction-page .select-input {
 width: 100%;
-padding: 12px 14px;
-border: 1px solid #d6dce8;
-border-radius: 10px;
-font-size: 15px;
+padding: 8px 10px;
+border: 1px solid var(--border-color);
+border-radius: var(--radius-sm);
+font-size: 12px;
 background: #fff;
+color: var(--text-primary);
 }
 
-.content-grid {
+/* Two-column layout: table on the left, analytics on the right. */
+.transaction-page .content-grid {
 display: grid;
 grid-template-columns: 2.2fr 1fr;
-gap: 24px;
+gap: var(--space-grid);
+align-items: stretch;
 }
 
-.table-card {
-padding: 20px;
+/* Padding for the transactions table card. */
+.transaction-page .table-card,
+.transaction-page .analytics-card {
+padding: 14px;
 }
 
-.table-header {
+/* Header row inside the table card. */
+.transaction-page .table-header {
 display: flex;
 justify-content: space-between;
 align-items: center;
-margin-bottom: 18px;
+margin-bottom: 10px;
 }
 
-.table-header h2,
-.analytics-card h2 {
+.transaction-page .table-header h2,
+.transaction-page .analytics-card h2 {
+font-size: var(--fs-section-title);
+font-weight: var(--fw-section-title);
+color: var(--text-primary);
 margin: 0;
 }
 
-.table-wrapper {
+.transaction-page .table-header span {
+font-size: 12px;
+color: var(--text-secondary);
+}
+
+/* Allow horizontal scroll on narrow screens. */
+.transaction-page .table-wrapper {
 overflow-x: auto;
 }
 
-table {
+/* Base table styles. */
+.transaction-page table {
 width: 100%;
 border-collapse: collapse;
 }
 
-th,
-td {
-padding: 14px 12px;
-border-bottom: 1px solid #edf1f7;
+/* Cell spacing and borders. */
+.transaction-page th,
+.transaction-page td {
+padding: 9px 10px;
+border-bottom: 1px solid #f0f2f5;
 text-align: left;
 vertical-align: middle;
+font-size: 12px;
+white-space: nowrap;
 }
 
-th {
-font-size: 14px;
-color: #61708a;
+/* Table header cell styling. */
+.transaction-page th {
+background: #f4f3fa;
+color: var(--text-secondary);
+font-size: var(--fs-table-header);
+font-weight: var(--fw-table-header);
+letter-spacing: var(--ls-table-header);
+}
+
+/* Stack ticker and company name in one cell. */
+.transaction-page .stock-cell {
+display: flex;
+flex-direction: column;
+gap: 3px;
+}
+
+.transaction-page .stock-cell strong {
+font-size: 12px;
+}
+
+.transaction-page .stock-cell span {
+font-size: 11px;
+color: var(--text-secondary);
+}
+
+/* Shared pill/badge styling used for type and status labels. */
+.transaction-page .pill {
+display: inline-block;
+padding: 4px 8px;
+border-radius: 999px;
+font-size: 10px;
 font-weight: 600;
 }
 
-.stock-cell {
+.transaction-page .pill-buy {
+background: #ecfdf3;
+color: var(--positive-green);
+}
+
+.transaction-page .pill-sell {
+background: #fef2f2;
+color: var(--negative-red);
+}
+
+.transaction-page .pill-completed {
+background: var(--accent-purple-tint);
+color: var(--accent-purple-active);
+}
+
+.transaction-page .pill-pending {
+background: #fff7ed;
+color: #9a3412;
+}
+
+.transaction-page .positive-text {
+color: var(--positive-green);
+font-weight: 600;
+}
+
+.transaction-page .negative-text {
+color: var(--negative-red);
+font-weight: 600;
+}
+
+.transaction-page .empty-state {
+text-align: center;
+padding: 20px;
+font-size: 12px;
+color: var(--text-secondary);
+}
+
+/* Insights panel rows. */
+.transaction-page .analytics-card {
 display: flex;
 flex-direction: column;
+gap: 10px;
+}
+
+.transaction-page .analytics-header {
+display: flex;
+align-items: center;
+justify-content: space-between;
+gap: 8px;
+}
+
+.transaction-page .analytics-range {
+display: inline-flex;
+align-items: center;
+padding: 3px 8px;
+border-radius: 999px;
+font-size: 10px;
+font-weight: 600;
+background: var(--accent-purple-tint);
+color: var(--accent-purple-active);
+border: 1px solid var(--accent-purple-border);
+}
+
+.transaction-page .insight-grid {
+display: grid;
+gap: 8px;
+}
+
+.transaction-page .insight-block {
+padding: 9px 10px;
+border: 1px solid var(--border-subtle);
+border-radius: var(--radius-sm);
+background: #f7f7fc;
+display: grid;
 gap: 4px;
 }
 
-.stock-cell span {
-font-size: 13px;
-color: #66748d;
-}
-
-.pill {
-display: inline-block;
-padding: 6px 10px;
-border-radius: 999px;
-font-size: 13px;
-font-weight: 700;
-}
-
-.pill-buy {
-background: #e8f8ee;
-color: #1d7a43;
-}
-
-.pill-sell {
-background: #fdecec;
-color: #b53a3a;
-}
-
-.pill-completed {
-background: #eef3ff;
-color: #3056a3;
-}
-
-.pill-pending {
-background: #fff4db;
-color: #9a6b00;
-}
-
-.positive-text {
-color: #1d7a43;
-font-weight: 700;
-}
-
-.negative-text {
-color: #b53a3a;
-font-weight: 700;
-}
-
-.empty-state {
-text-align: center;
-padding: 28px;
-color: #6b7891;
-}
-
-.analytics-card {
-padding: 20px;
-height: fit-content;
-}
-
-.insight-block {
-padding: 16px 0;
-border-bottom: 1px solid #edf1f7;
-}
-
-.insight-block:last-child {
-border-bottom: none;
-}
-
-.insight-label {
+.transaction-page .insight-label {
 display: block;
-color: #66748d;
-font-size: 14px;
-margin-bottom: 8px;
+color: var(--text-secondary);
+font-size: 10px;
+text-transform: uppercase;
+letter-spacing: 0.03em;
 }
 
+.transaction-page .insight-value {
+font-size: 14px;
+font-weight: 600;
+color: var(--text-primary);
+}
+
+.transaction-page .analytics-footer-link {
+margin-top: auto;
+border: none;
+background: transparent;
+padding: 10px 0 0;
+border-top: 1px solid var(--border-subtle);
+width: 100%;
+text-align: right;
+font-size: 11px;
+font-weight: 500;
+color: var(--accent-purple);
+cursor: pointer;
+}
+
+.transaction-page .analytics-footer-link:hover {
+text-decoration: underline;
+}
+
+/* Tablet layout adjustments. */
 @media (max-width: 1100px) {
-.content-grid {
+.transaction-page .content-grid {
 grid-template-columns: 1fr;
 }
 
-.controls-row {
+.transaction-page .controls-row {
 grid-template-columns: 1fr 1fr;
 }
 }
 
-@media (max-width: 700px) {
+/* Mobile layout adjustments. */
+@media (max-width: 760px) {
 .transaction-page {
 flex-direction: column;
 }
 
-.sidebar {
-width: 100%;
-border-right: none;
-border-bottom: 1px solid #e4e8f0;
+.transaction-page .main-content {
+padding: 12px;
+gap: 12px;
 }
 
-.controls-row {
+.transaction-page .sidebar {
+width: 100%;
+border-right: none;
+border-bottom: 1px solid var(--border-color);
+}
+
+.transaction-page .controls-card,
+.transaction-page .table-card,
+.transaction-page .analytics-card {
+padding: 12px;
+}
+
+.transaction-page .controls-row {
 grid-template-columns: 1fr;
 }
 
-.topbar {
+.transaction-page .topbar {
 flex-direction: column;
 align-items: flex-start;
+}
+
+.transaction-page .table-header {
+flex-direction: column;
+align-items: flex-start;
+gap: 6px;
 }
 }

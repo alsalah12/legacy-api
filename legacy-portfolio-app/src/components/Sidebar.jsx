@@ -1,5 +1,8 @@
+// React is required because this component returns JSX.
 import React from 'react';
+// useNavigate allows sidebar buttons to switch routes programmatically.
 import { useNavigate } from 'react-router-dom';
+// Import the sidebar-specific CSS.
 import './Sidebar.css';
 
 // Navigation items are stored as data objects so adding a new route
@@ -16,6 +19,7 @@ const NAV_ITEMS = [
 // onToggle   — function to flip the collapsed state in the parent
 // activeItem — string matching the label of the current active route
 function Sidebar({ collapsed, onToggle, activeItem }) {
+  // navigate changes the current route without reloading the page.
   const navigate = useNavigate();
 
   return (

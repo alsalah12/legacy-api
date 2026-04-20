@@ -1,0 +1,562 @@
+/* Holdings page keeps Transaction History styling language, with stricter mockup-like layout proportions. */
+.holdings-page {
+  display: flex;
+  height: 100vh;
+  min-height: 100vh;
+  background: var(--app-bg);
+  font-family: "Inter", sans-serif;
+  overflow: hidden;
+}
+
+.holdings-page * {
+  font-family: inherit;
+}
+
+.holdings-page .main-content {
+  flex: 1;
+  height: calc(100vh - var(--app-topbar-height));
+  min-height: calc(100vh - var(--app-topbar-height));
+  padding: var(--space-page);
+  display: grid;
+  overflow: hidden;
+}
+
+/* Desktop shell is intentionally constrained so composition matches the mockup scale. */
+.holdings-page .holdings-shell {
+  width: min(1120px, 100%);
+  margin: 0 auto;
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr);
+  gap: 9px;
+  min-height: 0;
+  height: 100%;
+}
+
+.holdings-page .holdings-shell.full-table-mode {
+  grid-template-rows: auto minmax(0, 1fr);
+}
+
+/* Header spacing and hierarchy. */
+.holdings-page .topbar {
+  display: flex;
+  align-items: center;
+  min-height: 30px;
+}
+
+.holdings-page .topbar h1 {
+  margin: 0;
+  font-size: var(--fs-page-title);
+  font-weight: var(--fw-page-title);
+  color: var(--text-primary);
+}
+
+/* Compact summary metrics row. */
+.holdings-page .summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.holdings-page .metric-card,
+.holdings-page .table-card,
+.holdings-page .allocation-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-soft);
+}
+
+.holdings-page .metric-card {
+  min-height: 66px;
+  padding: 9px 11px;
+  display: grid;
+  align-content: center;
+  gap: 2px;
+}
+
+.holdings-page .metric-label {
+  font-size: 10px;
+  color: var(--text-secondary);
+}
+
+.holdings-page .metric-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.holdings-page .positive-text {
+  color: var(--positive-green);
+  font-weight: 600;
+}
+
+.holdings-page .negative-text {
+  color: var(--negative-red);
+  font-weight: 600;
+}
+
+/* Main horizontal row: large holdings card + intentional allocation width. */
+.holdings-page .content-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.95fr) minmax(318px, 0.9fr);
+  gap: 10px;
+  align-items: start;
+  min-height: 0;
+}
+
+.holdings-page .content-grid.single-column {
+  grid-template-columns: 1fr;
+}
+
+.holdings-page .table-card,
+.holdings-page .allocation-card {
+  padding: 11px;
+}
+
+.holdings-page .table-card {
+  display: flex;
+  flex-direction: column;
+  min-height: 448px;
+  height: 100%;
+}
+
+.holdings-page .allocation-card {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  min-height: 448px;
+  height: 100%;
+}
+
+.holdings-page .table-header,
+.holdings-page .allocation-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 7px;
+}
+
+.holdings-page .table-header-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Add-stock controls remain compact and consistent with Transaction History controls. */
+.holdings-page .table-actions {
+  display: grid;
+  grid-template-columns: minmax(64px, 0.5fr) minmax(140px, 1.3fr) repeat(3, minmax(86px, 0.7fr)) minmax(96px, 0.9fr) auto;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.holdings-page .action-input,
+.holdings-page .action-select {
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  font-size: 11px;
+  background: #ffffff;
+  color: var(--text-primary);
+}
+
+.holdings-page .add-stock-btn {
+  border: 1px solid var(--accent-purple);
+  border-radius: var(--radius-sm);
+  background: var(--accent-purple);
+  color: #ffffff;
+  padding: 6px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.holdings-page .add-stock-btn:hover {
+  background: var(--accent-purple-hover);
+  border-color: var(--accent-purple-hover);
+}
+
+.holdings-page .table-header h2,
+.holdings-page .allocation-header h2 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.holdings-page .table-header span {
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+.holdings-page .view-mode-btn {
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  background: #ffffff;
+  color: var(--text-secondary);
+  padding: 5px 8px;
+  font-size: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.holdings-page .view-mode-btn:hover {
+  background: var(--accent-purple-tint);
+  border-color: var(--accent-purple-border);
+  color: var(--accent-purple-active);
+}
+
+/* Holdings table: tighter rows, muted headers, stronger numeric hierarchy. */
+.holdings-page .table-wrapper {
+  overflow-x: auto;
+  overflow-y: hidden;
+  flex: 1;
+  min-height: 0;
+}
+
+.holdings-page table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.holdings-page th,
+.holdings-page td {
+  padding: 6px 9px;
+  border-bottom: 1px solid #eef2f6;
+  text-align: left;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.holdings-page th {
+  background: #f4f3fa;
+  color: #6b6880;
+  font-size: var(--fs-table-header);
+  font-weight: var(--fw-table-header);
+  letter-spacing: var(--ls-table-header);
+}
+
+.holdings-page td {
+  font-size: 12px;
+  color: #2d3748;
+}
+
+.holdings-page .stock-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.holdings-page .stock-cell strong {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.holdings-page .stock-cell span {
+  font-size: 11px;
+  color: #95a0af;
+}
+
+.holdings-page .number-cell {
+  font-variant-numeric: tabular-nums;
+}
+
+.holdings-page .value-cell {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  color: #111827;
+}
+
+.holdings-page .total-row td {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  border-top: 1px solid var(--border-color);
+  border-bottom: none;
+  background: #f6f5fb;
+  font-weight: 600;
+}
+
+.holdings-page .delete-stock-btn {
+  border: 1px solid #fecaca;
+  border-radius: var(--radius-sm);
+  background: #fef2f2;
+  color: var(--negative-red);
+  padding: 5px 8px;
+  font-size: 10px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.holdings-page .delete-stock-btn:hover {
+  background: #fee2e2;
+}
+
+.holdings-page .empty-state {
+  text-align: center;
+  padding: 16px;
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+.holdings-page .table-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding-top: 8px;
+  border-top: 1px solid #eef2f6;
+}
+
+.holdings-page .table-range,
+.holdings-page .pagination-page {
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+.holdings-page .pagination-controls {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.holdings-page .pagination-btn {
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  background: #ffffff;
+  color: var(--text-secondary);
+  padding: 5px 8px;
+  font-size: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.holdings-page .pagination-btn:hover:not(:disabled) {
+  background: var(--accent-purple-tint);
+  border-color: var(--accent-purple-border);
+  color: var(--accent-purple-active);
+}
+
+.holdings-page .pagination-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* Allocation panel: centered chart and aligned legend values. */
+.holdings-page .allocation-body {
+  display: grid;
+  align-content: center;
+  gap: 11px;
+}
+
+.holdings-page .allocation-visual {
+  display: flex;
+  justify-content: center;
+}
+
+.holdings-page .allocation-donut {
+  position: relative;
+  width: 176px;
+  height: 176px;
+  display: grid;
+  place-items: center;
+}
+
+.holdings-page .allocation-donut-svg {
+  width: 176px;
+  height: 176px;
+}
+
+.holdings-page .allocation-donut-track,
+.holdings-page .allocation-donut-segment {
+  fill: none;
+  stroke-width: 8;
+}
+
+.holdings-page .allocation-donut-track {
+  stroke: #eef1f6;
+}
+
+.holdings-page .allocation-donut-segment {
+  stroke-linecap: butt;
+}
+
+.holdings-page .allocation-hole {
+  position: absolute;
+  width: 94px;
+  height: 94px;
+  border-radius: 50%;
+  border: 1px solid #edf1f6;
+  background: #ffffff;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 1px;
+}
+
+.holdings-page .allocation-center-label {
+  font-size: 10px;
+  color: var(--text-secondary);
+}
+
+.holdings-page .allocation-center-value {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.holdings-page .allocation-legend {
+  display: grid;
+  gap: 6px;
+}
+
+.holdings-page .legend-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  background: #f8f8fd;
+}
+
+.holdings-page .legend-left {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+}
+
+.holdings-page .legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.holdings-page .allocation-stocks {
+  background: #5548c8; /* royal purple — primary asset class */
+}
+
+.holdings-page .allocation-bonds {
+  background: #9b91e8; /* muted violet — fixed income */
+}
+
+.holdings-page .allocation-crypto {
+  background: #2ea87a; /* forest green — alternative assets */
+}
+
+.holdings-page .allocation-cash {
+  background: #a0a8b8; /* neutral slate — cash & equivalents */
+}
+
+.holdings-page .legend-label {
+  font-size: 11px;
+  color: var(--text-primary);
+}
+
+.holdings-page .legend-value {
+  min-width: 36px;
+  text-align: right;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 1120px) {
+  .holdings-page {
+    height: auto;
+    overflow: visible;
+  }
+
+  .holdings-page .main-content {
+    height: auto;
+    min-height: auto;
+    padding: 12px;
+    overflow: visible;
+  }
+
+  .holdings-page .holdings-shell {
+    grid-template-rows: auto;
+    height: auto;
+  }
+
+  .holdings-page .table-actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .holdings-page .summary-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .holdings-page .content-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .holdings-page .table-footer {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .holdings-page .table-card,
+  .holdings-page .allocation-card {
+    min-height: auto;
+  }
+}
+
+@media (max-width: 760px) {
+  .holdings-page {
+    --shared-sidebar-width: 220px;
+    flex-direction: column;
+  }
+
+  .holdings-page .main-content {
+    padding: 10px;
+  }
+
+  .holdings-page .summary-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .holdings-page .metric-card,
+  .holdings-page .table-card,
+  .holdings-page .allocation-card {
+    padding: 10px;
+  }
+
+  .holdings-page .topbar,
+  .holdings-page .table-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+
+  .holdings-page .table-header-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .holdings-page .table-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .holdings-page .pagination-controls {
+    flex-wrap: wrap;
+  }
+
+  .holdings-page .allocation-donut,
+  .holdings-page .allocation-donut-svg {
+    width: 140px;
+    height: 140px;
+  }
+
+  .holdings-page .allocation-hole {
+    width: 78px;
+    height: 78px;
+  }
+}

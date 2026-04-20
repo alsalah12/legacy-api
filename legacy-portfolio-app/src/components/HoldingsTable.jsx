@@ -1,4 +1,6 @@
+// React is needed because this component returns JSX.
 import React from 'react';
+// Import the table styles for the holdings list.
 import './HoldingsTable.css';
 
 // Static holdings data. Later replace with props or a fetch() call
@@ -53,6 +55,7 @@ const HOLDINGS = [
 function HoldingsTable() {
   return (
     <div className="table-wrapper">
+      {/* Table element groups the holdings into rows and columns. */}
       <table className="holdings-table">
         <thead>
           <tr>
@@ -72,7 +75,7 @@ function HoldingsTable() {
                 {/* Symbol and company name grouped together */}
                 <span className="table-symbol">{holding.symbol}</span>
                 <br />
-                <span style={{ fontSize: '0.85rem', color: '#6b7890' }}>
+                <span className="table-company">
                   {holding.company}
                 </span>
               </td>

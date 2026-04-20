@@ -1,0 +1,130 @@
+/* Shared sidebar width token used by all authenticated pages. */
+:root {
+  --shared-sidebar-width: 220px;
+}
+
+/* Fixed enterprise sidebar — deep charcoal with purple active accent. */
+.app-sidebar {
+  position: fixed;
+  top: var(--app-topbar-height);
+  left: 0;
+  width: var(--shared-sidebar-width);
+  height: calc(100vh - var(--app-topbar-height));
+  padding: 20px;
+  background: var(--sidebar-bg);
+  border-right: 1px solid rgba(255, 255, 255, 0.06);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transition: width 0.2s ease, padding 0.2s ease, border-right-color 0.2s ease;
+}
+
+.app-sidebar.collapsed {
+  width: 0;
+  padding: 0;
+  border-right-color: transparent;
+}
+
+/* Vertical nav list with compact spacing. */
+.app-sidebar-nav {
+  display: grid;
+  gap: 8px;
+  padding-top: 4px;
+}
+
+/* Footer timestamp shown at the bottom center of sidebar. */
+.app-sidebar-updated {
+  margin-top: auto;
+  padding-top: 12px;
+  text-align: center;
+  font-size: 10px;
+  color: rgba(185, 190, 210, 0.5);
+  white-space: nowrap;
+}
+
+.app-sidebar.collapsed .app-sidebar-updated {
+  display: none;
+}
+
+/* Shared link styling for every page — light text on dark sidebar. */
+.app-sidebar-link {
+  display: block;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #b0b5c8;
+  background: transparent;
+  text-decoration: none;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.app-sidebar-link:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.08);
+  color: #e8eaf2;
+  text-decoration: none;
+}
+
+/* Active page — purple tint highlight, clearly selected. */
+.app-sidebar-link.active {
+  background: rgba(85, 72, 200, 0.22);
+  border-color: rgba(85, 72, 200, 0.45);
+  color: #d4d0f8;
+  text-decoration: none;
+}
+
+/* Shared main content offset so pages sit beside the fixed sidebar. */
+.app-page-main {
+  margin-left: var(--shared-sidebar-width);
+  margin-top: var(--app-topbar-height);
+  min-height: calc(100vh - var(--app-topbar-height));
+  transition: margin-left 0.2s ease;
+}
+
+/* When sidebar is collapsed, shift content to the smaller sidebar width. */
+body.sidebar-collapsed .app-page-main {
+  margin-left: 0;
+}
+
+/* Mobile layout stacks the sidebar above the page content. */
+@media (max-width: 760px) {
+  .app-sidebar {
+    position: fixed;
+    top: var(--app-topbar-height);
+    left: 0;
+    width: min(84vw, 280px);
+    height: calc(100vh - var(--app-topbar-height));
+    margin-top: 0;
+    padding: 14px 12px;
+    border-right: 1px solid var(--border-color);
+    border-bottom: none;
+    box-shadow: 4px 0 24px rgba(13, 17, 35, 0.35);
+    overflow-y: auto;
+    transform: translateX(0);
+    transition: transform 0.2s ease;
+    z-index: 1150;
+  }
+
+  .app-sidebar.collapsed {
+    width: min(84vw, 280px);
+    padding: 14px 12px;
+    border-right-color: var(--border-color);
+    transform: translateX(-100%);
+  }
+
+  .app-sidebar-updated {
+    display: none;
+  }
+
+  .app-page-main {
+    margin-left: 0;
+    margin-top: var(--app-topbar-height);
+    min-height: calc(100vh - var(--app-topbar-height));
+  }
+
+  body.sidebar-collapsed .app-page-main {
+    margin-left: 0;
+  }
+}

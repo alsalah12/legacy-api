@@ -2,7 +2,7 @@
 .news-carousel {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
 }
 
 /* Navigation row: previous arrow, dot indicators, next arrow */
@@ -10,30 +10,29 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
+  gap: 8px;
 }
 
 /* Arrow navigation buttons */
 .wheel-arrow {
-  background: transparent;
-  border: 1px solid #e0e7f0;
-  color: #173b6b;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
+  background: #ffffff;
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-sm);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  font-size: 1.3rem;
+  font-size: 14px;
   font-family: inherit;
   line-height: 1;
-  padding-bottom: 2px;
+  padding: 0;
 }
 
 .wheel-arrow:hover {
-  background: #eaf1fa;
-  border-color: #b7c5db;
+  background: #f3f4f6;
 }
 
 .wheel-arrow:focus-visible {
@@ -49,10 +48,10 @@
 }
 
 .wheel-dot {
-  width: 9px;
-  height: 9px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
-  background: #cdd7e6;
+  background: #d1d5db;
   border: none;
   cursor: pointer;
   padding: 0;
@@ -60,37 +59,37 @@
 }
 
 .wheel-dot.active {
-  background: #2d68aa;
-  width: 11px;
-  height: 11px;
+  background: var(--accent-blue);
+  width: 9px;
+  height: 9px;
 }
 
 /* Stacked card area */
 .news-cards-stack {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
 }
 
 /* Base card appearance */
 .news-card {
-  border: 1px solid #e8eef6;
-  border-radius: 18px;
-  padding: 18px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  padding: 10px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
 }
 
 /* Fully visible active story */
 .news-card-active {
   background: #ffffff;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+  box-shadow: var(--shadow-soft);
 }
 
 /* Dimmed inactive stories */
 .news-card-muted {
-  background: #f7fafc;
+  background: #f9fafb;
   opacity: 0.45;
   pointer-events: none;
 }
@@ -98,43 +97,43 @@
 /* Category tag (e.g. Earnings, Macro) */
 .news-tag {
   display: inline-block;
-  background: #eaf1fa;
-  color: #1c4f91;
-  font-size: 0.76rem;
-  font-weight: 700;
+  background: #eef2ff;
+  color: #3730a3;
+  font-size: 10px;
+  font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  padding: 4px 10px;
+  padding: 3px 8px;
   border-radius: 100px;
   align-self: flex-start;
 }
 
 /* Headline text */
 .news-title {
-  font-size: 0.97rem;
-  font-weight: 700;
-  color: #162844;
-  line-height: 1.5;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.4;
 }
 
 /* Source and time row */
 .news-meta {
   display: flex;
   justify-content: space-between;
-  font-size: 0.82rem;
-  color: #8896aa;
+  font-size: 11px;
+  color: var(--text-secondary);
 }
 
 /* Read-more link */
 .news-link {
-  font-size: 0.88rem;
-  color: #2d68aa;
-  font-weight: 700;
+  font-size: 11px;
+  color: var(--accent-blue);
+  font-weight: 500;
   text-decoration: none;
   align-self: flex-start;
 }
 
 .news-link:hover {
-  color: #173b6b;
+  color: #1d4ed8;
   text-decoration: underline;
 }

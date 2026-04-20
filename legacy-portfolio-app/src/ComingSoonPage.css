@@ -1,0 +1,58 @@
+/* Full-page wrapper for placeholder routes. */
+.coming-soon-page {
+  background: var(--app-bg);
+}
+
+/* Main content area sits beside the shared sidebar. */
+.coming-soon-main {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: var(--space-page);
+}
+
+/* Enterprise-style card container. */
+.coming-soon-card {
+  width: 100%;
+  max-width: 520px;
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-soft);
+  padding: 20px;
+  display: grid;
+  gap: 10px;
+}
+
+/* Compact heading scale for consistency with dashboard typography. */
+.coming-soon-card h1 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* Supporting body text. */
+.coming-soon-card p {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+/* Link styled as a compact enterprise action. */
+.coming-soon-link {
+  justify-self: start;
+  margin-top: 4px;
+  border: 1px solid var(--accent-blue);
+  border-radius: var(--radius-sm);
+  color: var(--accent-blue);
+  padding: 7px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.coming-soon-link:hover {
+  background: #eff6ff;
+  text-decoration: none;
+}

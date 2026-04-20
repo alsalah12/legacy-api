@@ -1,0 +1,148 @@
+/* Sticky top bar — clean white with subtle bottom border. */
+.app-topbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1200;
+  height: var(--app-topbar-height);
+  background: #ffffff;
+  border-bottom: 1px solid var(--border-color);
+  box-shadow: 0 1px 0 0 rgba(13, 17, 23, 0.04);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+}
+
+.app-topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.app-topbar-menu-btn {
+  border: 1px solid var(--border-color);
+  background: var(--app-bg);
+  color: var(--text-secondary);
+  border-radius: var(--radius-sm);
+  width: 28px;
+  height: 28px;
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.app-topbar-menu-btn:hover {
+  background: var(--border-color);
+}
+
+/* Left side title area. */
+.app-topbar-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* Right side metric container. */
+.app-topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Individual metric block. */
+.app-topbar-metric {
+  display: grid;
+  gap: 2px;
+  text-align: right;
+}
+
+.app-topbar-label {
+  font-size: 10px;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.app-topbar-value {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.app-topbar-add-funds-btn {
+  border: 1px solid var(--accent-purple);
+  background: var(--accent-purple);
+  color: #ffffff;
+  border-radius: var(--radius-sm);
+  padding: 7px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.app-topbar-add-funds-btn:hover {
+  background: var(--accent-purple-hover);
+  border-color: var(--accent-purple-hover);
+}
+
+@media (max-width: 760px) {
+  .app-topbar {
+    height: var(--app-topbar-height);
+    min-height: var(--app-topbar-height);
+    align-items: center;
+    flex-direction: row;
+    padding: 0 10px;
+    gap: 8px;
+  }
+
+  .app-topbar-title {
+    max-width: 145px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 13px;
+  }
+
+  .app-topbar-right {
+    margin-left: auto;
+    width: auto;
+    gap: 8px;
+    flex-wrap: nowrap;
+  }
+
+  .app-topbar-metric:first-of-type {
+    display: none;
+  }
+
+  .app-topbar-metric {
+    text-align: right;
+  }
+
+  .app-topbar-label {
+    display: none;
+  }
+
+  .app-topbar-value {
+    font-size: 11px;
+  }
+
+  .app-topbar-add-funds-btn {
+    padding: 6px 8px;
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 460px) {
+  .app-topbar-title {
+    max-width: 112px;
+    font-size: 12px;
+  }
+
+  .app-topbar-value {
+    display: none;
+  }
+}
