@@ -163,6 +163,24 @@ flex-direction: column;
 gap: 3px;
 }
 
+/* Date and time are stacked to reflect the backend schema clearly in one column. */
+.transaction-page .date-time-cell {
+display: flex;
+flex-direction: column;
+gap: 2px;
+}
+
+.transaction-page .date-time-cell strong {
+font-size: 12px;
+font-weight: 600;
+color: var(--text-primary);
+}
+
+.transaction-page .date-time-cell span {
+font-size: 11px;
+color: var(--text-secondary);
+}
+
 .transaction-page .stock-cell strong {
 font-size: 12px;
 }
@@ -201,15 +219,7 @@ background: #fff7ed;
 color: #9a3412;
 }
 
-.transaction-page .positive-text {
-color: var(--positive-green);
-font-weight: 600;
-}
-
-.transaction-page .negative-text {
-color: var(--negative-red);
-font-weight: 600;
-}
+/* positive-text / negative-text are defined globally in index.css */
 
 .transaction-page .empty-state {
 text-align: center;

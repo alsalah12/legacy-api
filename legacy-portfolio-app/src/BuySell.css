@@ -40,9 +40,9 @@
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-soft);
-  padding: 14px;
+  padding: 18px;
   display: grid;
-  gap: 12px;
+  gap: 16px;
 }
 
 /* Header row inside the main content card. */
@@ -50,7 +50,8 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
+  padding-bottom: 2px;
 }
 
 .buy-sell-page .table-header h2 {
@@ -69,13 +70,15 @@
 .buy-sell-page .controls-row {
   display: grid;
   grid-template-columns: minmax(160px, 0.9fr) minmax(220px, 1.6fr) auto;
-  gap: 10px;
+  gap: 12px;
+  align-items: center;
 }
 
 .buy-sell-page .search-input,
 .buy-sell-page .select-input {
   width: 100%;
-  padding: 8px 10px;
+  min-height: 40px;
+  padding: 9px 12px;
   border: 1px solid var(--border-color);
   border-radius: var(--radius-sm);
   font-size: 12px;
@@ -85,7 +88,8 @@
 
 /* Refresh button uses the same compact control sizing, without introducing a new visual system. */
 .buy-sell-page .refresh-button {
-  padding: 8px 12px;
+  min-height: 40px;
+  padding: 9px 14px;
   border: 1px solid var(--border-color);
   border-radius: var(--radius-sm);
   font-size: 12px;
@@ -102,7 +106,9 @@
 
 /* Horizontal overflow remains available on smaller widths, matching the reference. */
 .buy-sell-page .table-wrapper {
-  overflow-x: auto;
+overflow-x: auto;
+border: 1px solid var(--border-subtle);
+border-radius: 12px;
 }
 
 /* Base table styling directly follows Transaction History conventions. */
@@ -113,7 +119,7 @@
 
 .buy-sell-page th,
 .buy-sell-page td {
-  padding: 9px 10px;
+  padding: 12px 12px;
   border-bottom: 1px solid #f0f2f5;
   text-align: left;
   vertical-align: middle;
@@ -133,7 +139,7 @@
 .buy-sell-page .stock-cell {
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 4px;
 }
 
 .buy-sell-page .stock-cell strong {
@@ -145,25 +151,17 @@
   color: var(--text-secondary);
 }
 
-.buy-sell-page .positive-text {
-  color: var(--positive-green);
-  font-weight: 600;
-}
-
-.buy-sell-page .negative-text {
-  color: var(--negative-red);
-  font-weight: 600;
-}
+/* positive-text / negative-text are defined globally in index.css */
 
 /* Buy and sell actions stay compact and product-like, not flashy. */
 .buy-sell-page .action-group {
   display: inline-flex;
-  gap: 6px;
+  gap: 8px;
 }
 
 .buy-sell-page .action-button {
   min-width: 54px;
-  padding: 6px 10px;
+  padding: 7px 12px;
   border-radius: var(--radius-sm);
   border: 1px solid var(--border-color);
   font-size: 11px;
@@ -205,7 +203,7 @@
   justify-content: space-between;
   align-items: center;
   gap: 12px;
-  padding-top: 2px;
+  padding-top: 4px;
 }
 
 .buy-sell-page .table-count,
@@ -258,8 +256,8 @@
     gap: 12px;
   }
 
-  .buy-sell-page .stocks-card {
-    padding: 12px;
+.buy-sell-page .stocks-card {
+    padding: 14px;
   }
 
   .buy-sell-page .controls-row {
@@ -290,4 +288,52 @@
     min-width: 48px;
     padding: 5px 8px;
   }
+}
+
+.buy-sell-page .status-stack {
+  display: grid;
+  gap: 8px;
+  padding-top: 2px;
+}
+
+.buy-sell-page .status-pill {
+  width: fit-content;
+  max-width: 100%;
+  padding: 8px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(124, 93, 214, 0.16);
+  background: rgba(245, 243, 255, 0.88);
+  color: var(--accent-purple-active);
+}
+
+.buy-sell-page .status-pill-warning {
+  border-color: rgba(217, 119, 6, 0.18);
+  background: rgba(255, 247, 237, 0.92);
+  color: #9a5a06;
+}
+
+.buy-sell-page .status-pill-error {
+  border-color: rgba(220, 38, 38, 0.18);
+  background: rgba(254, 242, 242, 0.96);
+  color: var(--negative-red);
+}
+
+.buy-sell-page .status-pill-success {
+  border-color: rgba(22, 163, 74, 0.18);
+  background: rgba(236, 253, 243, 0.96);
+  color: var(--positive-green);
+}
+
+.buy-sell-page .funds-line {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.buy-sell-page .refresh-button {
+  border-color: var(--accent-purple-border);
+  color: var(--accent-purple-active);
+}
+
+.buy-sell-page .refresh-button:hover {
+  background: var(--accent-purple-tint);
 }

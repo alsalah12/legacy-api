@@ -1,6 +1,7 @@
 /* Shared sidebar width token used by all authenticated pages. */
 :root {
   --shared-sidebar-width: 220px;
+  --shared-sidebar-collapsed-width: 82px;
 }
 
 /* Fixed enterprise sidebar — deep charcoal with purple active accent. */
@@ -10,32 +11,36 @@
   left: 0;
   width: var(--shared-sidebar-width);
   height: calc(100vh - var(--app-topbar-height));
-  padding: 20px;
+  padding: 14px 14px 18px;
   background: var(--sidebar-bg);
   border-right: 1px solid rgba(255, 255, 255, 0.06);
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  transition: width 0.2s ease, padding 0.2s ease, border-right-color 0.2s ease;
+  transition: width 0.22s ease, padding 0.22s ease, border-right-color 0.22s ease;
 }
 
 .app-sidebar.collapsed {
-  width: 0;
-  padding: 0;
-  border-right-color: transparent;
+  width: var(--shared-sidebar-collapsed-width);
+  padding-inline: 10px;
 }
 
 /* Vertical nav list with compact spacing. */
 .app-sidebar-nav {
   display: grid;
-  gap: 8px;
-  padding-top: 4px;
+  gap: 10px;
+  padding-top: 6px;
+}
+
+.app-sidebar-item-group {
+  display: grid;
+  gap: 6px;
 }
 
 /* Footer timestamp shown at the bottom center of sidebar. */
 .app-sidebar-updated {
   margin-top: auto;
-  padding-top: 12px;
+  padding-top: 14px;
   text-align: center;
   font-size: 10px;
   color: rgba(185, 190, 210, 0.5);
@@ -48,9 +53,11 @@
 
 /* Shared link styling for every page — light text on dark sidebar. */
 .app-sidebar-link {
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: 12px;
   border: 1px solid transparent;
-  border-radius: var(--radius-sm);
+  border-radius: 12px;
   padding: 10px 12px;
   font-size: 13px;
   font-weight: 500;
@@ -58,6 +65,30 @@
   background: transparent;
   text-decoration: none;
   transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.app-sidebar-link-icon {
+  width: 20px;
+  text-align: center;
+  font-size: 14px;
+  line-height: 1;
+  flex: 0 0 auto;
+}
+
+.app-sidebar-link-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.app-sidebar.collapsed .app-sidebar-link {
+  justify-content: center;
+  padding-inline: 10px;
+}
+
+.app-sidebar.collapsed .app-sidebar-link-label {
+  display: none;
 }
 
 .app-sidebar-link:hover {
@@ -75,17 +106,80 @@
   text-decoration: none;
 }
 
-/* Shared main content offset so pages sit beside the fixed sidebar. */
+/* Secondary holdings categories inherit the sidebar feel without adding a new nav system. */
+.app-sidebar-subnav {
+  margin-left: 10px;
+  padding-left: 10px;
+  border-left: 1px solid rgba(255, 255, 255, 0.08);
+  display: grid;
+  gap: 6px;
+}
+
+.app-sidebar-sublink {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  color: rgba(224, 227, 239, 0.78);
+  text-decoration: none;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.app-sidebar-sublink-dot {
+  font-size: 10px;
+  line-height: 1;
+  opacity: 0.8;
+}
+
+.app-sidebar-sublink-label {
+  min-width: 0;
+}
+
+.app-sidebar-sublink:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: #f2f3f8;
+  text-decoration: none;
+}
+
+.app-sidebar-sublink.active {
+  background: rgba(85, 72, 200, 0.16);
+  color: #ddd8ff;
+}
+
+.app-sidebar-subnav-collapsed {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  padding-top: 2px;
+}
+
+.app-sidebar-subnav-indicator {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.app-sidebar-subnav-indicator.active {
+  background: rgba(141, 128, 255, 0.92);
+}
+
+/* Shared main content offset so every page sits beside the fixed sidebar at a consistent position.
+   overflow-y: auto ensures all pages scroll the same way — individual pages can still lock their
+   own inner containers (e.g. dashboard uses overflow: hidden on .db-main). */
 .app-page-main {
   margin-left: var(--shared-sidebar-width);
   margin-top: var(--app-topbar-height);
   min-height: calc(100vh - var(--app-topbar-height));
-  transition: margin-left 0.2s ease;
+  overflow-y: auto;
+  transition: margin-left 0.22s ease;
 }
 
 /* When sidebar is collapsed, shift content to the smaller sidebar width. */
 body.sidebar-collapsed .app-page-main {
-  margin-left: 0;
+  margin-left: var(--shared-sidebar-collapsed-width);
 }
 
 /* Mobile layout stacks the sidebar above the page content. */
@@ -122,6 +216,7 @@ body.sidebar-collapsed .app-page-main {
     margin-left: 0;
     margin-top: var(--app-topbar-height);
     min-height: calc(100vh - var(--app-topbar-height));
+    overflow-y: auto;
   }
 
   body.sidebar-collapsed .app-page-main {

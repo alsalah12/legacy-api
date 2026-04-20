@@ -2,17 +2,28 @@
 import React from "react";
 // Shared styles for the sticky top bar.
 import "./AppTopBar.css";
+import { formatCurrency, usePortfolioData } from "../services/holdingsData";
+// LEGACY horizontal brand logo — replaces the old "Portfolio Manager" text.
+import legacyLogo from "../assets/legacy-logo.svg";
 
 // AppTopBar renders a compact sticky header used across app pages.
 export default function AppTopBar() {
+  const {
+    totals,
+    addFunds,
+    actionMessage,
+    actionError,
+  } = usePortfolioData();
+
   // Toggle sidebar visibility (for fully hidden mode).
   const handleToggleSidebar = () => {
     window.dispatchEvent(new CustomEvent("app-toggle-sidebar"));
   };
 
-  // Basic placeholder action for adding funds.
-  const handleAddFunds = () => {
-    window.alert("Add Funds action coming soon.");
+  const handleAddFunds = async () => {
+    const raw = window.prompt("Enter amount to add:");
+    if (raw === null) return;
+    await addFunds(raw);
   };
 
   return (
@@ -28,19 +39,25 @@ export default function AppTopBar() {
           ☰
         </button>
 
-        <span className="app-topbar-title">Legacy Portfolio Manager</span>
+      {/* LEGACY horizontal logo — replaces old "Portfolio Manager" text.
+           Sits left-aligned, vertically centred, scales with aspect-ratio preserved. */}
+        <img
+          src={legacyLogo}
+          alt="LEGACY"
+          className="app-topbar-logo"
+        />
       </div>
 
       {/* Right side key financial metrics (kept clean without profile picture). */}
       <div className="app-topbar-right">
         <div className="app-topbar-metric">
           <span className="app-topbar-label">Total Portfolio Worth</span>
-          <strong className="app-topbar-value">$152,430.25</strong>
+          <strong className="app-topbar-value">{formatCurrency(totals.totalPortfolioWorth)}</strong>
         </div>
 
         <div className="app-topbar-metric">
           <span className="app-topbar-label">Available Funds</span>
-          <strong className="app-topbar-value">$12,450.00</strong>
+          <strong className="app-topbar-value">{formatCurrency(totals.availableFunds)}</strong>
         </div>
 
         <button
@@ -50,7 +67,11 @@ export default function AppTopBar() {
         >
           + Add Funds
         </button>
+
       </div>
+
+      {actionError && <div className="app-topbar-message app-topbar-message-error">{actionError}</div>}
+      {!actionError && actionMessage && <div className="app-topbar-message">{actionMessage}</div>}
     </header>
   );
 }

@@ -1,210 +1,58 @@
-// React keeps derived values predictable and easy to replace with API data later.
 import React, { useEffect, useMemo, useState } from "react";
-// Page styles mirror Transaction History spacing and card language.
+import { useSearchParams } from "react-router-dom";
 import "./Holdings.css";
 import AppSidebar from "./components/AppSidebar";
 import AppTopBar from "./components/AppTopBar";
-
-// Placeholder holdings rows (backend-ready structure).
-const mockHoldings = [
-  { id: 1, ticker: "AAPL", company: "Apple Inc.", shares: 120, averagePrice: 160.2, currentPrice: 189.35, assetClass: "Stocks" },
-  { id: 2, ticker: "MSFT", company: "Microsoft Corp.", shares: 80, averagePrice: 355.5, currentPrice: 421.9, assetClass: "Stocks" },
-  { id: 3, ticker: "BND", company: "Vanguard Total Bond ETF", shares: 140, averagePrice: 72.8, currentPrice: 74.15, assetClass: "Bonds" },
-  { id: 4, ticker: "BTC", company: "Bitcoin", shares: 0.18, averagePrice: 61250, currentPrice: 68410, assetClass: "Crypto" },
-  { id: 5, ticker: "VTI", company: "Vanguard Total Stock ETF", shares: 95, averagePrice: 248.8, currentPrice: 273.1, assetClass: "Stocks" },
-];
-
-// Allocation groups for donut + legend.
-const allocationData = [
-  { label: "Stocks", percentage: 63, colorClass: "allocation-stocks", stroke: "#cfdffc" },
-  { label: "Bonds", percentage: 19, colorClass: "allocation-bonds", stroke: "#e4d3fb" },
-  { label: "Crypto", percentage: 10, colorClass: "allocation-crypto", stroke: "#ccf3de" },
-  { label: "Cash", percentage: 8, colorClass: "allocation-cash", stroke: "#dfe3ea" },
-];
-
-function formatCurrency(value) {
-  return new Intl.NumberFormat("en-GB", {
-    style: "currency",
-    currency: "USD",
-    minimumFractionDigits: value >= 1000 ? 0 : 2,
-    maximumFractionDigits: value >= 1000 ? 0 : 2,
-  }).format(value);
-}
-
-function formatShares(value) {
-  return Number.isInteger(value) ? value.toString() : value.toFixed(2);
-}
+import PortfolioAllocationChart from "./components/PortfolioAllocationChart";
+import { formatCurrency, formatPercent, usePortfolioData } from "./services/holdingsData";
 
 export default function Holdings() {
-  const COMPACT_PAGE_SIZE = 5;
-  const FULL_PAGE_SIZE = 10;
+  const PAGE_SIZE = 10;
+  const [searchParams, setSearchParams] = useSearchParams();
 
-  // Stateful holdings list so users can add and remove rows.
-  const [holdingsRows, setHoldingsRows] = useState(mockHoldings);
+  const {
+    holdings,
+    loading,
+    fallbackMessage,
+    livePriceWarning,
+    totals,
+    ensureLivePrices,
+    portfolioSummary,
+    allocationBreakdown,
+  } = usePortfolioData();
   const [currentPage, setCurrentPage] = useState(1);
-  const [isFullTableView, setIsFullTableView] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const selectedCategory = (searchParams.get("category") || "stocks").toLowerCase();
 
-  // Simple controlled form for creating a new holding row.
-  const [newHolding, setNewHolding] = useState({
-    ticker: "",
-    company: "",
-    shares: "",
-    averagePrice: "",
-    currentPrice: "",
-    assetClass: "Stocks",
-  });
+  useEffect(() => {
+    ensureLivePrices(undefined, { includeBackendFallback: true });
+  }, [ensureLivePrices]);
 
-  const handleFieldChange = (field, value) => {
-    setNewHolding((previous) => ({ ...previous, [field]: value }));
-  };
-
-  const handleAddStock = () => {
-    const ticker = newHolding.ticker.trim().toUpperCase();
-    const company = newHolding.company.trim();
-    const shares = Number(newHolding.shares);
-    const averagePrice = Number(newHolding.averagePrice);
-    const currentPrice = Number(newHolding.currentPrice);
-
-    if (!ticker || !company || shares <= 0 || averagePrice <= 0 || currentPrice <= 0) {
-      window.alert("Please enter valid values for all stock fields.");
-      return;
-    }
-
-    const newRow = {
-      id: Date.now(),
-      ticker,
-      company,
-      shares,
-      averagePrice,
-      currentPrice,
-      assetClass: newHolding.assetClass,
-    };
-
-    setHoldingsRows((previous) => [newRow, ...previous]);
-    setCurrentPage(1);
-
-    setNewHolding({
-      ticker: "",
-      company: "",
-      shares: "",
-      averagePrice: "",
-      currentPrice: "",
-      assetClass: "Stocks",
-    });
-  };
-
-  const handleDeleteStock = (id) => {
-    const confirmed = window.confirm("Are you sure you want to delete this stock?");
-    if (!confirmed) {
-      return;
-    }
-
-    setHoldingsRows((previous) => previous.filter((row) => row.id !== id));
-  };
-
-  const handleToggleFullTableView = () => {
-    setIsFullTableView((previous) => !previous);
-    setCurrentPage(1);
-  };
-
-  // Build display rows and summary values from raw rows.
-  const summary = useMemo(() => {
-    const rows = holdingsRows.map((holding) => {
-      const marketValue = holding.shares * holding.currentPrice;
-      const costValue = holding.shares * holding.averagePrice;
-      const gainLoss = marketValue - costValue;
-
-      return { ...holding, marketValue, gainLoss };
-    });
-
-    const portfolioValue = rows.reduce((sum, row) => sum + row.marketValue, 0);
-    const totalGain = rows.reduce((sum, row) => sum + row.gainLoss, 0);
-
-    return {
-      rows,
-      portfolioValue,
-      todaysGain: portfolioValue * 0.0064,
-      totalGain,
-      cashBalance: 12450,
-      totalValue: portfolioValue,
-    };
-  }, [holdingsRows]);
-
-  // Convert allocation percentages into SVG dash offsets for a clean non-gradient donut.
-  const allocationSegments = useMemo(() => {
-    const totalsByClass = summary.rows.reduce(
-      (accumulator, row) => {
-        const value = row.marketValue;
-
-        if (row.assetClass === "Bonds") {
-          accumulator.Bonds += value;
-        } else if (row.assetClass === "Crypto") {
-          accumulator.Crypto += value;
-        } else {
-          accumulator.Stocks += value;
-        }
-
-        return accumulator;
-      },
-      { Stocks: 0, Bonds: 0, Crypto: 0 }
+  const filteredHoldings = useMemo(() => {
+    if (!searchTerm.trim()) return holdings;
+    const query = searchTerm.toLowerCase();
+    return holdings.filter(
+      (holding) =>
+        holding.name.toLowerCase().includes(query) ||
+        holding.symbol.toLowerCase().includes(query) ||
+        holding.sector.toLowerCase().includes(query)
     );
+  }, [holdings, searchTerm]);
 
-    const cashValue = summary.cashBalance;
-    const grandTotal = totalsByClass.Stocks + totalsByClass.Bonds + totalsByClass.Crypto + cashValue;
-
-    const dynamicAllocation = allocationData.map((item) => {
-      const rawValue = item.label === "Cash" ? cashValue : totalsByClass[item.label] || 0;
-      return {
-        ...item,
-        percentage: grandTotal > 0 ? Math.max(1, Math.round((rawValue / grandTotal) * 100)) : item.percentage,
-      };
-    });
-
-    const adjustedTotal = dynamicAllocation.reduce((sum, item) => sum + item.percentage, 0);
-    if (adjustedTotal !== 100) {
-      dynamicAllocation[0].percentage += 100 - adjustedTotal;
-    }
-
-    let offset = 0;
-
-    return dynamicAllocation.map((item) => {
-      const segment = {
-        ...item,
-        dashArray: `${item.percentage} ${100 - item.percentage}`,
-        dashOffset: `${-offset}`,
-      };
-
-      offset += item.percentage;
-      return segment;
-    });
-  }, [summary.rows, summary.cashBalance]);
-
-  const metrics = [
-    { label: "Portfolio Value", value: formatCurrency(summary.portfolioValue), tone: "default" },
-    { label: "Today’s Gain", value: `+${formatCurrency(summary.todaysGain)}`, tone: "positive" },
-    {
-      label: "Total Gain",
-      value: `${summary.totalGain >= 0 ? "+" : ""}${formatCurrency(summary.totalGain)}`,
-      tone: summary.totalGain >= 0 ? "positive" : "negative",
-    },
-    { label: "Cash Balance", value: formatCurrency(summary.cashBalance), tone: "default" },
-  ];
-
-  // Pagination keeps the compact screen clean when row count grows.
-  const pageSize = isFullTableView ? FULL_PAGE_SIZE : COMPACT_PAGE_SIZE;
-  const totalPages = Math.max(1, Math.ceil(summary.rows.length / pageSize));
+  const totalPages = Math.max(1, Math.ceil(filteredHoldings.length / PAGE_SIZE));
 
   useEffect(() => {
     setCurrentPage((previous) => Math.min(previous, totalPages));
   }, [totalPages]);
 
   const paginatedRows = useMemo(() => {
-    const startIndex = (currentPage - 1) * pageSize;
-    return summary.rows.slice(startIndex, startIndex + pageSize);
-  }, [summary.rows, currentPage, pageSize]);
+    const startIndex = (currentPage - 1) * PAGE_SIZE;
+    return filteredHoldings.slice(startIndex, startIndex + PAGE_SIZE);
+  }, [filteredHoldings, currentPage]);
 
-  const rangeStart = summary.rows.length === 0 ? 0 : (currentPage - 1) * pageSize + 1;
-  const rangeEnd = Math.min(currentPage * pageSize, summary.rows.length);
+  const rangeStart = filteredHoldings.length === 0 ? 0 : (currentPage - 1) * PAGE_SIZE + 1;
+  const rangeEnd = Math.min(currentPage * PAGE_SIZE, filteredHoldings.length);
+  const showingPlaceholder = selectedCategory !== "stocks";
 
   return (
     <div className="holdings-page">
@@ -212,229 +60,194 @@ export default function Holdings() {
       <AppSidebar />
 
       <main className="main-content app-page-main">
-        <div className={`holdings-shell ${isFullTableView ? "full-table-mode" : ""}`}>
+        <div className="holdings-shell">
           <header className="topbar">
             <h1>Holdings</h1>
+
+            {/* Premium feature-action button requested for optimisation workflow entry point. */}
+            <button type="button" className="holdings-quantum-btn">
+              Quantum Portfolio Optimisation
+            </button>
           </header>
 
-          {!isFullTableView && (
+          {/* This mirrors the sidebar category list inside the page content for clearer handoff on smaller screens. */}
+          <div className="holdings-subnav" aria-label="Holdings categories">
+            {[
+              { label: "Stocks", value: "stocks" },
+              { label: "Bonds", value: "bonds" },
+              { label: "Crypto", value: "crypto" },
+            ].map((category) => (
+              <button
+                key={category.value}
+                type="button"
+                className={`holdings-subnav-btn ${selectedCategory === category.value ? "active" : ""}`}
+                onClick={() => setSearchParams({ category: category.value })}
+              >
+                {category.label}
+              </button>
+            ))}
+          </div>
+
+          {(loading || fallbackMessage || livePriceWarning) && (
+            <div className="status-stack" aria-live="polite">
+              {loading && <p className="subtitle status-pill">Loading holdings...</p>}
+              {fallbackMessage && <p className="subtitle status-pill">{fallbackMessage}</p>}
+              {livePriceWarning && <p className="subtitle status-pill status-pill-warning">{livePriceWarning}</p>}
+            </div>
+          )}
+
+          {!showingPlaceholder && (
+            <div className="table-actions" aria-label="Holdings search controls">
+              <input
+                type="text"
+                className="action-input"
+                placeholder="Search by name, symbol, or sector"
+                value={searchTerm}
+                onChange={(event) => setSearchTerm(event.target.value)}
+              />
+            </div>
+          )}
+
+          {!showingPlaceholder && (
             <section className="summary-grid">
-              {metrics.map((item) => (
-                <article className="metric-card" key={item.label}>
-                  <span className="metric-label">{item.label}</span>
-                  <strong className={`metric-value ${item.tone !== "default" ? `${item.tone}-text` : ""}`}>
-                    {item.value}
-                  </strong>
-                </article>
-              ))}
+              <article className="metric-card">
+                <span className="metric-label">Total Value</span>
+                <strong className="metric-value">{formatCurrency(portfolioSummary.totalValue)}</strong>
+                <span className="metric-sub">Holdings + available cash</span>
+              </article>
+              <article className="metric-card">
+                <span className="metric-label">Today’s Gain</span>
+                <strong className={`metric-value ${portfolioSummary.todayGainValue > 0 ? "positive-text" : portfolioSummary.todayGainValue < 0 ? "negative-text" : ""}`}>
+                  {formatCurrency(portfolioSummary.todayGainValue)}
+                </strong>
+                <span className="metric-sub">
+                  {portfolioSummary.todayGainAvailable ? formatPercent(portfolioSummary.todayGainPercent) : "Awaiting market history"}
+                </span>
+              </article>
+              <article className="metric-card">
+                <span className="metric-label">Total Gain</span>
+                <strong className={`metric-value ${portfolioSummary.totalGainValue > 0 ? "positive-text" : portfolioSummary.totalGainValue < 0 ? "negative-text" : ""}`}>
+                  {formatCurrency(portfolioSummary.totalGainValue)}
+                </strong>
+                <span className="metric-sub">{formatPercent(portfolioSummary.totalGainPercent)}</span>
+              </article>
             </section>
           )}
 
-          <section className={`content-grid ${isFullTableView ? "single-column" : ""}`}>
-            <article className="table-card">
-              <div className="table-header">
-                <h2>Your Holdings</h2>
-                <div className="table-header-actions">
-                  <span>{summary.rows.length} positions</span>
-                  <button type="button" className="view-mode-btn" onClick={handleToggleFullTableView}>
-                    {isFullTableView ? "Exit Full Page" : "View Full Page"}
-                  </button>
+          <section className={`content-grid ${showingPlaceholder ? "single-column" : "two-column"}`}>
+            {showingPlaceholder ? (
+              <article className="table-card holdings-placeholder-card">
+                {/* Bonds and crypto are intentionally stubbed until backend-backed data exists. */}
+                <div className="holdings-placeholder">
+                  <span className="holdings-placeholder-eyebrow">{selectedCategory}</span>
+                  <h2>Feature coming soon</h2>
+                  <p>
+                    {selectedCategory === "bonds"
+                      ? "Bond holdings are not wired into the backend yet."
+                      : "Crypto holdings are not wired into the backend yet."}
+                  </p>
                 </div>
-              </div>
-
-              {/* Working controls for adding new stocks to the holdings table. */}
-              <div className="table-actions" aria-label="Add stock controls">
-                <input
-                  type="text"
-                  placeholder="Ticker"
-                  value={newHolding.ticker}
-                  onChange={(event) => handleFieldChange("ticker", event.target.value)}
-                  className="action-input"
-                />
-                <input
-                  type="text"
-                  placeholder="Company"
-                  value={newHolding.company}
-                  onChange={(event) => handleFieldChange("company", event.target.value)}
-                  className="action-input"
-                />
-                <input
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  placeholder="Shares"
-                  value={newHolding.shares}
-                  onChange={(event) => handleFieldChange("shares", event.target.value)}
-                  className="action-input"
-                />
-                <input
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  placeholder="Avg"
-                  value={newHolding.averagePrice}
-                  onChange={(event) => handleFieldChange("averagePrice", event.target.value)}
-                  className="action-input"
-                />
-                <input
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  placeholder="Current"
-                  value={newHolding.currentPrice}
-                  onChange={(event) => handleFieldChange("currentPrice", event.target.value)}
-                  className="action-input"
-                />
-                <select
-                  value={newHolding.assetClass}
-                  onChange={(event) => handleFieldChange("assetClass", event.target.value)}
-                  className="action-select"
-                >
-                  <option value="Stocks">Stocks</option>
-                  <option value="Bonds">Bonds</option>
-                  <option value="Crypto">Crypto</option>
-                </select>
-                <button type="button" className="add-stock-btn" onClick={handleAddStock}>
-                  Add Stock
-                </button>
-              </div>
-
-              <div className="table-wrapper">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>Stock</th>
-                      <th>Shares</th>
-                      <th>Avg Price</th>
-                      <th>Current Price</th>
-                      <th>Gain / Loss</th>
-                      <th>Value</th>
-                      <th>Action</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {paginatedRows.map((holding) => (
-                      <tr key={holding.id}>
-                        <td>
-                          <div className="stock-cell">
-                            <strong>{holding.ticker}</strong>
-                            <span>{holding.company}</span>
-                          </div>
-                        </td>
-                        <td className="number-cell">{formatShares(holding.shares)}</td>
-                        <td className="number-cell">{formatCurrency(holding.averagePrice)}</td>
-                        <td className="value-cell">{formatCurrency(holding.currentPrice)}</td>
-                        <td className={`number-cell ${holding.gainLoss >= 0 ? "positive-text" : "negative-text"}`}>
-                          {holding.gainLoss >= 0 ? "+" : ""}
-                          {formatCurrency(holding.gainLoss)}
-                        </td>
-                        <td className="value-cell">{formatCurrency(holding.marketValue)}</td>
-                        <td>
-                          <button
-                            type="button"
-                            className="delete-stock-btn"
-                            onClick={() => handleDeleteStock(holding.id)}
-                          >
-                            Delete
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-
-                    <tr className="total-row">
-                      <td colSpan="5">Total</td>
-                      <td className="value-cell">{formatCurrency(summary.totalValue)}</td>
-                      <td />
-                    </tr>
-
-                    {paginatedRows.length === 0 && (
-                      <tr>
-                        <td colSpan="7" className="empty-state">
-                          No holdings available.
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
-
-              <div className="table-footer">
-                <span className="table-range">
-                  {rangeStart}–{rangeEnd} of {summary.rows.length}
-                </span>
-
-                <div className="pagination-controls">
-                  <button
-                    type="button"
-                    className="pagination-btn"
-                    onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
-                    disabled={currentPage === 1}
-                  >
-                    Previous
-                  </button>
-
-                  <span className="pagination-page">Page {currentPage} of {totalPages}</span>
-
-                  <button
-                    type="button"
-                    className="pagination-btn"
-                    onClick={() => setCurrentPage((page) => Math.min(totalPages, page + 1))}
-                    disabled={currentPage === totalPages}
-                  >
-                    Next
-                  </button>
-                </div>
-              </div>
-            </article>
-
-            {!isFullTableView && (
-              <aside className="allocation-card">
-                <div className="allocation-header">
-                  <h2>Allocation</h2>
-                </div>
-
-                <div className="allocation-body">
-                  <div className="allocation-visual">
-                    <div className="allocation-donut" aria-label="Portfolio allocation donut chart">
-                      <svg viewBox="0 0 42 42" className="allocation-donut-svg" role="img">
-                        <circle className="allocation-donut-track" cx="21" cy="21" r="15.9155" pathLength="100" />
-                        <g transform="rotate(-90 21 21)">
-                          {allocationSegments.map((segment) => (
-                            <circle
-                              key={segment.label}
-                              className="allocation-donut-segment"
-                              cx="21"
-                              cy="21"
-                              r="15.9155"
-                              pathLength="100"
-                              stroke={segment.stroke}
-                              strokeDasharray={segment.dashArray}
-                              strokeDashoffset={segment.dashOffset}
-                            />
-                          ))}
-                        </g>
-                      </svg>
-
-                      <div className="allocation-hole">
-                        <span className="allocation-center-label">Total</span>
-                        <strong className="allocation-center-value">100%</strong>
-                      </div>
+              </article>
+            ) : (
+              <>
+                {/* Left column (≈68%): primary holdings table container. */}
+                <article className="table-card">
+                  <div className="table-header">
+                    <h2>Your Holdings</h2>
+                    <div className="table-header-actions">
+                      <span>{filteredHoldings.length} positions</span>
                     </div>
                   </div>
 
-                  <div className="allocation-legend">
-                    {allocationSegments.map((item) => (
-                      <div className="legend-row" key={item.label}>
-                        <div className="legend-left">
-                          <span className={`legend-dot ${item.colorClass}`} />
-                          <span className="legend-label">{item.label}</span>
-                        </div>
-                        <strong className="legend-value">{item.percentage}%</strong>
-                      </div>
-                    ))}
+                  <div className="table-wrapper">
+                    <table>
+                      <thead>
+                        <tr>
+                          <th>Name</th>
+                          <th>Symbol</th>
+                          <th>Quantity Owned</th>
+                          <th>Current Live Bid Price</th>
+                          <th>Total Value</th>
+                          <th>Total Invested</th>
+                          <th>Profit / Loss</th>
+                          <th>Profit / Loss %</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {paginatedRows.map((holding) => {
+                          const isPositive = holding.profitLossValue > 0;
+                          const isNegative = holding.profitLossValue < 0;
+
+                          return (
+                            <tr key={holding.id}>
+                              <td>{holding.name}</td>
+                              <td><strong>{holding.symbol}</strong></td>
+                              <td className="number-cell">{holding.quantityOwned}</td>
+                              <td>{formatCurrency(holding.currentBidPrice)}</td>
+                              <td className="value-cell">{formatCurrency(holding.totalValue)}</td>
+                              <td className="value-cell">{formatCurrency(holding.totalInvested)}</td>
+                              <td className={`number-cell ${isPositive ? "positive-text" : isNegative ? "negative-text" : ""}`}>
+                                {formatCurrency(holding.profitLossValue)}
+                              </td>
+                              <td className={`number-cell ${isPositive ? "positive-text" : isNegative ? "negative-text" : ""}`}>
+                                {formatPercent(holding.profitLossPercent)}
+                              </td>
+                            </tr>
+                          );
+                        })}
+
+                        {paginatedRows.length === 0 && (
+                          <tr>
+                            <td colSpan="8" className="empty-state">
+                              No holdings data available.
+                            </td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
                   </div>
-                </div>
-              </aside>
+
+                  <div className="table-footer">
+                    <span className="table-range">
+                      {rangeStart}–{rangeEnd} of {filteredHoldings.length}
+                    </span>
+
+                    <div className="pagination-controls">
+                      <button
+                        type="button"
+                        className="pagination-btn"
+                        onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
+                        disabled={currentPage === 1}
+                      >
+                        Previous
+                      </button>
+
+                      <span className="pagination-page">Page {currentPage} of {totalPages}</span>
+
+                      <button
+                        type="button"
+                        className="pagination-btn"
+                        onClick={() => setCurrentPage((page) => Math.min(totalPages, page + 1))}
+                        disabled={currentPage === totalPages}
+                      >
+                        Next
+                      </button>
+                    </div>
+                  </div>
+                </article>
+
+                {/* Right column (≈32%): allocation chart remains on Holdings page only. */}
+                <aside className="holdings-allocation-section">
+                  <PortfolioAllocationChart
+                    title="Portfolio Allocation"
+                    subtitle="Live allocation by holding value"
+                    allocations={allocationBreakdown}
+                    totalValue={totals.holdingsMarketValue}
+                    centerLabel="Holdings Value"
+                    emptyMessage="No holdings available for allocation yet."
+                  />
+                </aside>
+              </>
             )}
           </section>
         </div>
