@@ -6,14 +6,16 @@ public class SellRequest {
     private String symbol;
     private Integer quantity;
     private BigDecimal price;
+    private Long portfolioId;
 
     // Constructors, getters, setters
     public SellRequest() {}
 
-    public SellRequest(String symbol, Integer quantity, BigDecimal price) {
+    public SellRequest(String symbol, Integer quantity, BigDecimal price, Long portfolioId) {
         this.symbol = symbol;
         this.quantity = quantity;
         this.price = price;
+        this.portfolioId = portfolioId;
     }
 
     public String getSymbol() { return symbol; }
@@ -24,4 +26,7 @@ public class SellRequest {
 
     public BigDecimal getPrice() { return price; }
     public void setPrice(BigDecimal price) { this.price = price; }
+
+    public Long getPortfolioId() { return portfolioId; }
+    public void setPortfolioId(Long portfolioId) { this.portfolioId = portfolioId; }
 }

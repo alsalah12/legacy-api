@@ -1,29 +1,39 @@
-// React is needed because this component returns JSX.
 import React from "react";
-// Shared styles for the sticky top bar.
 import "./AppTopBar.css";
 import { formatCurrency, usePortfolioData } from "../services/holdingsData";
-// LEGACY horizontal brand logo — replaces the old "Portfolio Manager" text.
-import legacyLogo from "../assets/legacy-logo.svg";
-
-// AppTopBar renders a compact sticky header used across app pages.
+import legacyLogo from "../assets/legacy-logo.png";
 export default function AppTopBar() {
   const {
     totals,
     addFunds,
     actionMessage,
+    actionError,
     portfoliosForActiveUser,
     activePortfolioId,
     setActivePortfolioId,
   } = usePortfolioData();
   const [switcherOpen, setSwitcherOpen] = React.useState(false);
+  const [isAddFundsOpen, setIsAddFundsOpen] = React.useState(false);
+  const [fundAmount, setFundAmount] = React.useState("1000");
+  const [isSubmittingFunds, setIsSubmittingFunds] = React.useState(false);
   const switcherRef = React.useRef(null);
+  const addFundsInputRef = React.useRef(null);
 
   const getPortfolioLabel = React.useCallback((portfolioItem, index) => {
     const name = String(portfolioItem?.name || "").trim();
     if (name) return name;
-    const identifier = portfolioItem?.id ?? index + 1;
-    return `Portfolio ${identifier}`;
+
+    const rawId = String(portfolioItem?.id ?? "").trim().toLowerCase();
+    if (!rawId || rawId === "local-portfolio") {
+      return `Portfolio ${index + 1}`;
+    }
+
+    const numericId = Number(rawId);
+    if (Number.isFinite(numericId) && numericId > 0) {
+      return `Portfolio ${numericId}`;
+    }
+
+    return `Portfolio ${index + 1}`;
   }, []);
 
   const activePortfolioLabel = React.useMemo(() => {
@@ -48,6 +58,7 @@ export default function AppTopBar() {
     const handleEscape = (event) => {
       if (event.key === "Escape") {
         setSwitcherOpen(false);
+        setIsAddFundsOpen(false);
       }
     };
 
@@ -60,15 +71,43 @@ export default function AppTopBar() {
     };
   }, []);
 
+  React.useEffect(() => {
+    if (!isAddFundsOpen) return;
+
+    const timer = window.setTimeout(() => {
+      addFundsInputRef.current?.focus();
+      addFundsInputRef.current?.select();
+    }, 0);
+
+    return () => window.clearTimeout(timer);
+  }, [isAddFundsOpen]);
+
   // Toggle sidebar visibility (for fully hidden mode).
   const handleToggleSidebar = () => {
     window.dispatchEvent(new CustomEvent("app-toggle-sidebar"));
   };
 
-  const handleAddFunds = async () => {
-    const raw = window.prompt("Enter amount to add:");
-    if (raw === null) return;
-    await addFunds(raw);
+  const openAddFundsModal = () => {
+    setFundAmount("1000");
+    setIsAddFundsOpen(true);
+  };
+
+  const closeAddFundsModal = () => {
+    if (isSubmittingFunds) return;
+    setIsAddFundsOpen(false);
+  };
+
+  const handleAddFundsSubmit = async (event) => {
+    event.preventDefault();
+    const normalizedAmount = String(fundAmount).trim().replace(/[$,\s]/g, "");
+
+    setIsSubmittingFunds(true);
+    const result = await addFunds(normalizedAmount);
+    setIsSubmittingFunds(false);
+
+    if (result?.ok) {
+      setIsAddFundsOpen(false);
+    }
   };
 
   const handleCreatePortfolio = () => {
@@ -83,7 +122,6 @@ export default function AppTopBar() {
 
   return (
     <header className="app-topbar">
-      {/* Left side product title. */}
       <div className="app-topbar-left">
         <button
           type="button"
@@ -94,16 +132,9 @@ export default function AppTopBar() {
           ☰
         </button>
 
-      {/* LEGACY horizontal logo — replaces old "Portfolio Manager" text.
-           Sits left-aligned, vertically centred, scales with aspect-ratio preserved. */}
-        <img
-          src={legacyLogo}
-          alt="LEGACY"
-          className="app-topbar-logo"
-        />
+        <img src={legacyLogo} alt="LEGACY" className="app-topbar-logo" />
       </div>
 
-      {/* Right side key financial metrics (kept clean without profile picture). */}
       <div className="app-topbar-right">
         <div className="app-topbar-portfolio-switcher" ref={switcherRef}>
           <button
@@ -168,13 +199,61 @@ export default function AppTopBar() {
         <button
           type="button"
           className="app-topbar-add-funds-btn"
-          onClick={handleAddFunds}
+          onClick={openAddFundsModal}
         >
           + Add Funds
         </button>
 
       </div>
-      {actionMessage && <div className="app-topbar-message">{actionMessage}</div>}
+      {isAddFundsOpen ? (
+        <div className="app-topbar-modal-backdrop" onClick={closeAddFundsModal}>
+          <div
+            className="app-topbar-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="add-funds-title"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="app-topbar-modal-header">
+              <div>
+                <h2 id="add-funds-title">Add Funds</h2>
+                <p>Increase available cash for the active portfolio.</p>
+              </div>
+              <button type="button" className="app-topbar-modal-close" onClick={closeAddFundsModal} aria-label="Close add funds dialog">
+                ×
+              </button>
+            </div>
+
+            <form className="app-topbar-modal-form" onSubmit={handleAddFundsSubmit}>
+              <label className="app-topbar-modal-field">
+                <span>Amount</span>
+                <input
+                  ref={addFundsInputRef}
+                  type="text"
+                  inputMode="decimal"
+                  value={fundAmount}
+                  onChange={(event) => setFundAmount(event.target.value)}
+                  placeholder="1000"
+                  disabled={isSubmittingFunds}
+                />
+              </label>
+
+              {actionError ? <div className="app-topbar-modal-error">{actionError}</div> : null}
+
+              <div className="app-topbar-modal-actions">
+                <button type="button" className="app-topbar-modal-secondary" onClick={closeAddFundsModal} disabled={isSubmittingFunds}>
+                  Cancel
+                </button>
+                <button type="submit" className="app-topbar-modal-primary" disabled={isSubmittingFunds}>
+                  {isSubmittingFunds ? "Adding..." : "Add Funds"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      ) : null}
+      {actionMessage ? <div className="app-topbar-message">{actionMessage}</div> : null}
+      {actionError ? <div className="app-topbar-message app-topbar-message-error">{actionError}</div> : null}
     </header>
   );
 }

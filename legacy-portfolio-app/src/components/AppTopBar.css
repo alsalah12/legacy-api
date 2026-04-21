@@ -59,8 +59,8 @@
    object-fit: contain guards against any accidental stretching.
    ─────────────────────────────────────────────────────────────────────────── */
 .app-topbar-logo {
-  /* Height is intentionally set below the navbar height to give it breathing room */
-  height: 30px;
+  /* Height increased to 36px for better visibility and professional appearance */
+  height: 36px;
   width: auto;
   object-fit: contain;
   display: block;
@@ -251,12 +251,152 @@
   border: 1px solid #bbf7d0;
   border-radius: var(--radius-sm);
   padding: 4px 8px;
+  z-index: 1301;
+  max-width: min(80vw, 520px);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .app-topbar-message-error {
   color: var(--negative-red);
   background: #fef2f2;
   border-color: #fecaca;
+}
+
+.app-topbar-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1400;
+  background: rgba(18, 10, 34, 0.46);
+  display: grid;
+  place-items: center;
+  padding: 20px;
+}
+
+.app-topbar-modal {
+  width: min(100%, 420px);
+  background: #ffffff;
+  border: 1px solid #e2d9f3;
+  border-radius: 18px;
+  box-shadow: 0 24px 56px rgba(24, 15, 45, 0.28);
+  overflow: hidden;
+}
+
+.app-topbar-modal-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 20px 12px;
+}
+
+.app-topbar-modal-header h2 {
+  margin: 0;
+  font-size: 18px;
+  color: #2d1b53;
+}
+
+.app-topbar-modal-header p {
+  margin: 6px 0 0;
+  font-size: 13px;
+  color: #71658a;
+}
+
+.app-topbar-modal-close {
+  border: none;
+  background: transparent;
+  color: #7d70a0;
+  font-size: 24px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.app-topbar-modal-form {
+  display: grid;
+  gap: 14px;
+  padding: 0 20px 20px;
+}
+
+.app-topbar-modal-field {
+  display: grid;
+  gap: 8px;
+}
+
+.app-topbar-modal-field span {
+  font-size: 12px;
+  font-weight: 600;
+  color: #4b1d8f;
+}
+
+.app-topbar-modal-field input {
+  width: 100%;
+  height: 42px;
+  border: 1px solid #d9ceee;
+  border-radius: 12px;
+  padding: 0 14px;
+  font-size: 15px;
+  color: #2e2e45;
+  background: #fcfbff;
+}
+
+.app-topbar-modal-field input:focus {
+  outline: none;
+  border-color: #6f2dbd;
+  box-shadow: 0 0 0 3px rgba(111, 45, 189, 0.15);
+}
+
+.app-topbar-modal-error {
+  border: 1px solid #fecaca;
+  background: #fef2f2;
+  color: #b91c1c;
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 12px;
+}
+
+.app-topbar-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.app-topbar-modal-secondary,
+.app-topbar-modal-primary {
+  height: 38px;
+  border-radius: 10px;
+  padding: 0 14px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.app-topbar-modal-secondary {
+  border: 1px solid #ddd2f0;
+  background: #ffffff;
+  color: #5c4c80;
+}
+
+.app-topbar-modal-primary {
+  border: 1px solid #6f2dbd;
+  background: #6f2dbd;
+  color: #ffffff;
+}
+
+.app-topbar-modal-primary:hover {
+  background: #4b1d8f;
+  border-color: #4b1d8f;
+}
+
+.app-topbar-modal-secondary:hover {
+  background: #f8f3ff;
+  border-color: #cdb8eb;
+}
+
+.app-topbar-modal-primary:disabled,
+.app-topbar-modal-secondary:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
 }
 
 @media (max-width: 760px) {

@@ -6,6 +6,7 @@ import legacy.firstmodel.dto.HoldingsResponse;
 import legacy.firstmodel.dto.SellRequest;
 import legacy.firstmodel.exception.InsufficientFundsException;
 import legacy.firstmodel.exception.InvalidTransactionException;
+import legacy.firstmodel.exception.StockNotFoundException;
 import legacy.firstmodel.model.Holdings;
 import legacy.firstmodel.model.Portfolio;
 import legacy.firstmodel.model.Stock;
@@ -18,6 +19,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 
 @Service
@@ -81,6 +83,11 @@ public class HoldingsService {
         return holdingsRepository.findById(id).map(this::buildResponse);
     }
 
+    public Optional<HoldingsResponse> getHoldingsResponseBySymbol(String symbol) {
+        Holdings holdings = holdingsRepository.findBySymbol(symbol);
+        return Optional.ofNullable(holdings).map(this::buildResponse);
+    }
+
     public HoldingsResponse updateHoldings(Long id, HoldingsCreateRequest request) {
         Optional<Holdings> existing = holdingsRepository.findById(id);
         if (existing.isEmpty()) {
@@ -122,27 +129,23 @@ public class HoldingsService {
     }
 
     public HoldingsResponse buyStock(BuyRequest request) throws InsufficientFundsException {
-        Optional<Portfolio> portfolioOpt = portfolioService.getAllPortfolios().stream().findFirst();
-        if (portfolioOpt.isEmpty()) {
-            throw new IllegalStateException("Portfolio not found");
-        }
-
-        Portfolio portfolio = portfolioOpt.get();
-        BigDecimal price = getLivePriceOrStored(request.getSymbol(), request.getPrice());
-        BigDecimal totalCost = price.multiply(BigDecimal.valueOf(request.getQuantity()));
+        String symbol = normalizeSymbol(request.getSymbol());
+        int quantity = requireQuantity(request.getQuantity());
+        Stock stock = requireStock(symbol);
+        Portfolio portfolio = resolvePortfolio(request.getPortfolioId());
+        BigDecimal price = requirePrice(getLivePriceOrStored(symbol, request.getPrice()));
+        BigDecimal totalCost = price.multiply(BigDecimal.valueOf(quantity));
 
         if (portfolio.getBalance().compareTo(totalCost) < 0) {
             throw new InsufficientFundsException("Insufficient balance for purchase");
         }
 
-        Holdings holdings = holdingsRepository.findBySymbol(request.getSymbol());
+        Holdings holdings = holdingsRepository.findBySymbol(symbol);
         if (holdings == null) {
-            Stock stock = stockService.getStockBySymbol(request.getSymbol());
-            String companyName = stock != null ? stock.getCompanyName() : request.getSymbol();
-            holdings = new Holdings(companyName, request.getSymbol(), request.getQuantity(), price,
+            holdings = new Holdings(stock.getCompanyName(), symbol, quantity, price,
                 totalCost, totalCost, BigDecimal.ZERO, BigDecimal.ZERO);
         } else {
-            int newQuantity = holdings.getQuantityOwned() + request.getQuantity();
+            int newQuantity = holdings.getQuantityOwned() + quantity;
             BigDecimal newTotalInvested = holdings.getTotalInvested().add(totalCost);
             BigDecimal newTotalValue = price.multiply(BigDecimal.valueOf(newQuantity));
             holdings.setQuantityOwned(newQuantity);
@@ -155,53 +158,59 @@ public class HoldingsService {
                 : BigDecimal.ZERO);
         }
 
-        holdingsRepository.save(holdings);
+        Holdings savedHolding = holdingsRepository.save(holdings);
 
-        Stock stock = stockService.getStockBySymbol(request.getSymbol());
-        String companyName = stock != null ? stock.getCompanyName() : request.getSymbol();
         java.time.LocalDateTime now = java.time.LocalDateTime.now();
         java.time.format.DateTimeFormatter dateFormatter = java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy");
         java.time.format.DateTimeFormatter timeFormatter = java.time.format.DateTimeFormatter.ofPattern("HH:mm");
         Transactions transaction = new Transactions(
             now.format(dateFormatter),
             now.format(timeFormatter),
-            companyName,
-            request.getSymbol(),
+            stock.getCompanyName(),
+            symbol,
             price,
-            request.getQuantity(),
+            quantity,
             totalCost,
             "BUY"
         );
         transactionsService.createTransaction(transaction);
 
         portfolio.setBalance(portfolio.getBalance().subtract(totalCost));
-        portfolio.setTotalInvested(portfolio.getTotalInvested().add(totalCost));
-        portfolioService.updatePortfolio(portfolio);
+        updatePortfolioMetrics(portfolio);
 
-        return buildResponse(holdings);
+        return buildResponse(savedHolding);
     }
 
     public String sellStock(SellRequest request) throws InvalidTransactionException {
-        Holdings holdings = holdingsRepository.findBySymbol(request.getSymbol());
-        if (holdings == null || holdings.getQuantityOwned() < request.getQuantity()) {
+        String symbol = normalizeSymbol(request.getSymbol());
+        int quantity = requireQuantity(request.getQuantity());
+        Holdings holdings = holdingsRepository.findBySymbol(symbol);
+        if (holdings == null) {
+            throw new StockNotFoundException(symbol);
+        }
+
+        if (holdings.getQuantityOwned() < quantity) {
             throw new InvalidTransactionException("Insufficient holdings for sale");
         }
 
-        BigDecimal price = getLivePriceOrStored(request.getSymbol(), request.getPrice() != null ? request.getPrice() : holdings.getBidPrice());
-        BigDecimal totalProceeds = price.multiply(BigDecimal.valueOf(request.getQuantity()));
+        Stock stock = requireStock(symbol);
+        Portfolio portfolio = resolvePortfolio(request.getPortfolioId());
+        BigDecimal price = requirePrice(getLivePriceOrStored(symbol, request.getPrice() != null ? request.getPrice() : holdings.getBidPrice()));
+        BigDecimal totalProceeds = price.multiply(BigDecimal.valueOf(quantity));
 
-        int newQuantity = holdings.getQuantityOwned() - request.getQuantity();
-        BigDecimal soldInvested = holdings.getTotalInvested().divide(BigDecimal.valueOf(holdings.getQuantityOwned()), 4, RoundingMode.HALF_UP)
-            .multiply(BigDecimal.valueOf(request.getQuantity()));
+        int newQuantity = holdings.getQuantityOwned() - quantity;
+        BigDecimal soldInvested = holdings.getTotalInvested()
+            .divide(BigDecimal.valueOf(holdings.getQuantityOwned()), 4, RoundingMode.HALF_UP)
+            .multiply(BigDecimal.valueOf(quantity));
         BigDecimal newTotalInvested = holdings.getTotalInvested().subtract(soldInvested);
         BigDecimal newTotalValue = price.multiply(BigDecimal.valueOf(newQuantity));
         holdings.setQuantityOwned(newQuantity);
         holdings.setBidPrice(price);
-        holdings.setTotalInvested(newTotalInvested);
-        holdings.setTotalValue(newTotalValue);
-        holdings.setProfitLoss(newTotalValue.subtract(newTotalInvested));
-        holdings.setProfitPercentageChange(newTotalInvested.compareTo(BigDecimal.ZERO) > 0
-            ? holdings.getProfitLoss().divide(newTotalInvested, 4, RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(100))
+        holdings.setTotalInvested(newQuantity == 0 ? BigDecimal.ZERO : newTotalInvested.max(BigDecimal.ZERO));
+        holdings.setTotalValue(newQuantity == 0 ? BigDecimal.ZERO : newTotalValue.max(BigDecimal.ZERO));
+        holdings.setProfitLoss(holdings.getTotalValue().subtract(holdings.getTotalInvested()));
+        holdings.setProfitPercentageChange(holdings.getTotalInvested().compareTo(BigDecimal.ZERO) > 0
+            ? holdings.getProfitLoss().divide(holdings.getTotalInvested(), 4, RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(100))
             : BigDecimal.ZERO);
 
         if (newQuantity == 0) {
@@ -216,28 +225,83 @@ public class HoldingsService {
         Transactions transaction = new Transactions(
             now.format(dateFormatter),
             now.format(timeFormatter),
-            holdings.getCompanyName(),
-            request.getSymbol(),
+            stock.getCompanyName(),
+            symbol,
             price,
-            request.getQuantity(),
+            quantity,
             totalProceeds,
             "SELL"
         );
         transactionsService.createTransaction(transaction);
 
-        Optional<Portfolio> portfolioOpt = portfolioService.getAllPortfolios().stream().findFirst();
-        if (portfolioOpt.isPresent()) {
-            Portfolio portfolio = portfolioOpt.get();
-            portfolio.setBalance(portfolio.getBalance().add(totalProceeds));
-            portfolio.setTotalInvested(portfolio.getTotalInvested().subtract(soldInvested));
-            portfolioService.updatePortfolio(portfolio);
-        }
+        portfolio.setBalance(portfolio.getBalance().add(totalProceeds));
+        updatePortfolioMetrics(portfolio);
 
         return "Stock sold successfully";
     }
 
-    public Holdings getHoldingsBySymbol(String symbol) {
-        return holdingsRepository.findBySymbol(symbol);
+    private String normalizeSymbol(String symbol) {
+        String normalized = symbol == null ? "" : symbol.trim().toUpperCase(Locale.US);
+        if (normalized.isBlank()) {
+            throw new IllegalArgumentException("Stock symbol is required");
+        }
+        return normalized;
+    }
+
+    private int requireQuantity(Integer quantity) {
+        if (quantity == null || quantity <= 0) {
+            throw new IllegalArgumentException("Quantity must be greater than zero");
+        }
+        return quantity;
+    }
+
+    private BigDecimal requirePrice(BigDecimal price) {
+        if (price == null || price.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("Price must be greater than zero");
+        }
+        return price;
+    }
+
+    private Stock requireStock(String symbol) {
+        Stock stock = stockService.getStockBySymbol(symbol);
+        if (stock == null) {
+            throw new StockNotFoundException(symbol);
+        }
+        return stock;
+    }
+
+    private Portfolio resolvePortfolio(Long portfolioId) {
+        if (portfolioId != null) {
+            Optional<Portfolio> portfolioById = portfolioService.getPortfolioById(portfolioId);
+            if (portfolioById.isPresent()) {
+                return portfolioById.get();
+            }
+        }
+
+        return portfolioService.getAllPortfolios().stream()
+            .findFirst()
+            .orElseThrow(() -> new IllegalStateException("Portfolio not found"));
+    }
+
+    private void updatePortfolioMetrics(Portfolio portfolio) {
+        BigDecimal holdingsValue = BigDecimal.ZERO;
+        BigDecimal holdingsInvested = BigDecimal.ZERO;
+
+        for (Holdings currentHolding : holdingsRepository.findAll()) {
+            holdingsValue = holdingsValue.add(safePrice(currentHolding.getTotalValue()));
+            holdingsInvested = holdingsInvested.add(safePrice(currentHolding.getTotalInvested()));
+        }
+
+        BigDecimal totalProfit = holdingsValue.subtract(holdingsInvested);
+        BigDecimal totalReturnPercent = holdingsInvested.compareTo(BigDecimal.ZERO) > 0
+            ? totalProfit.divide(holdingsInvested, 4, RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(100))
+            : BigDecimal.ZERO;
+
+        portfolio.setTotalValue(holdingsValue.setScale(2, RoundingMode.HALF_UP));
+        portfolio.setTotalInvested(holdingsInvested.setScale(2, RoundingMode.HALF_UP));
+        portfolio.setTotalProfit(totalProfit.setScale(2, RoundingMode.HALF_UP));
+        portfolio.setTotalReturnPercent(totalReturnPercent.setScale(2, RoundingMode.HALF_UP));
+        portfolioService.updatePortfolio(portfolio);
     }
 
     private BigDecimal getLivePriceOrStored(String symbol, BigDecimal storedPrice) {

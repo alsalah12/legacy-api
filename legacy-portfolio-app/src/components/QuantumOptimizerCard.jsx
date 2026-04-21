@@ -57,7 +57,7 @@ export default function QuantumOptimizerCard({ formValues, onChange, onSubmit, l
             min="0"
             step="0.01"
             value={formValues.cashAvailable}
-            onChange={onChange}
+            readOnly
             disabled={loading}
           />
         </label>

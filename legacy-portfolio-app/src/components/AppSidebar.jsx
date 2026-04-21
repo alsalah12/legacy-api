@@ -1,11 +1,8 @@
-// React is needed because this component returns JSX.
 import React from "react";
-// NavLink lets the sidebar know which route is currently active.
 import { NavLink, useLocation } from "react-router-dom";
-// Shared sidebar styles used across all authenticated pages.
 import "./AppSidebar.css";
 
-// One shared source of truth for the left navigation.
+// Shared source of truth for primary navigation.
 const sidebarItems = [
   { label: "Dashboard", path: "/dashboard", icon: "⌂" },
   { label: "Holdings", path: "/holdings", icon: "◫" },
@@ -50,7 +47,6 @@ export default function AppSidebar() {
 
   return (
     <aside className={`app-sidebar ${collapsed ? "collapsed" : ""}`}>
-      {/* Reusable nav links. NavLink adds the active class automatically. */}
       <nav className="app-sidebar-nav" aria-label="Primary navigation">
         {sidebarItems.map((item) => {
           const isHoldingsItem = item.path === "/holdings";

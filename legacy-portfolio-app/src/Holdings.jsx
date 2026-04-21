@@ -1,9 +1,11 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import "./Holdings.css";
 import "./components/QuantumOptimizer.css";
 import AppSidebar from "./components/AppSidebar";
 import AppTopBar from "./components/AppTopBar";
+import AppContentLayout from "./components/AppContentLayout";
+import PageHeader from "./components/PageHeader";
 import PortfolioAllocationChart from "./components/PortfolioAllocationChart";
 import QuantumOptimizerCard from "./components/QuantumOptimizerCard";
 import OptimizationResultsPanel from "./components/OptimizationResultsPanel";
@@ -34,12 +36,24 @@ export default function Holdings() {
   const [optimizationResult, setOptimizationResult] = useState(null);
   const [optimizationLoading, setOptimizationLoading] = useState(false);
   const [optimizationError, setOptimizationError] = useState("");
-  const optimizerSectionRef = useRef(null);
   const selectedCategory = (searchParams.get("category") || "stocks").toLowerCase();
 
   useEffect(() => {
     ensureLivePrices(undefined, { includeBackendFallback: true });
   }, [ensureLivePrices]);
+
+  useEffect(() => {
+    setOptimizerForm((previous) => {
+      if (previous.cashAvailable === totals.availableFunds) {
+        return previous;
+      }
+
+      return {
+        ...previous,
+        cashAvailable: totals.availableFunds,
+      };
+    });
+  }, [totals.availableFunds]);
 
   const filteredHoldings = useMemo(() => {
     if (!searchTerm.trim()) return holdings;
@@ -99,9 +113,6 @@ export default function Holdings() {
 
   const focusOptimizer = () => {
     setOptimizerExpanded(true);
-    window.requestAnimationFrame(() => {
-      optimizerSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-    });
   };
 
   return (
@@ -109,28 +120,26 @@ export default function Holdings() {
       <AppTopBar />
       <AppSidebar />
 
-      <main className="main-content app-page-main">
-        <div className="holdings-shell">
-          <header className="topbar">
-            <h1>Holdings</h1>
+      <AppContentLayout shellClassName="holdings-shell">
+          <PageHeader
+            title="Holdings"
+            actions={(
+              <>
+                <button
+                  type="button"
+                  className="holdings-add-stock-btn"
+                  onClick={() => navigate("/buy-sell")}
+                >
+                  Add Stocks
+                </button>
 
-            {/* Header actions keep primary optimisation and stock-entry workflows together. */}
-            <div className="holdings-header-actions">
-              <button
-                type="button"
-                className="holdings-add-stock-btn"
-                onClick={() => navigate("/buy-sell")}
-              >
-                Add Stocks
-              </button>
+                <button type="button" className="holdings-quantum-btn" onClick={focusOptimizer}>
+                  Open Quantum Optimizer
+                </button>
+              </>
+            )}
+          />
 
-              <button type="button" className="holdings-quantum-btn" onClick={focusOptimizer}>
-                Open Quantum Optimizer
-              </button>
-            </div>
-          </header>
-
-          {/* This mirrors the sidebar category list inside the page content for clearer handoff on smaller screens. */}
           <div className="holdings-subnav" aria-label="Holdings categories">
             {[
               { label: "Stocks", value: "stocks" },
@@ -192,12 +201,7 @@ export default function Holdings() {
                 {/* Bonds and crypto are intentionally stubbed until backend-backed data exists. */}
                 <div className="holdings-placeholder">
                   <span className="holdings-placeholder-eyebrow">{selectedCategory}</span>
-                  <h2>Feature coming soon</h2>
-                  <p>
-                    {selectedCategory === "bonds"
-                      ? "Bond holdings are not wired into the backend yet."
-                      : "Crypto holdings are not wired into the backend yet."}
-                  </p>
+                  <h2 className="app-section-title">Feature coming soon</h2>
                 </div>
               </article>
             ) : (
@@ -205,7 +209,7 @@ export default function Holdings() {
                 {/* Left column (≈68%): primary holdings table container. */}
                 <article className="table-card">
                   <div className="table-header">
-                    <h2>Your Holdings</h2>
+                    <h2 className="app-section-title">Your Holdings</h2>
                     <div className="table-header-actions">
                       <span>{filteredHoldings.length} positions</span>
                     </div>
@@ -303,20 +307,27 @@ export default function Holdings() {
             )}
           </section>
 
-          {!showingPlaceholder && (
-            <section className="holdings-advanced-tools" ref={optimizerSectionRef}>
-              <div className="holdings-advanced-tools-header">
-                <h2>Advanced Tools</h2>
-                <button
-                  type="button"
-                  className="holdings-advanced-toggle-btn"
-                  onClick={() => setOptimizerExpanded((previous) => !previous)}
-                >
-                  {optimizerExpanded ? "Hide Quantum Optimizer" : "Show Quantum Optimizer"}
-                </button>
-              </div>
+          {!showingPlaceholder && optimizerExpanded && (
+            <div className="holdings-optimizer-modal-backdrop" onClick={() => setOptimizerExpanded(false)}>
+              <section
+                className="holdings-optimizer-modal"
+                role="dialog"
+                aria-modal="true"
+                aria-label="Quantum Optimizer"
+                onClick={(event) => event.stopPropagation()}
+              >
+                <div className="holdings-optimizer-modal-header">
+                  <h2 className="app-section-title">Quantum Optimizer</h2>
+                  <button
+                    type="button"
+                    className="holdings-optimizer-modal-close"
+                    onClick={() => setOptimizerExpanded(false)}
+                    aria-label="Close Quantum Optimizer"
+                  >
+                    ×
+                  </button>
+                </div>
 
-              {optimizerExpanded && (
                 <section className="quantum-section">
                   <QuantumOptimizerCard
                     formValues={optimizerForm}
@@ -331,11 +342,10 @@ export default function Holdings() {
                     result={optimizationResult}
                   />
                 </section>
-              )}
-            </section>
+              </section>
+            </div>
           )}
-        </div>
-      </main>
+      </AppContentLayout>
     </div>
   );
 }

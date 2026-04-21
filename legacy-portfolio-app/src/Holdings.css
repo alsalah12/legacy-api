@@ -11,24 +11,12 @@
   font-family: inherit;
 }
 
-/* main-content fills available width; height/overflow handled by app-page-main. */
-.holdings-page .main-content {
-  flex: 1;
-  padding: var(--space-page);
-  display: grid;
-  gap: 12px;
-  align-content: stretch;
-  /* Desktop viewport-fit: keep Holdings on one screen beside fixed topbar/sidebar. */
-  height: calc(100vh - var(--app-topbar-height));
-  overflow: hidden;
-}
-
 /* Shell fills full available width — consistent with BuySell and Transactions pages. */
 .holdings-page .holdings-shell {
   width: 100%;
   display: grid;
   /* Top controls are auto-height; holdings content remains primary and consumes remaining space. */
-  grid-template-rows: auto auto auto auto minmax(0, 1fr) auto;
+  grid-template-rows: auto auto auto auto minmax(0, 1fr);
   gap: 12px;
   min-height: 0;
   height: 100%;
@@ -38,109 +26,65 @@
   grid-template-rows: auto minmax(0, 1fr);
 }
 
-/* Header spacing and hierarchy. */
-.holdings-page .topbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  min-height: 30px;
-  padding-bottom: 2px;
-}
-
-.holdings-page .topbar h1 {
-  margin: 0;
-  font-size: var(--fs-page-title);
-  font-weight: var(--fw-page-title);
-  color: var(--text-primary);
-}
-
-.holdings-page .holdings-header-actions {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-}
-
 .holdings-page .holdings-add-stock-btn {
-  border: 1px solid rgba(85, 72, 200, 0.28);
-  border-radius: 12px;
-  background: #ffffff;
-  color: var(--accent-purple-active);
-  padding: 9px 14px;
+  border: 1px solid #5e27ad;
+  border-radius: 11px;
+  background: linear-gradient(135deg, #6f2dbd 0%, #532196 100%);
+  color: #ffffff;
+  padding: 9px 16px;
   font-size: 12px;
   font-weight: 600;
-  letter-spacing: 0.01em;
+  letter-spacing: 0.012em;
   cursor: pointer;
-  box-shadow: 0 4px 14px rgba(85, 72, 200, 0.08);
-  transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+  box-shadow: 0 8px 18px rgba(95, 38, 173, 0.24);
+  transition: transform 0.16s ease, box-shadow 0.16s ease, filter 0.16s ease;
 }
 
 .holdings-page .holdings-add-stock-btn:hover {
-  background: #f6f3ff;
+  filter: brightness(1.04);
   transform: translateY(-1px);
-  box-shadow: 0 8px 18px rgba(85, 72, 200, 0.12);
+  box-shadow: 0 12px 24px rgba(95, 38, 173, 0.3);
+}
+
+.holdings-page .holdings-add-stock-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 6px 14px rgba(95, 38, 173, 0.24);
+}
+
+.holdings-page .holdings-add-stock-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(111, 45, 189, 0.2), 0 10px 22px rgba(95, 38, 173, 0.26);
 }
 
 /* Premium feature CTA requested for holdings page. */
 .holdings-page .holdings-quantum-btn {
-  border: 1px solid rgba(85, 72, 200, 0.28);
-  border-radius: 12px;
-  background: #ffffff;
-  color: var(--accent-purple-active);
-  padding: 9px 14px;
+  border: 1px solid rgba(111, 45, 189, 0.34);
+  border-radius: 11px;
+  background: #f5efff;
+  color: #5e27ad;
+  padding: 9px 16px;
   font-size: 12px;
   font-weight: 600;
-  letter-spacing: 0.01em;
+  letter-spacing: 0.012em;
   cursor: pointer;
-  box-shadow: 0 4px 14px rgba(85, 72, 200, 0.08);
-  transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+  box-shadow: 0 5px 14px rgba(95, 38, 173, 0.12);
+  transition: transform 0.16s ease, box-shadow 0.16s ease, background 0.16s ease, border-color 0.16s ease;
 }
 
 .holdings-page .holdings-quantum-btn:hover {
-  background: #f6f3ff;
+  background: #efe3ff;
+  border-color: rgba(111, 45, 189, 0.5);
   transform: translateY(-1px);
-  box-shadow: 0 8px 18px rgba(85, 72, 200, 0.12);
+  box-shadow: 0 9px 20px rgba(95, 38, 173, 0.18);
 }
 
-.holdings-page .holdings-advanced-tools {
-  background: var(--card-bg);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-soft);
-  padding: 12px;
-  display: grid;
-  gap: 12px;
+.holdings-page .holdings-quantum-btn:active {
+  transform: translateY(0);
 }
 
-.holdings-page .holdings-advanced-tools-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-}
-
-.holdings-page .holdings-advanced-tools-header h2 {
-  margin: 0;
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--text-primary);
-}
-
-.holdings-page .holdings-advanced-toggle-btn {
-  border: 1px solid rgba(85, 72, 200, 0.28);
-  border-radius: 10px;
-  background: #ffffff;
-  color: var(--accent-purple-active);
-  padding: 8px 12px;
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.holdings-page .holdings-advanced-toggle-btn:hover {
-  background: #f6f3ff;
+.holdings-page .holdings-quantum-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(111, 45, 189, 0.18), 0 8px 18px rgba(95, 38, 173, 0.16);
 }
 
 .holdings-page .holdings-subnav {
@@ -179,7 +123,7 @@
 .holdings-page .summary-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 12px;
+  gap: var(--space-grid);
 }
 
 .holdings-page .metric-card,
@@ -200,18 +144,18 @@
 }
 
 .holdings-page .metric-label {
-  font-size: 10px;
+  font-size: var(--fs-micro);
   color: var(--text-secondary);
 }
 
 .holdings-page .metric-value {
-  font-size: 14px;
-  font-weight: 600;
+  font-size: var(--fs-metric-md);
+  font-weight: var(--fw-metric-md);
   color: var(--text-primary);
 }
 
 .holdings-page .metric-sub {
-  font-size: 11px;
+  font-size: var(--fs-caption);
   color: var(--text-secondary);
 }
 
@@ -219,7 +163,7 @@
   min-height: 0;
   height: 100%;
   min-width: 0;
-  overflow: hidden;
+  overflow: visible;
 }
 
 /* positive-text / negative-text are defined globally in index.css */
@@ -227,11 +171,11 @@
 /* Main horizontal row: large holdings card + intentional allocation width. */
 .holdings-page .content-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1.95fr) minmax(318px, 0.9fr);
+  grid-template-columns: minmax(0, 2.25fr) minmax(250px, 0.72fr);
   gap: 12px;
   align-items: start;
   min-height: 0;
-  height: 100%;
+  height: auto;
   min-width: 0;
 }
 
@@ -241,7 +185,7 @@
 
 .holdings-page .content-grid.two-column {
   /* Requested ratio: left table ~68%, right allocation ~32%. */
-  grid-template-columns: minmax(0, 2.2fr) minmax(280px, 0.92fr);
+  grid-template-columns: minmax(0, 2.4fr) minmax(240px, 0.7fr);
 }
 
 .holdings-page .table-card,
@@ -253,10 +197,10 @@
   display: flex;
   flex-direction: column;
   min-height: 0;
-  height: 100%;
+  height: auto;
   gap: 12px;
   min-width: 0;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .holdings-page .holdings-allocation-section {
@@ -382,8 +326,8 @@
 .holdings-page .table-header h2,
 .holdings-page .allocation-header h2 {
   margin: 0;
-  font-size: 14px;
-  font-weight: 600;
+  font-size: var(--fs-section-title);
+  font-weight: var(--fw-section-title);
   color: var(--text-primary);
 }
 
@@ -680,7 +624,7 @@
   font-variant-numeric: tabular-nums;
 }
 
-@media (max-width: 1120px) {
+@media (max-width: 1180px) {
   .holdings-page {
     height: auto;
     overflow: visible;
@@ -709,6 +653,15 @@
 
   .holdings-page .content-grid {
     grid-template-columns: 1fr;
+  }
+
+  .holdings-page .holdings-allocation-section {
+    height: auto;
+  }
+
+  .holdings-page .holdings-allocation-section .portfolio-allocation-card {
+    height: auto;
+    min-height: 320px;
   }
 
   .holdings-page .table-footer {
@@ -803,6 +756,51 @@
 
 .holdings-page .table-actions {
   margin-bottom: 2px;
+}
+
+.holdings-page .holdings-optimizer-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1500;
+  background: rgba(16, 12, 31, 0.48);
+  display: grid;
+  place-items: center;
+  padding: 20px;
+}
+
+.holdings-page .holdings-optimizer-modal {
+  width: min(1080px, 100%);
+  max-height: calc(100vh - 40px);
+  overflow: auto;
+  border-radius: 14px;
+  border: 1px solid rgba(111, 45, 189, 0.25);
+  background: #ffffff;
+  box-shadow: 0 24px 60px rgba(22, 16, 44, 0.3);
+  padding: 14px;
+  display: grid;
+  gap: 12px;
+}
+
+.holdings-page .holdings-optimizer-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.holdings-page .holdings-optimizer-modal-close {
+  border: 1px solid #d9c8f2;
+  background: #f7f2ff;
+  color: #5e27ad;
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.holdings-page .holdings-optimizer-modal-close:hover {
+  background: #efe4ff;
 }
 
 .holdings-page .action-input,

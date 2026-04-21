@@ -113,7 +113,12 @@ public class PortfolioController {
     }
 
     @PostMapping("/{id}/deposit")
-    public ResponseEntity<PortfolioResponse> deposit(@PathVariable Long id, @RequestBody BigDecimal amount) {
+    public ResponseEntity<?> deposit(@PathVariable Long id, @RequestBody BigDecimal amount) {
+        if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new ErrorResponse("BAD_REQUEST", "Amount must be greater than zero"));
+        }
+
         Optional<Portfolio> portfolioOpt = portfolioService.getPortfolioById(id);
         if (portfolioOpt.isPresent()) {
             Portfolio portfolio = portfolioOpt.get();
@@ -121,12 +126,18 @@ public class PortfolioController {
             Portfolio updated = portfolioService.updatePortfolio(portfolio);
             return ResponseEntity.ok(buildResponse(updated));
         } else {
-            return ResponseEntity.notFound().build();
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(new ErrorResponse("NOT_FOUND", "Portfolio not found"));
         }
     }
 
     @PostMapping("/{id}/withdraw")
     public ResponseEntity<?> withdraw(@PathVariable Long id, @RequestBody BigDecimal amount) {
+        if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new ErrorResponse("BAD_REQUEST", "Amount must be greater than zero"));
+        }
+
         Optional<Portfolio> portfolioOpt = portfolioService.getPortfolioById(id);
         if (portfolioOpt.isPresent()) {
             Portfolio portfolio = portfolioOpt.get();
@@ -138,7 +149,8 @@ public class PortfolioController {
             Portfolio updated = portfolioService.updatePortfolio(portfolio);
             return ResponseEntity.ok(buildResponse(updated));
         } else {
-            return ResponseEntity.notFound().build();
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(new ErrorResponse("NOT_FOUND", "Portfolio not found"));
         }
     }
 }

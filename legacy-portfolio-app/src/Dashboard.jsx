@@ -2,6 +2,8 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import "./Dashboard.css";
 import AppSidebar from "./components/AppSidebar";
 import AppTopBar from "./components/AppTopBar";
+import AppContentLayout from "./components/AppContentLayout";
+import PageHeader from "./components/PageHeader";
 import { formatCurrency, formatPercent, usePortfolioData } from "./services/holdingsData";
 import { getTimeBasedGreeting } from "./utils/greeting";
 
@@ -43,9 +45,9 @@ function formatChartDate(date) {
 }
 
 function buildChartGeometry(series) {
-  const width = 560;
-  const height = 240;
-  const padding = { top: 16, right: 18, bottom: 34, left: 56 };
+  const width = 920;
+  const height = 380;
+  const padding = { top: 20, right: 24, bottom: 44, left: 74 };
   const values = series.map((point) => point.value);
   const minValue = Math.min(...values);
   const maxValue = Math.max(...values);
@@ -134,7 +136,7 @@ function RotatingNewsCard({ stories }) {
     <>
       <div className="table-header">
         <div>
-          <h2>Market News</h2>
+          <h2 className="app-section-title">Market News</h2>
           <span className="performer-live">&#9679; Live</span>
         </div>
       </div>
@@ -184,16 +186,38 @@ export default function Dashboard() {
 
   const holdingsToDisplay = holdings.slice(0, 4);
 
+  // The displayed name comes from the same shared user context used by signup/login.
+  // PortfolioDataProvider hydrates activeUser from currentUser, legacy.users, and legacy.activeUserId.
+  // Steve is only used when no real profile name exists yet so the dashboard never greets "User".
   const firstName = useMemo(() => {
     const rawName = String(activeUser?.name || "").trim();
-    return rawName ? rawName.split(/\s+/)[0] : "";
+    return rawName ? rawName.split(/\s+/)[0] : "Steve";
   }, [activeUser?.name]);
 
+  // Time-of-day greeting is derived from the user's local clock via getTimeBasedGreeting().
   const greetingText = getTimeBasedGreeting();
-  // FIXED: Removed "Welcome" from greeting
-  // OLD: "Good evening, Welcome" or "Good evening, {firstName}, Welcome"
-  // NEW: Only "Good evening, {firstName}"
   const greetingHeading = firstName ? `${greetingText}, ${firstName}` : greetingText;
+
+  // Baseline status compares current holdings market value against invested cost basis.
+  // Positive means the portfolio is outperforming baseline, negative means underperforming,
+  // and missing/flat data falls back to the neutral at-baseline state so the label always renders.
+  const performanceStatus = useMemo(() => {
+    const currentValue = Number(totals.holdingsMarketValue);
+    const investedValue = Number(totals.holdingsInvested);
+
+    if (!Number.isFinite(currentValue) || !Number.isFinite(investedValue)) {
+      return { label: "Portfolio at baseline", tone: "baseline" };
+    }
+
+    const delta = currentValue - investedValue;
+    if (Math.abs(delta) < 0.005) {
+      return { label: "Portfolio at baseline", tone: "baseline" };
+    }
+
+    return delta > 0
+      ? { label: "Portfolio outperforming baseline", tone: "outperforming" }
+      : { label: "Portfolio underperforming baseline", tone: "underperforming" };
+  }, [totals.holdingsInvested, totals.holdingsMarketValue]);
 
   // Read all dashboard metrics from the shared portfolio summary selector so
   // Total Value / Today's Gain / Total Gain stay aligned with the holdings data.
@@ -272,43 +296,16 @@ export default function Dashboard() {
       <AppTopBar />
       <AppSidebar />
 
-      <main className="main-content app-page-main">
-        <div className="dashboard-shell">
-          {/* 
-            DASHBOARD LAYOUT REFACTORED TO MATCH HOLDINGS PAGE STRUCTURE
-            ═══════════════════════════════════════════════════════════════════
-            
-            This dashboard now reuses the same layout architecture as Holdings.jsx:
-            - Same outer page container approach
-            - Same main-content wrapper with height constraint
-            - Same grid-based shell structure
-            - Same 2-column content layout (1.95fr left / 0.9fr right)
-            
-            KEY CHANGES FROM PREVIOUS VERSION:
-            1. REMOVED "Welcome" from greeting text
-               Heading now shows: "Good evening, {firstName}"
-               No "Welcome" word included
-            2. Refactored to use Holdings topbar pattern
-            3. Moved KPI metrics to summary-grid (same as Holdings)
-            4. Left column uses Holdings-style card pattern
-            5. Fixed viewport fit to work at 100% browser zoom
-            6. Reduced padding/gaps to fit properly on standard screens
-            
-            LAYOUT STRUCTURE (same as Holdings):
-            - topbar: heading only
-            - summary-grid: 3 KPI cards
-            - content-grid: 2-column layout
-              - Left (1.95fr): chart + holdings table
-              - Right (0.9fr): performers + news
-            ═══════════════════════════════════════════════════════════════════
-          */}
+      <AppContentLayout shellClassName="dashboard-shell">
+          <PageHeader
+            title={greetingHeading}
+            titleAdornment={(
+              <span className={`dashboard-performance-status ${performanceStatus.tone}`}>
+                {performanceStatus.label}
+              </span>
+            )}
+          />
 
-          {/* TOP HEADER: Greeting only (matches Holdings topbar) */}
-          <header className="topbar">
-            <h1>{greetingHeading}</h1>
-          </header>
-
-          {/* KPI METRICS ROW (mirrors Holdings summary-grid pattern) */}
           <section className="summary-grid">
             {summaryStats.map((stat) => (
               <article className="metric-card" key={stat.label}>
@@ -326,21 +323,19 @@ export default function Dashboard() {
                   {stat.value}
                 </strong>
                 <span className="metric-sub">{stat.sub}</span>
+
               </article>
             ))}
           </section>
 
-          {/* MAIN 2-COLUMN LAYOUT (mirrors Holdings content-grid) */}
           <section className="content-grid">
-            {/* LEFT COLUMN (≈68%): Chart + Holdings Table */}
             <div className="dashboard-column-left">
               <article className="table-card chart-card">
                 <div className="table-header">
                   <div>
-                    <h2>Portfolio Performance</h2>
+                    <h2 className="app-section-title">Portfolio Performance</h2>
                     <p className="table-meta">Live prices refreshed at {formattedLiveRefresh}</p>
                   </div>
-
                   <div className="chart-actions">
                     <div className="period-tabs" role="group" aria-label="Chart time period">
                       {performanceRangeOptions.map((p) => (
@@ -354,7 +349,6 @@ export default function Dashboard() {
                         </button>
                       ))}
                     </div>
-
                     <button
                       type="button"
                       className="refresh-btn"
@@ -460,27 +454,12 @@ export default function Dashboard() {
                   </div>
                 </div>
 
-                <div className="asset-row">
-                  <div className="asset-cell">
-                    <span className="asset-label">Holdings market value</span>
-                    <span className="asset-value">{formatCurrency(totals.holdingsMarketValue)}</span>
-                  </div>
-                  <div className="asset-cell">
-                    <span className="asset-label">Available cash</span>
-                    <span className="asset-value">{formatCurrency(totals.availableFunds)}</span>
-                  </div>
-                  <div className="asset-cell">
-                    <span className="asset-label">Net return</span>
-                    <span className={`asset-value ${totals.holdingsProfit >= 0 ? "positive-text" : "negative-text"}`}>
-                      {formatCurrency(totals.holdingsProfit)}
-                    </span>
-                  </div>
-                </div>
+
               </article>
 
               <article className="table-card">
                 <div className="table-header">
-                  <h2>Holdings Overview</h2>
+                  <h2 className="app-section-title">Holdings Overview</h2>
                   <a href="/holdings" className="table-view-all">
                     View all
                   </a>
@@ -523,12 +502,11 @@ export default function Dashboard() {
               </article>
             </div>
 
-            {/* RIGHT COLUMN (≈32%): Performers + News */}
             <aside className="dashboard-column-right">
               <article className="table-card">
                 <div className="table-header">
                   <div>
-                    <h2>Top Equity Performers</h2>
+                    <h2 className="app-section-title">Top Equity Performers</h2>
                     <p className="table-meta">Sorted from shared holdings performance</p>
                   </div>
                 </div>
@@ -557,8 +535,7 @@ export default function Dashboard() {
               </article>
             </aside>
           </section>
-        </div>
-      </main>
+      </AppContentLayout>
     </div>
   );
 }
