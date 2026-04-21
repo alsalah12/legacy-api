@@ -75,6 +75,132 @@
   gap: 12px;
 }
 
+.app-topbar-portfolio-switcher {
+  position: relative;
+}
+
+.app-topbar-portfolio-btn {
+  border: 1px solid #ddd2f0;
+  background: #ffffff;
+  color: #4b1d8f;
+  border-radius: 999px;
+  height: 32px;
+  padding: 0 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+}
+
+.app-topbar-portfolio-btn:hover {
+  background: #f8f3ff;
+  border-color: #cdb8eb;
+}
+
+.app-topbar-portfolio-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(111, 45, 189, 0.18);
+}
+
+.app-topbar-portfolio-btn-label {
+  max-width: 190px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.app-topbar-portfolio-chevron {
+  font-size: 11px;
+  color: #7b4fbe;
+  transition: transform 0.15s ease;
+}
+
+.app-topbar-portfolio-chevron.open {
+  transform: rotate(180deg);
+}
+
+.app-topbar-portfolio-menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 8px);
+  width: 260px;
+  background: #ffffff;
+  border: 1px solid #e7def4;
+  border-radius: 12px;
+  box-shadow: 0 12px 24px rgba(23, 18, 38, 0.14);
+  padding: 8px;
+  z-index: 1300;
+}
+
+.app-topbar-portfolio-menu-list {
+  display: grid;
+  gap: 4px;
+  max-height: 240px;
+  overflow-y: auto;
+}
+
+.app-topbar-portfolio-menu-item {
+  width: 100%;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  background: transparent;
+  color: #2e2e45;
+  padding: 8px 10px;
+  font-size: 12px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  text-align: left;
+}
+
+.app-topbar-portfolio-menu-item:hover {
+  background: #f8f3ff;
+  border-color: #eadff8;
+}
+
+.app-topbar-portfolio-menu-item.active {
+  background: rgba(111, 45, 189, 0.12);
+  border-color: rgba(111, 45, 189, 0.28);
+  color: #4b1d8f;
+  font-weight: 600;
+}
+
+.app-topbar-portfolio-active-mark {
+  color: #6f2dbd;
+  font-size: 12px;
+}
+
+.app-topbar-portfolio-menu-actions {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid #eee6fa;
+  display: grid;
+  gap: 4px;
+}
+
+.app-topbar-portfolio-action {
+  width: 100%;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  background: transparent;
+  color: #5f4c86;
+  padding: 8px 10px;
+  font-size: 12px;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+}
+
+.app-topbar-portfolio-action:hover {
+  background: #f8f3ff;
+  color: #4b1d8f;
+}
+
 /* Individual metric block. */
 .app-topbar-metric {
   display: grid;
@@ -155,6 +281,19 @@
     flex-wrap: nowrap;
   }
 
+  .app-topbar-portfolio-btn {
+    height: 30px;
+    padding: 0 10px;
+  }
+
+  .app-topbar-portfolio-btn-label {
+    max-width: 120px;
+  }
+
+  .app-topbar-portfolio-menu {
+    width: 220px;
+  }
+
   .app-topbar-metric:first-of-type {
     display: none;
   }
@@ -192,5 +331,9 @@
 
   .app-topbar-value {
     display: none;
+  }
+
+  .app-topbar-portfolio-btn-label {
+    max-width: 92px;
   }
 }

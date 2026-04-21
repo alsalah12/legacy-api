@@ -60,7 +60,6 @@ function buildChartGeometry(series) {
       series.length === 1
         ? padding.left
         : padding.left + (index / (series.length - 1)) * chartWidth;
-
     const yRatio = (point.value - chartMin) / Math.max(chartMax - chartMin, 1);
     const y = padding.top + (1 - yRatio) * chartHeight;
 
@@ -132,33 +131,35 @@ function RotatingNewsCard({ stories }) {
   const story = stories[index];
 
   return (
-    <article className="card db-news-card">
-      <div className="db-card-header">
-        <h2 className="db-card-title">Market News</h2>
-        <span className="db-news-live">&#9679; Live</span>
-      </div>
-
-      <div className={`db-news-body${fading ? " db-news-fading" : ""}`}>
-        <span className="db-news-category">{story.category}</span>
-        <p className="db-news-headline">{story.headline}</p>
-        <div className="db-news-meta">
-          <span className="db-news-source">{story.source}</span>
-          <span className="db-news-time">{story.time}</span>
+    <>
+      <div className="table-header">
+        <div>
+          <h2>Market News</h2>
+          <span className="performer-live">&#9679; Live</span>
         </div>
       </div>
 
-      <div className="db-news-dots">
+      <div className={`news-body${fading ? " news-fading" : ""}`}>
+        <span className="news-category">{story.category}</span>
+        <p className="news-headline">{story.headline}</p>
+        <div className="news-meta">
+          <span className="news-source">{story.source}</span>
+          <span className="news-time">{story.time}</span>
+        </div>
+      </div>
+
+      <div className="news-dots">
         {stories.map((_, i) => (
           <button
             key={i}
             type="button"
-            className={`db-news-dot${i === index ? " active" : ""}`}
+            className={`news-dot${i === index ? " active" : ""}`}
             onClick={() => navigateTo(i)}
             aria-label={`View story ${i + 1}`}
           />
         ))}
       </div>
-    </article>
+    </>
   );
 }
 
@@ -183,14 +184,34 @@ export default function Dashboard() {
 
   const holdingsToDisplay = holdings.slice(0, 4);
 
+  const firstName = useMemo(() => {
+    const rawName = String(activeUser?.name || "").trim();
+    return rawName ? rawName.split(/\s+/)[0] : "";
+  }, [activeUser?.name]);
+
+  const greetingText = getTimeBasedGreeting();
+  // FIXED: Removed "Welcome" from greeting
+  // OLD: "Good evening, Welcome" or "Good evening, {firstName}, Welcome"
+  // NEW: Only "Good evening, {firstName}"
+  const greetingHeading = firstName ? `${greetingText}, ${firstName}` : greetingText;
+
+  // Read all dashboard metrics from the shared portfolio summary selector so
+  // Total Value / Today's Gain / Total Gain stay aligned with the holdings data.
   const summaryStats = useMemo(
     () => [
-      { label: "Total Value", value: formatCurrency(portfolioSummary.totalValue), sub: "Holdings + available cash" },
       {
-        label: "Today’s Gain",
-        value: formatCurrency(portfolioSummary.todayGainValue),
-        sub: portfolioSummary.todayGainAvailable ? formatPercent(portfolioSummary.todayGainPercent) : "Awaiting market history",
-        positive: portfolioSummary.todayGainValue > 0,
+        label: "Total Value",
+        value: formatCurrency(portfolioSummary.totalValue),
+        sub: "Holdings + available cash",
+      },
+      {
+        label: "Today's Gain",
+        value: portfolioSummary.todayGainAvailable ? formatCurrency(portfolioSummary.todayGainValue) : "Unavailable",
+        sub: portfolioSummary.todayGainAvailable
+          ? formatPercent(portfolioSummary.todayGainPercent)
+          : "Previous close unavailable",
+        positive: portfolioSummary.todayGainAvailable ? portfolioSummary.todayGainValue > 0 : null,
+        unavailable: !portfolioSummary.todayGainAvailable,
       },
       {
         label: "Total Gain",
@@ -226,17 +247,17 @@ export default function Dashboard() {
       {
         label: "Portfolio",
         value: performanceSeries[performanceSeries.length - 1]?.value ?? totals.holdingsMarketValue,
-        className: "db-lc-stocks",
+        className: "lc-stocks",
       },
       {
         label: "Invested",
         value: totals.holdingsInvested,
-        className: "db-lc-bonds",
+        className: "lc-bonds",
       },
       {
         label: "Cash",
         value: totals.availableFunds,
-        className: "db-lc-cash",
+        className: "lc-cash",
       },
     ],
     [performanceSeries, totals.availableFunds, totals.holdingsInvested, totals.holdingsMarketValue]
@@ -246,254 +267,297 @@ export default function Dashboard() {
     ? new Date(lastLiveRefreshAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
     : "Not refreshed yet";
 
-  const greetingText = getTimeBasedGreeting();
-  const displayName = activeUser?.name?.trim() || "User";
-
   return (
-    <div className="db-page">
+    <div className="dashboard-page">
       <AppTopBar />
       <AppSidebar />
 
-      {/* Dashboard content is intentionally ordered as:
-          1) KPI summary row, 2) hero performance chart, 3) supporting insights row, 4) holdings preview.
-          This removes the previous stacked/competing card hierarchy and keeps one clear visual flow. */}
-      <main className="db-main app-page-main">
-        {/* Top row: greeting hero on the left, three KPI cards on the right — single above-fold band. */}
-        <div className="db-top-row">
-          {/* Hero greeting — clean static text, no controls, no dropdowns. */}
-          <div className="db-welcome">
-            <p className="db-welcome-kicker">Portfolio Overview</p>
-            <h1 className="db-welcome-title">{greetingText}, {displayName}</h1>
-            <p className={`db-welcome-sub ${totals.holdingsProfit >= 0 ? "db-benchmark-positive" : "db-benchmark-negative"}`}>
-              Your portfolio is {totals.holdingsProfit >= 0 ? "outperforming" : "underperforming"} benchmark
-              &nbsp;&mdash;&nbsp;{totals.holdingsProfit >= 0 ? "+" : ""}{formatCurrency(totals.holdingsProfit)} total return.
-            </p>
-            <button
-              type="button"
-              className="db-refresh-btn"
-              onClick={async () => {
-                await ensureLivePrices(undefined, { forceRefresh: true, includeBackendFallback: true });
-                await refreshPerformanceHistory();
-              }}
-              title={`Last refreshed ${formattedLiveRefresh}`}
-            >
-              ↻ Refresh prices
-            </button>
-          </div>
+      <main className="main-content app-page-main">
+        <div className="dashboard-shell">
+          {/* 
+            DASHBOARD LAYOUT REFACTORED TO MATCH HOLDINGS PAGE STRUCTURE
+            ═══════════════════════════════════════════════════════════════════
+            
+            This dashboard now reuses the same layout architecture as Holdings.jsx:
+            - Same outer page container approach
+            - Same main-content wrapper with height constraint
+            - Same grid-based shell structure
+            - Same 2-column content layout (1.95fr left / 0.9fr right)
+            
+            KEY CHANGES FROM PREVIOUS VERSION:
+            1. REMOVED "Welcome" from greeting text
+               Heading now shows: "Good evening, {firstName}"
+               No "Welcome" word included
+            2. Refactored to use Holdings topbar pattern
+            3. Moved KPI metrics to summary-grid (same as Holdings)
+            4. Left column uses Holdings-style card pattern
+            5. Fixed viewport fit to work at 100% browser zoom
+            6. Reduced padding/gaps to fit properly on standard screens
+            
+            LAYOUT STRUCTURE (same as Holdings):
+            - topbar: heading only
+            - summary-grid: 3 KPI cards
+            - content-grid: 2-column layout
+              - Left (1.95fr): chart + holdings table
+              - Right (0.9fr): performers + news
+            ═══════════════════════════════════════════════════════════════════
+          */}
 
-          <div className="db-summary-row">
+          {/* TOP HEADER: Greeting only (matches Holdings topbar) */}
+          <header className="topbar">
+            <h1>{greetingHeading}</h1>
+          </header>
+
+          {/* KPI METRICS ROW (mirrors Holdings summary-grid pattern) */}
+          <section className="summary-grid">
             {summaryStats.map((stat) => (
-              <div className="card db-kpi-card" key={stat.label}>
-                <span className="db-kpi-label">{stat.label}</span>
-                <span className={`db-kpi-value${stat.positive === false ? " db-negative" : stat.positive ? " db-positive" : ""}`}>
+              <article className="metric-card" key={stat.label}>
+                <span className="metric-label">{stat.label}</span>
+                <strong
+                  className={[
+                    "metric-value",
+                    stat.unavailable ? "unavailable-text" : "",
+                    stat.positive === false ? "negative-text" : "",
+                    stat.positive === true ? "positive-text" : "",
+                  ]
+                    .filter(Boolean)
+                    .join(" ")}
+                >
                   {stat.value}
-                </span>
-                <span className="db-kpi-sub">{stat.sub}</span>
-              </div>
+                </strong>
+                <span className="metric-sub">{stat.sub}</span>
+              </article>
             ))}
-          </div>
-        </div>
+          </section>
 
-        {/* Hero portfolio performance section: primary focus area of the page. */}
-        <section className="db-hero-section">
-          <article className="card db-perf-card db-perf-card-hero">
-            <div className="db-card-header">
-              <div>
-                <h2 className="db-card-title">Portfolio Performance</h2>
-                <p className="db-card-meta">Live prices last refreshed at {formattedLiveRefresh}</p>
-              </div>
-              <div className="db-period-tabs" role="group" aria-label="Chart time period">
-                {performanceRangeOptions.map((p) => (
-                  <button
-                    key={p}
-                    type="button"
-                    className={`db-period-btn${p === performanceRange ? " active" : ""}`}
-                    onClick={() => setPerformanceRange(p)}
-                  >
-                    {p}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="db-chart-area">
-              <div className="db-chart-panel">
-                {chartGeometry ? (
-                  <svg
-                    viewBox={`0 0 ${chartGeometry.width} ${chartGeometry.height}`}
-                    className="db-chart-svg"
-                    aria-label={`Portfolio performance for ${performanceRange}`}
-                    role="img"
-                  >
-                    <defs>
-                      <linearGradient id="dbPortfolioGradient" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="rgba(85,72,200,0.26)" />
-                        <stop offset="100%" stopColor="rgba(85,72,200,0)" />
-                      </linearGradient>
-                    </defs>
-
-                    {chartGeometry.yTicks.map((tick) => (
-                      <line
-                        key={`grid-${tick.y}`}
-                        x1={chartGeometry.padding.left}
-                        y1={tick.y}
-                        x2={chartGeometry.width - chartGeometry.padding.right}
-                        y2={tick.y}
-                        stroke="#ece8fb"
-                        strokeWidth="1"
-                      />
-                    ))}
-
-                    <polygon points={chartGeometry.areaPoints} fill="url(#dbPortfolioGradient)" />
-
-                    <polyline
-                      points={chartGeometry.polylinePoints}
-                      fill="none"
-                      stroke="#5548c8"
-                      strokeWidth="3.2"
-                      strokeLinejoin="round"
-                      strokeLinecap="round"
-                    />
-
-                    {chartGeometry.points.length > 0 && (
-                      <circle
-                        cx={chartGeometry.points[chartGeometry.points.length - 1].x}
-                        cy={chartGeometry.points[chartGeometry.points.length - 1].y}
-                        r="4.5"
-                        fill="#5548c8"
-                        stroke="#ffffff"
-                        strokeWidth="2"
-                      />
-                    )}
-
-                    {chartGeometry.yTicks.map((tick) => (
-                      <text
-                        key={`ylabel-${tick.y}`}
-                        x={chartGeometry.padding.left - 10}
-                        y={tick.y + 4}
-                        textAnchor="end"
-                        className="db-chart-axis-label"
-                      >
-                        {formatCurrency(tick.value)}
-                      </text>
-                    ))}
-
-                    {chartGeometry.xTicks.map((tick) => (
-                      <text
-                        key={tick.key}
-                        x={tick.x}
-                        y={chartGeometry.height - 10}
-                        textAnchor="middle"
-                        className="db-chart-axis-label"
-                      >
-                        {tick.label}
-                      </text>
-                    ))}
-                  </svg>
-                ) : (
-                  <div className="db-chart-empty">
-                    Historical chart data needs at least two data points. Try a wider range or refresh prices.
+          {/* MAIN 2-COLUMN LAYOUT (mirrors Holdings content-grid) */}
+          <section className="content-grid">
+            {/* LEFT COLUMN (≈68%): Chart + Holdings Table */}
+            <div className="dashboard-column-left">
+              <article className="table-card chart-card">
+                <div className="table-header">
+                  <div>
+                    <h2>Portfolio Performance</h2>
+                    <p className="table-meta">Live prices refreshed at {formattedLiveRefresh}</p>
                   </div>
-                )}
-              </div>
 
-              <div className="db-chart-legend db-chart-legend-side">
-                {chartLegend.map((series) => (
-                  <div className="db-legend-stat" key={series.label}>
-                    <span className={`db-legend-chip ${series.className}`}>{series.label}</span>
-                    <strong>{formatCurrency(series.value)}</strong>
-                  </div>
-                ))}
-              </div>
-            </div>
+                  <div className="chart-actions">
+                    <div className="period-tabs" role="group" aria-label="Chart time period">
+                      {performanceRangeOptions.map((p) => (
+                        <button
+                          key={p}
+                          type="button"
+                          className={`period-btn${p === performanceRange ? " active" : ""}`}
+                          onClick={() => setPerformanceRange(p)}
+                        >
+                          {p}
+                        </button>
+                      ))}
+                    </div>
 
-            <div className="db-asset-row">
-              <div className="db-asset-cell">
-                <span className="db-asset-label">Holdings market value</span>
-                <span className="db-asset-value">{formatCurrency(totals.holdingsMarketValue)}</span>
-              </div>
-              <div className="db-asset-cell">
-                <span className="db-asset-label">Available cash</span>
-                <span className="db-asset-value">{formatCurrency(totals.availableFunds)}</span>
-              </div>
-              <div className="db-asset-cell">
-                <span className="db-asset-label">Net return</span>
-                <span className={`db-asset-value ${totals.holdingsProfit >= 0 ? "db-positive" : "db-negative"}`}>
-                  {formatCurrency(totals.holdingsProfit)}
-                </span>
-              </div>
-            </div>
-          </article>
-        </section>
-
-        {/* Supporting insight row sits below hero chart and does not compete with it. */}
-        <section className="db-grid-secondary">
-          <article className="card db-performers-card">
-            <div className="db-card-header">
-              <div>
-                <h2 className="db-card-title">Top Equity Performers</h2>
-                <p className="db-card-meta">Sorted from shared holdings performance</p>
-              </div>
-            </div>
-
-            <div className="db-performers-list">
-              {performers.map((performer) => (
-                <div className="db-performer-row" key={performer.symbol}>
-                  <span className="db-performer-rank">#{performer.rank}</span>
-                  <div className="db-performer-info">
-                    <span className="db-performer-symbol">{performer.symbol}</span>
-                    <span className="db-performer-name">{performer.name}</span>
-                  </div>
-                  <div className="db-performer-metric">
-                    <span className={`db-performer-perf${performer.positive ? " db-positive" : " db-negative"}`}>{performer.perf}</span>
-                    <span className="db-performer-profit">{formatCurrency(performer.profitLossValue)}</span>
+                    <button
+                      type="button"
+                      className="refresh-btn"
+                      onClick={async () => {
+                        await ensureLivePrices(undefined, { forceRefresh: true, includeBackendFallback: true });
+                        await refreshPerformanceHistory();
+                      }}
+                      title={`Last refreshed ${formattedLiveRefresh}`}
+                    >
+                      Refresh prices
+                    </button>
                   </div>
                 </div>
-              ))}
+
+                <div className="chart-area">
+                  <div className="chart-panel">
+                    {chartGeometry ? (
+                      <svg
+                        viewBox={`0 0 ${chartGeometry.width} ${chartGeometry.height}`}
+                        className="chart-svg"
+                        aria-label={`Portfolio performance for ${performanceRange}`}
+                        role="img"
+                      >
+                        <defs>
+                          <linearGradient id="portfolioGradient" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stopColor="rgba(85,72,200,0.26)" />
+                            <stop offset="100%" stopColor="rgba(85,72,200,0)" />
+                          </linearGradient>
+                        </defs>
+
+                        {chartGeometry.yTicks.map((tick) => (
+                          <line
+                            key={`grid-${tick.y}`}
+                            x1={chartGeometry.padding.left}
+                            y1={tick.y}
+                            x2={chartGeometry.width - chartGeometry.padding.right}
+                            y2={tick.y}
+                            stroke="#ece8fb"
+                            strokeWidth="1"
+                          />
+                        ))}
+
+                        <polygon points={chartGeometry.areaPoints} fill="url(#portfolioGradient)" />
+
+                        <polyline
+                          points={chartGeometry.polylinePoints}
+                          fill="none"
+                          stroke="#5548c8"
+                          strokeWidth="3.2"
+                          strokeLinejoin="round"
+                          strokeLinecap="round"
+                        />
+
+                        {chartGeometry.points.length > 0 && (
+                          <circle
+                            cx={chartGeometry.points[chartGeometry.points.length - 1].x}
+                            cy={chartGeometry.points[chartGeometry.points.length - 1].y}
+                            r="4.5"
+                            fill="#5548c8"
+                            stroke="#ffffff"
+                            strokeWidth="2"
+                          />
+                        )}
+
+                        {chartGeometry.yTicks.map((tick) => (
+                          <text
+                            key={`ylabel-${tick.y}`}
+                            x={chartGeometry.padding.left - 10}
+                            y={tick.y + 4}
+                            textAnchor="end"
+                            className="chart-axis-label"
+                          >
+                            {formatCurrency(tick.value)}
+                          </text>
+                        ))}
+
+                        {chartGeometry.xTicks.map((tick) => (
+                          <text
+                            key={tick.key}
+                            x={tick.x}
+                            y={chartGeometry.height - 10}
+                            textAnchor="middle"
+                            className="chart-axis-label"
+                          >
+                            {tick.label}
+                          </text>
+                        ))}
+                      </svg>
+                    ) : (
+                      <div className="chart-empty">
+                        Historical chart data needs at least two data points. Try a wider range or refresh prices.
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="chart-legend chart-legend-side">
+                    {chartLegend.map((series) => (
+                      <div className="legend-stat" key={series.label}>
+                        <span className={`legend-chip ${series.className}`}>{series.label}</span>
+                        <strong>{formatCurrency(series.value)}</strong>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="asset-row">
+                  <div className="asset-cell">
+                    <span className="asset-label">Holdings market value</span>
+                    <span className="asset-value">{formatCurrency(totals.holdingsMarketValue)}</span>
+                  </div>
+                  <div className="asset-cell">
+                    <span className="asset-label">Available cash</span>
+                    <span className="asset-value">{formatCurrency(totals.availableFunds)}</span>
+                  </div>
+                  <div className="asset-cell">
+                    <span className="asset-label">Net return</span>
+                    <span className={`asset-value ${totals.holdingsProfit >= 0 ? "positive-text" : "negative-text"}`}>
+                      {formatCurrency(totals.holdingsProfit)}
+                    </span>
+                  </div>
+                </div>
+              </article>
+
+              <article className="table-card">
+                <div className="table-header">
+                  <h2>Holdings Overview</h2>
+                  <a href="/holdings" className="table-view-all">
+                    View all
+                  </a>
+                </div>
+
+                <div className="table-wrapper">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Name</th>
+                        <th>Symbol</th>
+                        <th>Quantity</th>
+                        <th>Bid Price</th>
+                        <th>Total Value</th>
+                        <th>P / L %</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {holdingsToDisplay.map((holding) => (
+                        <tr key={holding.id}>
+                          <td>{holding.name}</td>
+                          <td>
+                            <strong>{holding.symbol}</strong>
+                          </td>
+                          <td className="number-cell">{holding.quantityOwned}</td>
+                          <td className="number-cell">{formatCurrency(holding.currentBidPrice)}</td>
+                          <td className="value-cell">{formatCurrency(holding.totalValue)}</td>
+                          <td
+                            className={`number-cell ${
+                              holding.profitLossPercent > 0 ? "positive-text" : holding.profitLossPercent < 0 ? "negative-text" : ""
+                            }`}
+                          >
+                            {formatPercent(holding.profitLossPercent)}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </article>
             </div>
-          </article>
 
-          <RotatingNewsCard stories={NEWS_STORIES} />
-        </section>
+            {/* RIGHT COLUMN (≈32%): Performers + News */}
+            <aside className="dashboard-column-right">
+              <article className="table-card">
+                <div className="table-header">
+                  <div>
+                    <h2>Top Equity Performers</h2>
+                    <p className="table-meta">Sorted from shared holdings performance</p>
+                  </div>
+                </div>
 
-        {/* Holdings preview is a clean, full-width supporting section beneath insights. */}
-        <section className="db-holdings-section">
-          <section className="card db-holdings-card">
-            <div className="db-card-header">
-              <h2 className="db-card-title">Holdings Overview</h2>
-              <a href="/holdings" className="db-view-all">View all</a>
-            </div>
-
-            <div className="db-table-wrap">
-              <table className="db-table">
-                <thead>
-                  <tr>
-                    <th>Name</th>
-                    <th>Symbol</th>
-                    <th>Quantity</th>
-                    <th>Bid Price</th>
-                    <th>Total Value</th>
-                    <th>P / L %</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {holdingsToDisplay.map((holding) => (
-                    <tr key={holding.id}>
-                      <td className="db-company-cell">{holding.name}</td>
-                      <td><strong>{holding.symbol}</strong></td>
-                      <td className="db-cell-center">{holding.quantityOwned}</td>
-                      <td className="db-cell-center">{formatCurrency(holding.currentBidPrice)}</td>
-                      <td className="db-cell-center">{formatCurrency(holding.totalValue)}</td>
-                      <td className={`db-cell-center ${holding.profitLossPercent > 0 ? "db-positive" : holding.profitLossPercent < 0 ? "db-negative" : ""}`}>
-                        {formatPercent(holding.profitLossPercent)}
-                      </td>
-                    </tr>
+                <div className="performers-list">
+                  {performers.map((performer) => (
+                    <div className="performer-row" key={performer.symbol}>
+                      <span className="performer-rank">#{performer.rank}</span>
+                      <div className="performer-info">
+                        <span className="performer-symbol">{performer.symbol}</span>
+                        <span className="performer-name">{performer.name}</span>
+                      </div>
+                      <div className="performer-metric">
+                        <span className={`performer-perf${performer.positive ? " positive-text" : " negative-text"}`}>
+                          {performer.perf}
+                        </span>
+                        <span className="performer-profit">{formatCurrency(performer.profitLossValue)}</span>
+                      </div>
+                    </div>
                   ))}
-                </tbody>
-              </table>
-            </div>
+                </div>
+              </article>
+
+              <article className="table-card">
+                <RotatingNewsCard stories={NEWS_STORIES} />
+              </article>
+            </aside>
           </section>
-        </section>
+        </div>
       </main>
     </div>
   );

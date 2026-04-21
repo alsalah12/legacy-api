@@ -1,10 +1,14 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import "./Holdings.css";
+import "./components/QuantumOptimizer.css";
 import AppSidebar from "./components/AppSidebar";
 import AppTopBar from "./components/AppTopBar";
 import PortfolioAllocationChart from "./components/PortfolioAllocationChart";
+import QuantumOptimizerCard from "./components/QuantumOptimizerCard";
+import OptimizationResultsPanel from "./components/OptimizationResultsPanel";
 import { formatCurrency, formatPercent, usePortfolioData } from "./services/holdingsData";
+import { runQuantumOptimization } from "./services/quantumService";
 
 export default function Holdings() {
   const PAGE_SIZE = 10;
@@ -20,6 +24,17 @@ export default function Holdings() {
   } = usePortfolioData();
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
+  const [optimizerForm, setOptimizerForm] = useState({
+    riskTolerance: "medium",
+    targetObjective: "balanced",
+    maxHoldings: 5,
+    cashAvailable: 0,
+  });
+  const [optimizerExpanded, setOptimizerExpanded] = useState(false);
+  const [optimizationResult, setOptimizationResult] = useState(null);
+  const [optimizationLoading, setOptimizationLoading] = useState(false);
+  const [optimizationError, setOptimizationError] = useState("");
+  const optimizerSectionRef = useRef(null);
   const selectedCategory = (searchParams.get("category") || "stocks").toLowerCase();
 
   useEffect(() => {
@@ -52,6 +67,43 @@ export default function Holdings() {
   const rangeEnd = Math.min(currentPage * PAGE_SIZE, filteredHoldings.length);
   const showingPlaceholder = selectedCategory !== "stocks";
 
+  const handleOptimizerInputChange = (event) => {
+    const { name, value } = event.target;
+    setOptimizerForm((previous) => ({
+      ...previous,
+      [name]: name === "maxHoldings" || name === "cashAvailable" ? Number(value) : value,
+    }));
+  };
+
+  const handleRunOptimization = async (event) => {
+    event.preventDefault();
+    setOptimizationLoading(true);
+    setOptimizationError("");
+
+    try {
+      const response = await runQuantumOptimization({
+        riskTolerance: optimizerForm.riskTolerance,
+        targetObjective: optimizerForm.targetObjective,
+        maxHoldings: Math.max(1, Number(optimizerForm.maxHoldings) || 1),
+        cashAvailable: Math.max(0, Number(optimizerForm.cashAvailable) || 0),
+      });
+      setOptimizationResult(response);
+    } catch (error) {
+      const apiMessage = error?.response?.data?.message;
+      setOptimizationError(apiMessage || "Optimization failed. Please try again.");
+      setOptimizationResult(null);
+    } finally {
+      setOptimizationLoading(false);
+    }
+  };
+
+  const focusOptimizer = () => {
+    setOptimizerExpanded(true);
+    window.requestAnimationFrame(() => {
+      optimizerSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  };
+
   return (
     <div className="holdings-page">
       <AppTopBar />
@@ -72,8 +124,8 @@ export default function Holdings() {
                 Add Stocks
               </button>
 
-              <button type="button" className="holdings-quantum-btn">
-                Quantum Portfolio Optimisation
+              <button type="button" className="holdings-quantum-btn" onClick={focusOptimizer}>
+                Open Quantum Optimizer
               </button>
             </div>
           </header>
@@ -240,16 +292,48 @@ export default function Holdings() {
                 <aside className="holdings-allocation-section">
                   <PortfolioAllocationChart
                     title="Portfolio Allocation"
-                    subtitle="Live allocation by holding value"
+                    subtitle=""
                     allocations={allocationBreakdown}
                     totalValue={totals.holdingsMarketValue}
-                    centerLabel="Holdings Value"
+                    showCenter={false}
                     emptyMessage="No holdings available for allocation yet."
                   />
                 </aside>
               </>
             )}
           </section>
+
+          {!showingPlaceholder && (
+            <section className="holdings-advanced-tools" ref={optimizerSectionRef}>
+              <div className="holdings-advanced-tools-header">
+                <h2>Advanced Tools</h2>
+                <button
+                  type="button"
+                  className="holdings-advanced-toggle-btn"
+                  onClick={() => setOptimizerExpanded((previous) => !previous)}
+                >
+                  {optimizerExpanded ? "Hide Quantum Optimizer" : "Show Quantum Optimizer"}
+                </button>
+              </div>
+
+              {optimizerExpanded && (
+                <section className="quantum-section">
+                  <QuantumOptimizerCard
+                    formValues={optimizerForm}
+                    onChange={handleOptimizerInputChange}
+                    onSubmit={handleRunOptimization}
+                    loading={optimizationLoading}
+                  />
+
+                  <OptimizationResultsPanel
+                    loading={optimizationLoading}
+                    error={optimizationError}
+                    result={optimizationResult}
+                  />
+                </section>
+              )}
+            </section>
+          )}
         </div>
       </main>
     </div>

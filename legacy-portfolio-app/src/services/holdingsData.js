@@ -145,6 +145,72 @@ function getBackendBidPrice(rawBackendHolding = {}) {
   return toNumber(rawBackendHolding?.bidPrice ?? rawBackendHolding?.currentBidPrice ?? rawBackendHolding?.price, 0);
 }
 
+function getPortfolioId(rawHolding = {}) {
+  const candidate =
+    rawHolding?.portfolioId ??
+    rawHolding?.portfolio?.id ??
+    rawHolding?.portfolio?.portfolioId ??
+    rawHolding?.portfolioID ??
+    rawHolding?.portfolio_id ??
+    null;
+
+  const normalized = toId(candidate);
+  return normalized || null;
+}
+
+function getAverageBuyPrice(rawHolding = {}, quantityOwned = 0, fallbackPrice = 0) {
+  const explicitAverage = toNumber(
+    rawHolding?.averageBuyPrice ?? rawHolding?.avgBuyPrice ?? rawHolding?.averagePrice ?? rawHolding?.costBasisPrice,
+    NaN
+  );
+  if (Number.isFinite(explicitAverage) && explicitAverage > 0) {
+    return explicitAverage;
+  }
+
+  const investedFromBackend = toNumber(
+    rawHolding?.totalInvested ?? rawHolding?.investedAmount ?? rawHolding?.costBasis,
+    NaN
+  );
+  if (Number.isFinite(investedFromBackend) && quantityOwned > 0) {
+    return investedFromBackend / quantityOwned;
+  }
+
+  return Math.max(0, toNumber(fallbackPrice, 0));
+}
+
+function buildHoldingMetrics(rawHolding = {}, livePriceData = null) {
+  const symbol = normalizeSymbol(rawHolding?.symbol ?? rawHolding?.ticker) || "UNKNOWN";
+  const quantityOwned = Math.max(
+    0,
+    toNumber(rawHolding?.quantityOwned ?? rawHolding?.amountOwned ?? rawHolding?.quantity, 0)
+  );
+  const storedPrice = Math.max(0, getBackendBidPrice(rawHolding));
+  const currentBidPrice = Math.max(0, toNumber(livePriceData?.price, storedPrice));
+  const averageBuyPrice = Math.max(0, getAverageBuyPrice(rawHolding, quantityOwned, storedPrice));
+  const totalValue = quantityOwned * currentBidPrice;
+  const totalInvested = quantityOwned * averageBuyPrice;
+  const profitLossValue = totalValue - totalInvested;
+  const profitLossPercent = totalInvested > 0 ? (profitLossValue / totalInvested) * 100 : 0;
+
+  return {
+    id: rawHolding?.id ?? `${symbol}-${rawHolding?.companyName ?? rawHolding?.name ?? "holding"}`,
+    name: rawHolding?.companyName ?? rawHolding?.name ?? rawHolding?.company ?? "Unknown Company",
+    symbol,
+    portfolioId: getPortfolioId(rawHolding),
+    quantityOwned,
+    averageBuyPrice,
+    currentBidPrice,
+    totalValue,
+    totalInvested,
+    profitLossValue,
+    profitLossPercent,
+    sector: resolveSector(rawHolding?.sector, symbol),
+    priceSource: livePriceData?.source ?? rawHolding?.priceSource ?? "backend",
+    priceTimestamp: livePriceData?.timestamp ?? rawHolding?.priceTimestamp ?? null,
+    priceWarning: livePriceData?.isStale ? LIVE_WARNING_MESSAGE : rawHolding?.priceWarning ?? "",
+  };
+}
+
 function buildLivePriceEntry(symbol, payload, source, isStale = false) {
   const price = toNumber(payload?.price ?? payload?.bidPrice, 0);
   return {
@@ -275,53 +341,13 @@ async function getLivePricesForSymbols(symbols, options = {}) {
 }
 
 function mapBaseHolding(rawBackendHolding = {}) {
-  const symbol = normalizeSymbol(rawBackendHolding?.symbol ?? rawBackendHolding?.ticker) || "UNKNOWN";
-  const quantityOwned = toNumber(
-    rawBackendHolding?.quantityOwned ?? rawBackendHolding?.amountOwned ?? rawBackendHolding?.quantity,
-    0
-  );
-  const currentBidPrice = getBackendBidPrice(rawBackendHolding);
-  const totalInvested = toNumber(rawBackendHolding?.totalInvested, quantityOwned * currentBidPrice);
-  const totalValue = quantityOwned * currentBidPrice;
-  const profitLossValue = totalValue - totalInvested;
-  const profitLossPercent = totalInvested > 0 ? (profitLossValue / totalInvested) * 100 : 0;
-
-  return {
-    id: rawBackendHolding?.id ?? `${symbol}-${rawBackendHolding?.companyName ?? "holding"}`,
-    name: rawBackendHolding?.companyName ?? rawBackendHolding?.name ?? rawBackendHolding?.company ?? "Unknown Company",
-    symbol,
-    quantityOwned,
-    currentBidPrice,
-    totalValue,
-    totalInvested,
-    profitLossValue,
-    profitLossPercent,
-    sector: resolveSector(rawBackendHolding?.sector, symbol),
-    priceSource: "backend",
-    priceTimestamp: null,
-    priceWarning: "",
-  };
+  return buildHoldingMetrics(rawBackendHolding, null);
 }
 
 // Backend holdings are always the base source of truth.
 // Live quote data only enriches the bid price when it is available and needed.
 export function mapHoldingWithLivePrice(rawBackendHolding = {}, livePriceData = null) {
-  const baseHolding = mapBaseHolding(rawBackendHolding);
-  const currentBidPrice = toNumber(livePriceData?.price, baseHolding.currentBidPrice);
-  const totalValue = baseHolding.quantityOwned * currentBidPrice;
-  const profitLossValue = totalValue - baseHolding.totalInvested;
-  const profitLossPercent = baseHolding.totalInvested > 0 ? (profitLossValue / baseHolding.totalInvested) * 100 : 0;
-
-  return {
-    ...baseHolding,
-    currentBidPrice,
-    totalValue,
-    profitLossValue,
-    profitLossPercent,
-    priceSource: livePriceData?.source ?? baseHolding.priceSource,
-    priceTimestamp: livePriceData?.timestamp ?? null,
-    priceWarning: livePriceData?.isStale ? LIVE_WARNING_MESSAGE : "",
-  };
+  return buildHoldingMetrics(rawBackendHolding, livePriceData);
 }
 
 function mapTransactions(rawTransactions) {
@@ -501,6 +527,170 @@ function filterPerformanceSeriesByRange(series, selectedRange) {
   return series.slice(-Math.min(2, series.length));
 }
 
+/**
+ * SHARED METRIC CALCULATION — Single Source of Truth for Dashboard KPIs
+ * 
+ * This function calculates the portfolio-level metrics that appear in multiple places:
+ * - Dashboard KPI cards (Total Value, Today's Gain, Total Gain)
+ * - Holdings table values (match the same live prices and cost basis)
+ * - Top Performers ranking (derived from profitLossPercent calculated here)
+ * 
+ * METRIC DEFINITIONS:
+ * 
+ * totalValue: sum(quantity × current live price) + available cash
+ *   = totals.totalPortfolioWorth
+ *   Includes both holdings at live prices AND available cash balance
+ * 
+ * totalGainValue: sum(quantity × (current live price - average purchase price))
+ *   = totals.holdingsProfit
+ *   Profit/loss on holdings only, not including cash
+ * 
+ * totalGainPercent: totalGainValue / sum(quantity × average purchase price) × 100
+ *   = totals.holdingsProfitPercent
+ *   Return percentage on invested basis
+ * 
+ * todayGainValue: sum(quantity × (current live price - previous close price))
+ *   Calculated by pulling yesterday's close from historyBySymbol and comparing
+ *   to today's market value. If history unavailable, todayGainAvailable = false
+ *   and both values are 0.
+ * 
+ * todayGainPercent: todayGainValue / previousCloseValue × 100
+ *   Only valid if todayGainAvailable = true
+ * 
+ * CONSISTENCY GUARANTEES:
+ * - All holdings use the same live prices from the current livePrices state
+ * - Each holding's totalValue = quantityOwned × currentBidPrice (live or fallback)
+ * - Each holding's profitLossPercent uses the same cost basis as totalGainValue
+ * - Today's Gain only appears if previous close data exists (no fake values)
+ */
+function getPreviousClosePrice(holding, historyBySymbol, todayKey) {
+  const points = Array.isArray(historyBySymbol[holding.symbol]) ? historyBySymbol[holding.symbol] : [];
+  if (points.length === 0) return null;
+
+  const latest = points[points.length - 1];
+  const previousClose =
+    latest?.dateKey === todayKey && points.length > 1 ? points[points.length - 2]?.close : latest?.close;
+
+  const numeric = toNumber(previousClose, NaN);
+  return Number.isFinite(numeric) ? numeric : null;
+}
+
+const ALLOCATION_COLOR_PALETTE = [
+  "#5B2AD5", // deep purple
+  "#8B3DFF", // electric violet
+  "#4F46E5", // indigo
+  "#2563EB", // cobalt blue
+  "#0D9488", // teal
+  "#DB2777", // magenta
+  "#7C3AED", // vivid violet
+  "#0284C7", // azure
+];
+
+function getStableAllocationColor(symbol) {
+  const normalized = normalizeSymbol(symbol);
+  if (!normalized) return ALLOCATION_COLOR_PALETTE[0];
+
+  let hash = 0;
+  for (let index = 0; index < normalized.length; index += 1) {
+    hash = (hash * 31 + normalized.charCodeAt(index)) >>> 0;
+  }
+
+  return ALLOCATION_COLOR_PALETTE[hash % ALLOCATION_COLOR_PALETTE.length];
+}
+
+function buildPortfolioComputedData({ holdings = [], availableCash = 0, historyBySymbol = {} }) {
+  const normalizedHoldings = holdings.map((holding) => {
+    const quantityOwned = Math.max(0, toNumber(holding?.quantityOwned, 0));
+    const currentBidPrice = Math.max(0, toNumber(holding?.currentBidPrice ?? holding?.bidPrice ?? holding?.price, 0));
+    const averageBuyPrice = Math.max(
+      0,
+      toNumber(
+        holding?.averageBuyPrice,
+        quantityOwned > 0 ? toNumber(holding?.totalInvested, 0) / quantityOwned : currentBidPrice
+      )
+    );
+    const totalValue = quantityOwned * currentBidPrice;
+    const totalInvested = quantityOwned * averageBuyPrice;
+    const profitLossValue = totalValue - totalInvested;
+    const profitLossPercent = totalInvested > 0 ? (profitLossValue / totalInvested) * 100 : 0;
+
+    return {
+      ...holding,
+      quantityOwned,
+      currentBidPrice,
+      averageBuyPrice,
+      totalValue,
+      totalInvested,
+      profitLossValue,
+      profitLossPercent,
+    };
+  });
+
+  const holdingsMarketValue = normalizedHoldings.reduce((sum, row) => sum + toNumber(row.totalValue, 0), 0);
+  const holdingsInvested = normalizedHoldings.reduce((sum, row) => sum + toNumber(row.totalInvested, 0), 0);
+  const holdingsProfit = holdingsMarketValue - holdingsInvested;
+  const holdingsProfitPercent = holdingsInvested > 0 ? (holdingsProfit / holdingsInvested) * 100 : 0;
+  const safeAvailableCash = Math.max(0, toNumber(availableCash, 0));
+  const totalPortfolioWorth = holdingsMarketValue + safeAvailableCash;
+
+  const todayKey = new Date().toISOString().slice(0, 10);
+  const activeHoldings = normalizedHoldings.filter((holding) => holding.quantityOwned > 0 && holding.symbol);
+  const hasCompletePreviousCloseData =
+    activeHoldings.length > 0 &&
+    activeHoldings.every((holding) => Number.isFinite(getPreviousClosePrice(holding, historyBySymbol, todayKey)));
+
+  let todayGainValue = 0;
+  let todayGainPercent = 0;
+
+  if (hasCompletePreviousCloseData) {
+    const previousClosePortfolioValue = activeHoldings.reduce((sum, holding) => {
+      const previousClose = getPreviousClosePrice(holding, historyBySymbol, todayKey);
+      return sum + toNumber(previousClose, 0) * toNumber(holding.quantityOwned, 0);
+    }, 0);
+
+    todayGainValue = activeHoldings.reduce((sum, holding) => {
+      const previousClose = getPreviousClosePrice(holding, historyBySymbol, todayKey);
+      return sum + (toNumber(holding.currentBidPrice, 0) - toNumber(previousClose, 0)) * toNumber(holding.quantityOwned, 0);
+    }, 0);
+
+    todayGainPercent = previousClosePortfolioValue > 0 ? (todayGainValue / previousClosePortfolioValue) * 100 : 0;
+  }
+
+  const allocationBreakdown = normalizedHoldings
+    .filter((holding) => holding.totalValue > 0)
+    .sort((first, second) => second.totalValue - first.totalValue)
+    .map((holding, index) => ({
+      key: `${holding.symbol}-${holding.id}`,
+      symbol: holding.symbol,
+      name: holding.name,
+      quantity: holding.quantityOwned,
+      value: toNumber(holding.totalValue, 0),
+      percent: holdingsMarketValue > 0 ? (toNumber(holding.totalValue, 0) / holdingsMarketValue) * 100 : 0,
+      color: getStableAllocationColor(holding.symbol || index),
+    }));
+
+  return {
+    holdings: normalizedHoldings,
+    totals: {
+      holdingsMarketValue,
+      holdingsInvested,
+      holdingsProfit,
+      holdingsProfitPercent,
+      availableFunds: safeAvailableCash,
+      totalPortfolioWorth,
+    },
+    portfolioSummary: {
+      totalValue: totalPortfolioWorth,
+      totalGainValue: holdingsProfit,
+      totalGainPercent: holdingsProfitPercent,
+      todayGainValue: hasCompletePreviousCloseData ? todayGainValue : 0,
+      todayGainPercent: hasCompletePreviousCloseData ? todayGainPercent : 0,
+      todayGainAvailable: hasCompletePreviousCloseData,
+    },
+    allocationBreakdown,
+  };
+}
+
 export function formatPercent(value) {
   const numeric = toNumber(value, 0);
   const sign = numeric > 0 ? "+" : "";
@@ -649,22 +839,15 @@ export function PortfolioDataProvider({ children }) {
     return filtered.length > 0 ? filtered : portfolios;
   }, [activeUser, portfolios]);
 
-  const totals = useMemo(() => {
-    const holdingsMarketValue = holdings.reduce((sum, row) => sum + toNumber(row.totalValue, 0), 0);
-    const holdingsInvested = holdings.reduce((sum, row) => sum + toNumber(row.totalInvested, 0), 0);
-    const holdingsProfit = holdings.reduce((sum, row) => sum + toNumber(row.profitLossValue, 0), 0);
-    const holdingsProfitPercent = holdingsInvested > 0 ? (holdingsProfit / holdingsInvested) * 100 : 0;
-    const availableFunds = toNumber(activePortfolio.availableFunds, 0);
+  const portfolioComputed = useMemo(() => {
+    return buildPortfolioComputedData({
+      holdings,
+      availableCash: activePortfolio.availableFunds,
+      historyBySymbol,
+    });
+  }, [activePortfolio.availableFunds, holdings, historyBySymbol]);
 
-    return {
-      holdingsMarketValue,
-      holdingsInvested,
-      holdingsProfit,
-      holdingsProfitPercent,
-      availableFunds,
-      totalPortfolioWorth: holdingsMarketValue + availableFunds,
-    };
-  }, [activePortfolio.availableFunds, holdings]);
+  const totals = portfolioComputed.totals;
 
   const refreshTransactions = useCallback(async () => {
     try {
@@ -1069,60 +1252,9 @@ export function PortfolioDataProvider({ children }) {
     [performanceRange, performanceSeriesAll]
   );
 
-  // Shared summary metrics consumed by Dashboard + Holdings.
-  // These stay in sync because they derive from the same `holdings`, `totals`, and shared history cache.
-  const portfolioSummary = useMemo(() => {
-    const todayKey = new Date().toISOString().slice(0, 10);
-    const previousCloseHoldingsValue = holdings.reduce((sum, holding) => {
-      if (holding.quantityOwned <= 0) return sum;
-
-      const points = Array.isArray(historyBySymbol[holding.symbol]) ? historyBySymbol[holding.symbol] : [];
-      if (points.length === 0) return sum;
-
-      const latest = points[points.length - 1];
-      const fallback = latest?.close;
-      const previousClose =
-        latest?.dateKey === todayKey && points.length > 1
-          ? points[points.length - 2]?.close
-          : fallback;
-
-      if (!Number.isFinite(previousClose)) return sum;
-      return sum + previousClose * holding.quantityOwned;
-    }, 0);
-
-    const todayGainValue = totals.holdingsMarketValue - previousCloseHoldingsValue;
-    const todayGainPercent = previousCloseHoldingsValue > 0 ? (todayGainValue / previousCloseHoldingsValue) * 100 : 0;
-
-    return {
-      totalValue: totals.totalPortfolioWorth,
-      totalGainValue: totals.holdingsProfit,
-      totalGainPercent: totals.holdingsProfitPercent,
-      todayGainValue,
-      todayGainPercent,
-      todayGainAvailable: previousCloseHoldingsValue > 0,
-    };
-  }, [historyBySymbol, holdings, totals.holdingsMarketValue, totals.holdingsProfit, totals.holdingsProfitPercent, totals.totalPortfolioWorth]);
-
-  // Shared allocation dataset (value + percent) reused by all allocation charts.
-  const allocationBreakdown = useMemo(() => {
-    const palette = ["#6F2DBD", "#8A4ED2", "#A06CD5", "#B487E3", "#C9A7EB", "#DCC5F3", "#EEE3FA"];
-    const rows = holdings
-      .filter((holding) => holding.totalValue > 0)
-      .sort((first, second) => second.totalValue - first.totalValue)
-      .map((holding, index) => ({
-        key: `${holding.symbol}-${holding.id}`,
-        symbol: holding.symbol,
-        name: holding.name,
-        value: holding.totalValue,
-        color: palette[index % palette.length],
-      }));
-
-    const total = rows.reduce((sum, row) => sum + toNumber(row.value, 0), 0);
-    return rows.map((row) => ({
-      ...row,
-      percent: total > 0 ? (row.value / total) * 100 : 0,
-    }));
-  }, [holdings]);
+  // Shared summary + allocation metrics from one source of truth.
+  const portfolioSummary = portfolioComputed.portfolioSummary;
+  const allocationBreakdown = portfolioComputed.allocationBreakdown;
 
   const value = {
     holdings,
