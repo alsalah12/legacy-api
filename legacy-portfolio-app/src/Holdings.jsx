@@ -1,10 +1,16 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import "./Holdings.css";
+import "./components/QuantumOptimizer.css";
 import AppSidebar from "./components/AppSidebar";
 import AppTopBar from "./components/AppTopBar";
+import AppContentLayout from "./components/AppContentLayout";
+import PageHeader from "./components/PageHeader";
 import PortfolioAllocationChart from "./components/PortfolioAllocationChart";
+import QuantumOptimizerCard from "./components/QuantumOptimizerCard";
+import OptimizationResultsPanel from "./components/OptimizationResultsPanel";
 import { formatCurrency, formatPercent, usePortfolioData } from "./services/holdingsData";
+import { runQuantumOptimization } from "./services/quantumService";
 
 export default function Holdings() {
   const PAGE_SIZE = 10;
@@ -20,11 +26,34 @@ export default function Holdings() {
   } = usePortfolioData();
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
+  const [optimizerForm, setOptimizerForm] = useState({
+    riskTolerance: "medium",
+    targetObjective: "balanced",
+    maxHoldings: 5,
+    cashAvailable: 0,
+  });
+  const [optimizerExpanded, setOptimizerExpanded] = useState(false);
+  const [optimizationResult, setOptimizationResult] = useState(null);
+  const [optimizationLoading, setOptimizationLoading] = useState(false);
+  const [optimizationError, setOptimizationError] = useState("");
   const selectedCategory = (searchParams.get("category") || "stocks").toLowerCase();
 
   useEffect(() => {
     ensureLivePrices(undefined, { includeBackendFallback: true });
   }, [ensureLivePrices]);
+
+  useEffect(() => {
+    setOptimizerForm((previous) => {
+      if (previous.cashAvailable === totals.availableFunds) {
+        return previous;
+      }
+
+      return {
+        ...previous,
+        cashAvailable: totals.availableFunds,
+      };
+    });
+  }, [totals.availableFunds]);
 
   const filteredHoldings = useMemo(() => {
     if (!searchTerm.trim()) return holdings;
@@ -52,33 +81,65 @@ export default function Holdings() {
   const rangeEnd = Math.min(currentPage * PAGE_SIZE, filteredHoldings.length);
   const showingPlaceholder = selectedCategory !== "stocks";
 
+  const handleOptimizerInputChange = (event) => {
+    const { name, value } = event.target;
+    setOptimizerForm((previous) => ({
+      ...previous,
+      [name]: name === "maxHoldings" || name === "cashAvailable" ? Number(value) : value,
+    }));
+  };
+
+  const handleRunOptimization = async (event) => {
+    event.preventDefault();
+    setOptimizationLoading(true);
+    setOptimizationError("");
+
+    try {
+      const response = await runQuantumOptimization({
+        riskTolerance: optimizerForm.riskTolerance,
+        targetObjective: optimizerForm.targetObjective,
+        maxHoldings: Math.max(1, Number(optimizerForm.maxHoldings) || 1),
+        cashAvailable: Math.max(0, Number(optimizerForm.cashAvailable) || 0),
+      });
+      setOptimizationResult(response);
+    } catch (error) {
+      const apiMessage = error?.response?.data?.message;
+      setOptimizationError(apiMessage || "Optimization failed. Please try again.");
+      setOptimizationResult(null);
+    } finally {
+      setOptimizationLoading(false);
+    }
+  };
+
+  const focusOptimizer = () => {
+    setOptimizerExpanded(true);
+  };
+
   return (
     <div className="holdings-page">
       <AppTopBar />
       <AppSidebar />
 
-      <main className="main-content app-page-main">
-        <div className="holdings-shell">
-          <header className="topbar">
-            <h1>Holdings</h1>
+      <AppContentLayout shellClassName="holdings-shell">
+          <PageHeader
+            title="Holdings"
+            actions={(
+              <>
+                <button
+                  type="button"
+                  className="holdings-add-stock-btn"
+                  onClick={() => navigate("/buy-sell")}
+                >
+                  Add Stocks
+                </button>
 
-            {/* Header actions keep primary optimisation and stock-entry workflows together. */}
-            <div className="holdings-header-actions">
-              <button
-                type="button"
-                className="holdings-add-stock-btn"
-                onClick={() => navigate("/buy-sell")}
-              >
-                Add Stocks
-              </button>
+                <button type="button" className="holdings-quantum-btn" onClick={focusOptimizer}>
+                  Open Quantum Optimizer
+                </button>
+              </>
+            )}
+          />
 
-              <button type="button" className="holdings-quantum-btn">
-                Quantum Portfolio Optimisation
-              </button>
-            </div>
-          </header>
-
-          {/* This mirrors the sidebar category list inside the page content for clearer handoff on smaller screens. */}
           <div className="holdings-subnav" aria-label="Holdings categories">
             {[
               { label: "Stocks", value: "stocks" },
@@ -140,12 +201,7 @@ export default function Holdings() {
                 {/* Bonds and crypto are intentionally stubbed until backend-backed data exists. */}
                 <div className="holdings-placeholder">
                   <span className="holdings-placeholder-eyebrow">{selectedCategory}</span>
-                  <h2>Feature coming soon</h2>
-                  <p>
-                    {selectedCategory === "bonds"
-                      ? "Bond holdings are not wired into the backend yet."
-                      : "Crypto holdings are not wired into the backend yet."}
-                  </p>
+                  <h2 className="app-section-title">Feature coming soon</h2>
                 </div>
               </article>
             ) : (
@@ -153,7 +209,7 @@ export default function Holdings() {
                 {/* Left column (≈68%): primary holdings table container. */}
                 <article className="table-card">
                   <div className="table-header">
-                    <h2>Your Holdings</h2>
+                    <h2 className="app-section-title">Your Holdings</h2>
                     <div className="table-header-actions">
                       <span>{filteredHoldings.length} positions</span>
                     </div>
@@ -240,18 +296,56 @@ export default function Holdings() {
                 <aside className="holdings-allocation-section">
                   <PortfolioAllocationChart
                     title="Portfolio Allocation"
-                    subtitle="Live allocation by holding value"
+                    subtitle=""
                     allocations={allocationBreakdown}
                     totalValue={totals.holdingsMarketValue}
-                    centerLabel="Holdings Value"
+                    showCenter={false}
                     emptyMessage="No holdings available for allocation yet."
                   />
                 </aside>
               </>
             )}
           </section>
-        </div>
-      </main>
+
+          {!showingPlaceholder && optimizerExpanded && (
+            <div className="holdings-optimizer-modal-backdrop" onClick={() => setOptimizerExpanded(false)}>
+              <section
+                className="holdings-optimizer-modal"
+                role="dialog"
+                aria-modal="true"
+                aria-label="Quantum Optimizer"
+                onClick={(event) => event.stopPropagation()}
+              >
+                <div className="holdings-optimizer-modal-header">
+                  <h2 className="app-section-title">Quantum Optimizer</h2>
+                  <button
+                    type="button"
+                    className="holdings-optimizer-modal-close"
+                    onClick={() => setOptimizerExpanded(false)}
+                    aria-label="Close Quantum Optimizer"
+                  >
+                    ×
+                  </button>
+                </div>
+
+                <section className="quantum-section">
+                  <QuantumOptimizerCard
+                    formValues={optimizerForm}
+                    onChange={handleOptimizerInputChange}
+                    onSubmit={handleRunOptimization}
+                    loading={optimizationLoading}
+                  />
+
+                  <OptimizationResultsPanel
+                    loading={optimizationLoading}
+                    error={optimizationError}
+                    result={optimizationResult}
+                  />
+                </section>
+              </section>
+            </div>
+          )}
+      </AppContentLayout>
     </div>
   );
 }

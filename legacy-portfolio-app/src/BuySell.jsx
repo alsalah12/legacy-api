@@ -1,42 +1,164 @@
-// React hooks handle the lightweight filter and pagination state for this page.
 import React, { useMemo, useState } from "react";
-// Page-specific styles intentionally mirror the Transaction History screen.
 import "./BuySell.css";
 import AppSidebar from "./components/AppSidebar";
 import AppTopBar from "./components/AppTopBar";
+import AppContentLayout from "./components/AppContentLayout";
+import PageHeader from "./components/PageHeader";
 import { formatCurrency, formatPercent, usePortfolioData } from "./services/holdingsData";
 
-// Small page size keeps the table compact and consistent with the reference page density.
 const PAGE_SIZE = 4;
 
-// Buy & Sell page reuses the same shell and visual rhythm as Transaction History.
+function buildTradeState(mode, stock) {
+  return {
+    mode,
+    stock,
+    quantity: "1",
+    executionPrice: 0,
+    quoteWarning: "",
+    priceLoading: false,
+    submitting: false,
+    localError: "",
+  };
+}
+
 export default function BuySell() {
   const {
-    holdings: stocksToUse,
-    totals,
+    availableStocks,
     ensureLivePrices,
+    getExecutionPrice,
     buyStock,
     sellStock,
+    totals,
+    tradeMessage,
+    tradeError,
+    clearTradeFeedback,
   } = usePortfolioData();
   const [sectorFilter, setSectorFilter] = useState("ALL");
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [tradeState, setTradeState] = useState(() => buildTradeState(null, null));
+
+  const availableSymbols = useMemo(
+    () => availableStocks.map((stock) => stock.symbol).filter(Boolean),
+    [availableStocks]
+  );
+  const availableSymbolsKey = useMemo(() => availableSymbols.join("|"), [availableSymbols]);
 
   React.useEffect(() => {
-    ensureLivePrices(undefined, { includeBackendFallback: true });
-  }, [ensureLivePrices]);
+    if (!availableSymbolsKey) return;
+    ensureLivePrices(availableSymbols, { includeBackendFallback: true });
+  }, [availableSymbols, availableSymbolsKey, ensureLivePrices]);
 
-  // Generate the sector dropdown options from the available stock list.
+  const closeTradeDialog = React.useCallback(() => {
+    setTradeState(buildTradeState(null, null));
+  }, []);
+
+  const openTradeDialog = React.useCallback(
+    async (mode, stock) => {
+      clearTradeFeedback();
+
+      setTradeState({
+        ...buildTradeState(mode, stock),
+        priceLoading: true,
+      });
+
+      const quote = await getExecutionPrice(stock.symbol);
+
+      setTradeState((current) => {
+        if (current.stock?.symbol !== stock.symbol || current.mode !== mode) {
+          return current;
+        }
+
+        return {
+          ...current,
+          executionPrice: quote.ok ? quote.price : 0,
+          quoteWarning: quote.warning || "",
+          priceLoading: false,
+          localError: quote.ok ? "" : "Execution price is unavailable right now.",
+        };
+      });
+    },
+    [clearTradeFeedback, getExecutionPrice]
+  );
+
+  const handleTradeQuantityChange = (event) => {
+    const nextValue = event.target.value;
+    setTradeState((current) => ({
+      ...current,
+      quantity: nextValue,
+      localError: "",
+    }));
+  };
+
+  const handleTradeSubmit = async (event) => {
+    event.preventDefault();
+
+    const stock = tradeState.stock;
+    const quantity = Number(tradeState.quantity);
+    const totalCost = quantity * tradeState.executionPrice;
+
+    if (!stock) return;
+
+    if (!Number.isInteger(quantity) || quantity <= 0) {
+      setTradeState((current) => ({
+        ...current,
+        localError: "Please enter a whole-share quantity greater than zero.",
+      }));
+      return;
+    }
+
+    if (!Number.isFinite(tradeState.executionPrice) || tradeState.executionPrice <= 0) {
+      setTradeState((current) => ({
+        ...current,
+        localError: "Execution price is unavailable right now.",
+      }));
+      return;
+    }
+
+    if (tradeState.mode === "buy" && totalCost > totals.availableFunds) {
+      setTradeState((current) => ({
+        ...current,
+        localError: "Insufficient available funds for this purchase.",
+      }));
+      return;
+    }
+
+    if (tradeState.mode === "sell" && quantity > Number(stock.quantityOwned || 0)) {
+      setTradeState((current) => ({
+        ...current,
+        localError: "Insufficient owned quantity for this sale.",
+      }));
+      return;
+    }
+
+    setTradeState((current) => ({
+      ...current,
+      submitting: true,
+      localError: "",
+    }));
+
+    const result =
+      tradeState.mode === "buy"
+        ? await buyStock(stock.symbol, quantity, { executionPrice: tradeState.executionPrice })
+        : await sellStock(stock.symbol, quantity, { executionPrice: tradeState.executionPrice });
+
+    if (result?.ok) {
+      closeTradeDialog();
+      return;
+    }
+
+    setTradeState((current) => ({
+      ...current,
+      submitting: false,
+    }));
+  };
+
   const sectorOptions = useMemo(() => {
-    return [
-      "ALL",
-      ...new Set(stocksToUse.map((stock) => stock.sector)),
-    ];
-  }, [stocksToUse]);
+    return ["ALL", ...new Set(availableStocks.map((stock) => stock.sector))];
+  }, [availableStocks]);
 
-  // Filter the stock data based on search text and selected sector.
   const filteredStocks = useMemo(() => {
-    let results = [...stocksToUse];
+    let results = [...availableStocks];
 
     if (sectorFilter !== "ALL") {
       results = results.filter((stock) => stock.sector === sectorFilter);
@@ -53,57 +175,50 @@ export default function BuySell() {
     }
 
     return results;
-  }, [sectorFilter, searchTerm, stocksToUse]);
+  }, [availableStocks, sectorFilter, searchTerm]);
 
-  // Total page count is derived from the filtered dataset.
   const totalPages = Math.max(1, Math.ceil(filteredStocks.length / PAGE_SIZE));
 
-  // Clamp the current page whenever filters reduce the available results.
   React.useEffect(() => {
     setCurrentPage((previousPage) => Math.min(previousPage, totalPages));
   }, [totalPages]);
 
-  // Slice the visible rows for the current page.
   const paginatedStocks = useMemo(() => {
     const startIndex = (currentPage - 1) * PAGE_SIZE;
     return filteredStocks.slice(startIndex, startIndex + PAGE_SIZE);
   }, [filteredStocks, currentPage]);
 
-  // Footer text follows the same compact, utility-style language as the reference page.
   const rangeStart = filteredStocks.length === 0 ? 0 : (currentPage - 1) * PAGE_SIZE + 1;
   const rangeEnd = Math.min(currentPage * PAGE_SIZE, filteredStocks.length);
+  const tradeQuantity = Number(tradeState.quantity);
+  const estimatedTotal = Number.isFinite(tradeQuantity) && tradeQuantity > 0
+    ? tradeQuantity * tradeState.executionPrice
+    : 0;
+  const inlineTradeError = tradeState.localError || tradeError;
+  const isTradeDialogOpen = Boolean(tradeState.mode && tradeState.stock);
+  const tradeActionLabel = tradeState.mode === "sell" ? "Sell" : "Buy";
 
   return (
     <div className="buy-sell-page">
-      {/* Shared authenticated-page top navigation. */}
       <AppTopBar />
-
-      {/* Shared sidebar keeps navigation identical to the reference screen. */}
       <AppSidebar />
+      <AppContentLayout>
+        <PageHeader title="Buy & Sell Stocks" />
 
-      {/* Main content uses the same page shell pattern as Transaction History. */}
-      <main className="main-content app-page-main">
-        {/* Keep the heading compact so the table remains the visual focus. */}
-        <header className="topbar">
-          <div>
-            <h1>Buy &amp; Sell Stocks</h1>
-          </div>
-        </header>
-
-        {/* One main content card contains controls, table, and pagination. */}
         <section className="stocks-card">
+          <div className="status-stack" aria-live="polite">
+            {tradeMessage ? <div className="status-pill status-pill-success">{tradeMessage}</div> : null}
+            {inlineTradeError ? <div className="status-pill status-pill-error">{inlineTradeError}</div> : null}
+            {tradeState.quoteWarning ? <div className="status-pill status-pill-warning">{tradeState.quoteWarning}</div> : null}
+          </div>
+
           <div className="table-header">
-            <h2>Available Stocks</h2>
+            <h2 className="app-section-title">Available Stocks</h2>
             <span>{filteredStocks.length} results</span>
           </div>
 
-          {/* Controls row mirrors the density and form sizing of Transaction History. */}
           <div className="controls-row">
-            <select
-              value={sectorFilter}
-              onChange={(event) => setSectorFilter(event.target.value)}
-              className="select-input"
-            >
+            <select value={sectorFilter} onChange={(event) => setSectorFilter(event.target.value)} className="select-input">
               {sectorOptions.map((sector) => (
                 <option key={sector} value={sector}>
                   {sector === "ALL" ? "All Sectors" : sector}
@@ -122,13 +237,17 @@ export default function BuySell() {
             <button
               type="button"
               className="refresh-button"
-              onClick={() => ensureLivePrices(undefined, { forceRefresh: true, includeBackendFallback: true })}
+              onClick={() =>
+                ensureLivePrices(availableStocks.map((stock) => stock.symbol).filter(Boolean), {
+                  forceRefresh: true,
+                  includeBackendFallback: true,
+                })
+              }
             >
               Refresh live prices
             </button>
           </div>
 
-          {/* Table wrapper preserves the same approach used on Transaction History. */}
           <div className="table-wrapper">
             <table>
               <thead>
@@ -143,7 +262,6 @@ export default function BuySell() {
                 </tr>
               </thead>
               <tbody>
-                {/* Rows are easy to replace later with API-fed stock data. */}
                 {paginatedStocks.map((stock, index) => (
                   <tr key={stock.id || `${stock.symbol}-${index}`}>
                     <td>{(currentPage - 1) * PAGE_SIZE + index + 1}</td>
@@ -166,11 +284,7 @@ export default function BuySell() {
                         <button
                           type="button"
                           className="action-button buy-button"
-                          onClick={async () => {
-                            const rawQty = window.prompt(`Buy quantity for ${stock.symbol}:`);
-                            if (rawQty === null) return;
-                            await buyStock(stock.symbol, rawQty);
-                          }}
+                          onClick={() => openTradeDialog("buy", stock)}
                         >
                           Buy
                         </button>
@@ -178,11 +292,7 @@ export default function BuySell() {
                           type="button"
                           className="action-button sell-button"
                           disabled={stock.quantityOwned === 0}
-                          onClick={async () => {
-                            const rawQty = window.prompt(`Sell quantity for ${stock.symbol}:`);
-                            if (rawQty === null) return;
-                            await sellStock(stock.symbol, rawQty);
-                          }}
+                          onClick={() => openTradeDialog("sell", stock)}
                         >
                           Sell
                         </button>
@@ -191,7 +301,6 @@ export default function BuySell() {
                   </tr>
                 ))}
 
-                {/* Empty state keeps the same compact message style as the reference page. */}
                 {paginatedStocks.length === 0 && (
                   <tr>
                     <td colSpan="7" className="empty-state">
@@ -203,7 +312,6 @@ export default function BuySell() {
             </table>
           </div>
 
-          {/* Footer actions mirror internal-product pagination patterns. */}
           <div className="table-footer">
             <span className="table-count">
               {rangeStart}–{rangeEnd} of {filteredStocks.length}
@@ -232,7 +340,79 @@ export default function BuySell() {
             </div>
           </div>
         </section>
-      </main>
+
+        {isTradeDialogOpen ? (
+          <div className="trade-modal-backdrop" onClick={closeTradeDialog}>
+            <div
+              className="trade-modal"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="trade-dialog-title"
+              onClick={(event) => event.stopPropagation()}
+            >
+              <div className="trade-modal-header">
+                <div>
+                  <h2 id="trade-dialog-title">{tradeActionLabel} {tradeState.stock.symbol}</h2>
+                  <p>{tradeState.stock.name}</p>
+                </div>
+                <button type="button" className="trade-modal-close" onClick={closeTradeDialog}>
+                  ×
+                </button>
+              </div>
+
+              <form className="trade-modal-form" onSubmit={handleTradeSubmit}>
+                <label className="trade-modal-field">
+                  <span>Quantity</span>
+                  <input
+                    type="number"
+                    min="1"
+                    step="1"
+                    value={tradeState.quantity}
+                    onChange={handleTradeQuantityChange}
+                    disabled={tradeState.submitting || tradeState.priceLoading}
+                  />
+                </label>
+
+                <div className="trade-summary-card">
+                  <div>
+                    <span>Execution Price</span>
+                    <strong>
+                      {tradeState.priceLoading ? "Loading..." : formatCurrency(tradeState.executionPrice)}
+                    </strong>
+                  </div>
+                  <div>
+                    <span>Estimated Total</span>
+                    <strong>{formatCurrency(estimatedTotal)}</strong>
+                  </div>
+                  <div>
+                    <span>{tradeState.mode === "buy" ? "Available Funds" : "Quantity Owned"}</span>
+                    <strong>
+                      {tradeState.mode === "buy"
+                        ? formatCurrency(totals.availableFunds)
+                        : Number(tradeState.stock.quantityOwned || 0)}
+                    </strong>
+                  </div>
+                </div>
+
+                {inlineTradeError ? <div className="trade-inline-error">{inlineTradeError}</div> : null}
+
+                <div className="trade-modal-actions">
+                  <button type="button" className="trade-modal-secondary" onClick={closeTradeDialog}>
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className={`trade-modal-primary ${tradeState.mode === "sell" ? "sell" : "buy"}`}
+                    disabled={tradeState.submitting || tradeState.priceLoading}
+                  >
+                    {tradeState.submitting ? `${tradeActionLabel}ing...` : `${tradeActionLabel} Stock`}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        ) : null}
+      </AppContentLayout>
     </div>
   );
 }

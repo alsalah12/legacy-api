@@ -1,0 +1,519 @@
+%PDF-1.4
+%‚„œ”
+1 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+2 0 obj
+<< /Length 2152 >>
+stream
+BT
+/F1 11 Tf
+15 TL
+1 0 0 1 54 738 Tm
+(QUANTUM PORTFOLIO OPTIMIZER) Tj
+T*
+T*
+T*
+(Overview) Tj
+T*
+T*
+(The "quantum computing" feature in this project is a quantum-inspired portfolio optimizer,) Tj
+T*
+(not a true quantum hardware implementation. There is no Qiskit, no quantum circuit) Tj
+T*
+(execution, and no qubit-based runtime in this repository. Instead, the system uses a) Tj
+T*
+(classical optimization service written in Java that evaluates holdings, estimates return and) Tj
+T*
+( risk, and suggests portfolio rebalancing actions.) Tj
+T*
+T*
+(The backend exposes this functionality through a Spring endpoint and the frontend calls it) Tj
+T*
+(from the Holdings page.) Tj
+T*
+T*
+(Main Backend Files) Tj
+T*
+T*
+(- `demo/src/main/java/legacy/firstmodel/controller/QuantumOptimizationController.java`) Tj
+T*
+(- `demo/src/main/java/legacy/firstmodel/service/QuantumOptimizationService.java`) Tj
+T*
+(- `demo/src/main/java/legacy/firstmodel/dto/OptimizationRequestDTO.java`) Tj
+T*
+(- `demo/src/main/java/legacy/firstmodel/dto/OptimizationResponseDTO.java`) Tj
+T*
+T*
+(Main Frontend Files) Tj
+T*
+T*
+(- `legacy-portfolio-app/src/services/quantumService.js`) Tj
+T*
+(- `legacy-portfolio-app/src/Holdings.jsx`) Tj
+T*
+(- `legacy-portfolio-app/src/components/QuantumOptimizerCard.jsx`) Tj
+T*
+(- `legacy-portfolio-app/src/components/OptimizationResultsPanel.jsx`) Tj
+T*
+(- `legacy-portfolio-app/src/components/AllocationComparisonChart.jsx`) Tj
+T*
+T*
+(End-to-End Flow) Tj
+T*
+T*
+(1. The user opens the Holdings page and expands the Quantum Optimizer.) Tj
+T*
+(2. The frontend form collects:) Tj
+T*
+(   - risk tolerance) Tj
+T*
+(   - target objective) Tj
+T*
+(   - max holdings) Tj
+T*
+(   - cash available) Tj
+T*
+(3. The frontend sends a `POST /quantum/optimize` request.) Tj
+T*
+(4. The backend controller forwards the request to `QuantumOptimizationService`.) Tj
+T*
+(5. The service evaluates current holdings, estimates return and risk, computes target) Tj
+T*
+(weights, and returns recommendations.) Tj
+T*
+(6. The frontend renders optimization metrics, allocation comparisons, and buy/sell/hold) Tj
+T*
+(suggestions.) Tj
+T*
+T*
+(What `QuantumOptimizationService` Does) Tj
+ET
+endstream
+endobj
+3 0 obj
+<< /Type /Page /Parent 14 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 1 0 R >> >> /Contents 2 0 R >>
+endobj
+4 0 obj
+<< /Length 1375 >>
+stream
+BT
+/F1 11 Tf
+15 TL
+1 0 0 1 54 738 Tm
+T*
+(### `optimize\(...\)`) Tj
+T*
+T*
+(This is the main orchestration method. It:) Tj
+T*
+T*
+(1. Loads the current holdings.) Tj
+T*
+(2. Validates that holdings exist.) Tj
+T*
+(3. Reads user preferences from the request.) Tj
+T*
+(4. Calculates current portfolio value.) Tj
+T*
+(5. Adds available cash to determine investable value.) Tj
+T*
+(6. Builds asset-level metrics.) Tj
+T*
+(7. Selects the best assets based on score.) Tj
+T*
+(8. Computes target allocation weights.) Tj
+T*
+(9. Builds:) Tj
+T*
+(   - current allocations) Tj
+T*
+(   - optimized allocations) Tj
+T*
+(   - buy/sell/hold recommendations) Tj
+T*
+(10. Calculates:) Tj
+T*
+(   - expected return) Tj
+T*
+(   - expected risk) Tj
+T*
+(   - Sharpe ratio) Tj
+T*
+(11. Returns the final response DTO.) Tj
+T*
+T*
+(### `buildAssetMetrics\(...\)`) Tj
+T*
+T*
+(This method creates a scoreable record for each holding. For each asset it calculates:) Tj
+T*
+T*
+(- current value) Tj
+T*
+(- current portfolio weight) Tj
+T*
+(- expected return) Tj
+T*
+(- risk score) Tj
+T*
+(- final optimization score) Tj
+T*
+T*
+(The core scoring idea is:) Tj
+T*
+T*
+(`score = adjusted return - \(lambda x adjusted risk\)`) Tj
+T*
+T*
+(So:) Tj
+T*
+T*
+(- higher return improves the score) Tj
+T*
+(- higher risk lowers the score) Tj
+T*
+(- lambda controls how strongly risk is penalized) Tj
+T*
+T*
+(### `estimateRiskReturn\(...\)`) Tj
+T*
+ET
+endstream
+endobj
+5 0 obj
+<< /Type /Page /Parent 14 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 1 0 R >> >> /Contents 4 0 R >>
+endobj
+6 0 obj
+<< /Length 1591 >>
+stream
+BT
+/F1 11 Tf
+15 TL
+1 0 0 1 54 738 Tm
+(This method estimates expected return and expected risk for each asset.) Tj
+T*
+T*
+(It:) Tj
+T*
+T*
+(- fetches price history using `priceService.getHistory\(symbol\)`) Tj
+T*
+(- extracts close prices) Tj
+T*
+(- calculates historical return) Tj
+T*
+(- calculates daily volatility) Tj
+T*
+(- annualizes volatility) Tj
+T*
+(- blends historical return with the holding's existing profit percentage) Tj
+T*
+T*
+(If historical data is unavailable, the code falls back to simpler holding-level metrics.) Tj
+T*
+T*
+(### `lambdaForRiskTolerance\(...\)`) Tj
+T*
+T*
+(This maps the user's risk setting into a risk penalty:) Tj
+T*
+T*
+(- low risk -> stronger penalty on risk) Tj
+T*
+(- medium risk -> balanced penalty) Tj
+T*
+(- high risk -> lighter penalty on risk) Tj
+T*
+T*
+(This is how the optimizer adapts to different investor preferences.) Tj
+T*
+T*
+(### `adjustReturnForObjective\(...\)` and `adjustRiskForObjective\(...\)`) Tj
+T*
+T*
+(These methods modify return and risk scores depending on the selected investment objective:) Tj
+T*
+T*
+(- growth) Tj
+T*
+(- balanced) Tj
+T*
+(- low-risk) Tj
+T*
+T*
+(For example, a growth objective boosts return emphasis, while a low-risk objective penalizes) Tj
+T*
+( risk more heavily.) Tj
+T*
+T*
+(### `computeTargetWeights\(...\)`) Tj
+T*
+T*
+(This is where the recommended portfolio allocation is produced.) Tj
+T*
+T*
+(The method:) Tj
+T*
+T*
+(1. Ranks assets by score.) Tj
+T*
+(2. Keeps the top N assets based on `maxHoldings`.) Tj
+T*
+(3. Shifts scores into positive space.) Tj
+T*
+(4. Normalizes them into target weights that sum to 100%.) Tj
+T*
+ET
+endstream
+endobj
+7 0 obj
+<< /Type /Page /Parent 14 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 1 0 R >> >> /Contents 6 0 R >>
+endobj
+8 0 obj
+<< /Length 1741 >>
+stream
+BT
+/F1 11 Tf
+15 TL
+1 0 0 1 54 738 Tm
+(If scores are too flat, it falls back to equal weighting.) Tj
+T*
+T*
+(### `buildRecommendations\(...\)`) Tj
+T*
+T*
+(This compares current allocation weight against target allocation weight and assigns:) Tj
+T*
+T*
+(- `BUY` if target weight is meaningfully above current weight) Tj
+T*
+(- `SELL` if target weight is meaningfully below current weight) Tj
+T*
+(- `HOLD` if the difference is small) Tj
+T*
+T*
+(These actions are what appear in the frontend recommendations table.) Tj
+T*
+T*
+(### `weightedExpectedReturn\(...\)`, `weightedExpectedRisk\(...\)`, and) Tj
+T*
+(`calculateSharpeRatio\(...\)`) Tj
+T*
+T*
+(These methods produce portfolio-level summary metrics:) Tj
+T*
+T*
+(- expected return) Tj
+T*
+(- expected risk) Tj
+T*
+(- Sharpe ratio) Tj
+T*
+T*
+(The Sharpe ratio gives a simple measure of return relative to risk.) Tj
+T*
+T*
+(Why It Is Called Quantum-Inspired) Tj
+T*
+T*
+(It is called quantum-inspired because it frames the problem as an optimization task and) Tj
+T*
+(ranks assets under constraints, similar to how advanced optimization systems are often) Tj
+T*
+(presented in finance and quantum research discussions.) Tj
+T*
+T*
+(However, this implementation is still classical. It does not:) Tj
+T*
+T*
+(- create qubits) Tj
+T*
+(- execute quantum circuits) Tj
+T*
+(- call IBM Qiskit, D-Wave, Cirq, or PennyLane) Tj
+T*
+(- run on quantum hardware) Tj
+T*
+T*
+(So the current version is best described as a quantum-inspired optimization demo.) Tj
+T*
+T*
+(Impact of This Feature) Tj
+T*
+T*
+(This feature adds value because it:) Tj
+T*
+T*
+(- demonstrates advanced portfolio optimization concepts) Tj
+T*
+(- gives users interpretable buy/sell/hold guidance) Tj
+T*
+(- creates a strong technical showcase for the project) Tj
+ET
+endstream
+endobj
+9 0 obj
+<< /Type /Page /Parent 14 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 1 0 R >> >> /Contents 8 0 R >>
+endobj
+10 0 obj
+<< /Length 1720 >>
+stream
+BT
+/F1 11 Tf
+15 TL
+1 0 0 1 54 738 Tm
+(- keeps a clean API contract that could later support a more advanced optimizer) Tj
+T*
+T*
+(Limitations) Tj
+T*
+T*
+(The current implementation has important limitations:) Tj
+T*
+T*
+(- it is not true quantum computing) Tj
+T*
+(- it uses heuristic scoring rather than a mathematically exact global optimizer) Tj
+T*
+(- it depends on market history availability) Tj
+T*
+(- it performs per-symbol history fetching, which can increase latency and API usage) Tj
+T*
+(- recommendation quality depends on the quality of fallback data) Tj
+T*
+T*
+(What Would Happen at Scale) Tj
+T*
+T*
+(If this exact implementation were deployed at scale, the main issues would be:) Tj
+T*
+T*
+(### 1. Higher latency) Tj
+T*
+T*
+(The optimizer fetches historical data for each symbol. Larger portfolios and more users) Tj
+T*
+(would increase response time.) Tj
+T*
+T*
+(### 2. API quota pressure) Tj
+T*
+T*
+(Repeated history lookups across many users would put pressure on external market-data APIs.) Tj
+T*
+T*
+(### 3. More backend load) Tj
+T*
+T*
+(All optimization work currently runs synchronously in the request path. High traffic would) Tj
+T*
+(increase CPU and thread pressure.) Tj
+T*
+T*
+(### 4. Inconsistent result quality) Tj
+T*
+T*
+(When historical data is unavailable, the service falls back to simpler metrics. That means) Tj
+T*
+(recommendation quality can vary.) Tj
+T*
+T*
+(### 5. No real quantum advantage) Tj
+T*
+T*
+(Scaling this service would only scale a classical heuristic optimizer, not a true quantum) Tj
+T*
+(engine.) Tj
+T*
+T*
+(What Would Be Needed for Production Scale) Tj
+T*
+T*
+(To support large-scale deployment, the system would likely need:) Tj
+T*
+T*
+(- cached and preprocessed historical market data) Tj
+ET
+endstream
+endobj
+11 0 obj
+<< /Type /Page /Parent 14 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 1 0 R >> >> /Contents 10 0 R >>
+endobj
+12 0 obj
+<< /Length 1002 >>
+stream
+BT
+/F1 11 Tf
+15 TL
+1 0 0 1 54 738 Tm
+(- batched or asynchronous optimization jobs) Tj
+T*
+(- stronger portfolio risk modeling, including covariance-aware optimization) Tj
+T*
+(- better monitoring, quotas, and retry handling) Tj
+T*
+(- clearer auditability for recommendations) Tj
+T*
+(- a pluggable optimizer architecture for swapping in a true external optimization engine) Tj
+T*
+(later) Tj
+T*
+T*
+(Best Summary) Tj
+T*
+T*
+(This project contains a well-structured quantum-inspired portfolio optimization feature) Tj
+T*
+(built with:) Tj
+T*
+T*
+(- a React frontend form and results UI) Tj
+T*
+(- a Spring controller and DTO contract) Tj
+T*
+(- a Java optimization service) Tj
+T*
+(- allocation and recommendation visualizations) Tj
+T*
+T*
+(It is strong as an academic or demo feature, but if implemented at scale in its current) Tj
+T*
+(form, the main bottlenecks would come from market-data lookups, synchronous backend compute,) Tj
+T*
+( and heuristic model quality rather than frontend design or API shape.) Tj
+ET
+endstream
+endobj
+13 0 obj
+<< /Type /Page /Parent 14 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 1 0 R >> >> /Contents 12 0 R >>
+endobj
+14 0 obj
+<< /Type /Pages /Count 6 /Kids [3 0 R 5 0 R 7 0 R 9 0 R 11 0 R 13 0 R] >>
+endobj
+15 0 obj
+<< /Type /Catalog /Pages 14 0 R >>
+endobj
+xref
+0 16
+0000000000 65535 f 
+0000000015 00000 n 
+0000000085 00000 n 
+0000002289 00000 n 
+0000002416 00000 n 
+0000003843 00000 n 
+0000003970 00000 n 
+0000005613 00000 n 
+0000005740 00000 n 
+0000007533 00000 n 
+0000007660 00000 n 
+0000009433 00000 n 
+0000009562 00000 n 
+0000010617 00000 n 
+0000010746 00000 n 
+0000010836 00000 n 
+trailer
+<< /Size 16 /Root 15 0 R >>
+startxref
+10887
+%%EOF

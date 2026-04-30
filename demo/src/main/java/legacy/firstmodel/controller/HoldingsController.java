@@ -15,7 +15,7 @@ import legacy.firstmodel.dto.HoldingsResponse;
 import legacy.firstmodel.dto.SellRequest;
 import legacy.firstmodel.exception.InsufficientFundsException;
 import legacy.firstmodel.exception.InvalidTransactionException;
-import legacy.firstmodel.model.Holdings;
+import legacy.firstmodel.exception.StockNotFoundException;
 import legacy.firstmodel.service.HoldingsService;
 
 @RestController
@@ -45,11 +45,11 @@ public class HoldingsController {
         return ResponseEntity.ok(responses);
     }
 
-    @GetMapping("/{symbol}")
+    @GetMapping("/symbol/{symbol}")
     public ResponseEntity<?> getHoldingsBySymbol(@PathVariable String symbol) {
-        Holdings response = holdingsService.getHoldingsBySymbol(symbol);
-        if (response != null) {
-            return ResponseEntity.ok(response);
+        Optional<HoldingsResponse> response = holdingsService.getHoldingsResponseBySymbol(symbol);
+        if (response.isPresent()) {
+            return ResponseEntity.ok(response.get());
         }
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
             .body(new ErrorResponse("NOT_FOUND", "Holdings not found"));
@@ -91,9 +91,15 @@ public class HoldingsController {
         try {
             HoldingsResponse response = holdingsService.buyStock(request);
             return ResponseEntity.ok(response);
+        } catch (IllegalArgumentException ex) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new ErrorResponse("BAD_REQUEST", ex.getMessage()));
         } catch (InsufficientFundsException ex) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(new ErrorResponse("INSUFFICIENT_FUNDS", ex.getMessage()));
+        } catch (StockNotFoundException ex) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(new ErrorResponse("NOT_FOUND", ex.getMessage()));
         } catch (IllegalStateException ex) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(new ErrorResponse("NOT_FOUND", ex.getMessage()));
@@ -108,9 +114,18 @@ public class HoldingsController {
         try {
             String result = holdingsService.sellStock(request);
             return ResponseEntity.ok(result);
-        } catch (InvalidTransactionException ex) {
+        } catch (IllegalArgumentException ex) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new ErrorResponse("BAD_REQUEST", ex.getMessage()));
+        } catch (StockNotFoundException ex) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(new ErrorResponse("NOT_FOUND", ex.getMessage()));
+        } catch (InvalidTransactionException ex) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
                 .body(new ErrorResponse("INVALID_TRANSACTION", ex.getMessage()));
+        } catch (IllegalStateException ex) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(new ErrorResponse("NOT_FOUND", ex.getMessage()));
         } catch (Exception ex) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(new ErrorResponse("ERROR", ex.getMessage()));

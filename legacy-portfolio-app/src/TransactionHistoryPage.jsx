@@ -1,22 +1,11 @@
-// React hooks power the page state and memoised calculations.
 import React, { useMemo, useState } from "react";
-// Page-specific styles for the transaction history screen.
 import "./TransactionHistoryPage.css";
 import AppSidebar from "./components/AppSidebar";
 import AppTopBar from "./components/AppTopBar";
-import { usePortfolioData } from "./services/holdingsData";
+import AppContentLayout from "./components/AppContentLayout";
+import PageHeader from "./components/PageHeader";
+import { formatCurrency, usePortfolioData } from "./services/holdingsData";
 
-// Helper to show currency values in a readable format.
-function formatCurrency(value) {
-	return new Intl.NumberFormat("en-GB", {
-		style: "currency",
-		currency: "USD",
-		maximumFractionDigits: 0,
-	}).format(value);
-}
-
-// Backend transactions store date/time separately as dd/MM/yyyy and HH:mm strings,
-// so we parse them together here instead of relying on browser ISO parsing.
 function parseTransactionTimestamp(dateString, timeString = "00:00") {
 	const [day, month, year] = String(dateString || "").split("/").map(Number);
 	const [hours, minutes] = String(timeString || "00:00").split(":").map(Number);
@@ -145,12 +134,8 @@ export default function TransactionHistoryPage() {
 			<AppSidebar />
 
 			{/* Right content column that contains the header, filters, table, and insights. */}
-			<main className="main-content app-page-main">
-				<header className="topbar">
-					<div>
-						<h1>Transaction History</h1>
-					</div>
-				</header>
+			<AppContentLayout>
+				<PageHeader title="Transaction History" />
 
 				{/* Filter controls update React state, which then recalculates filteredTransactions. */}
 				<section className="controls-card">
@@ -200,7 +185,7 @@ export default function TransactionHistoryPage() {
 				<div className="content-grid">
 					<section className="table-card">
 						<div className="table-header">
-							<h2>Transactions</h2>
+							<h2 className="app-section-title">Transactions</h2>
 							<span>{filteredTransactions.length} results</span>
 						</div>
 
@@ -284,7 +269,7 @@ export default function TransactionHistoryPage() {
 					{/* Right-hand card showing summary insights derived from the full dataset. */}
 					<aside className="analytics-card">
 						<div className="analytics-header">
-							<h2>Investment Insights</h2>
+							<h2 className="app-section-title">Investment Insights</h2>
 							<span className="analytics-range">Last 30 days</span>
 						</div>
 
@@ -315,7 +300,7 @@ export default function TransactionHistoryPage() {
 						</button>
 					</aside>
 				</div>
-			</main>
+			</AppContentLayout>
 		</div>
 	);
 }

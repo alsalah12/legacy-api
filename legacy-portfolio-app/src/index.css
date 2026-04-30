@@ -126,18 +126,61 @@ p {
 }
 
 h1 {
-  font-size: 22px;
-  font-weight: 600;
+  font-size: var(--fs-page-title);
+  font-weight: var(--fw-page-title);
+  line-height: 1.25;
 }
 
 h2 {
-  font-size: 16px;
-  font-weight: 600;
+  font-size: var(--fs-section-title);
+  font-weight: var(--fw-section-title);
+  line-height: 1.3;
 }
 
 p {
-  font-size: 13px;
+  font-size: var(--fs-body);
   line-height: 1.45;
+}
+
+.app-page-title {
+  font-size: var(--fs-page-title);
+  font-weight: var(--fw-page-title);
+  line-height: 1.25;
+  color: var(--text-primary);
+}
+
+.app-section-title {
+  font-size: var(--fs-section-title);
+  font-weight: var(--fw-section-title);
+  line-height: 1.3;
+  color: var(--text-primary);
+}
+
+.app-card-label {
+  font-size: var(--fs-caption);
+  color: var(--text-secondary);
+}
+
+.app-card-value {
+  font-size: var(--fs-metric-md);
+  font-weight: var(--fw-metric-md);
+  color: var(--text-primary);
+}
+
+.app-table-header-text {
+  font-size: var(--fs-table-header);
+  font-weight: var(--fw-table-header);
+  letter-spacing: var(--ls-table-header);
+}
+
+.app-body-text {
+  font-size: var(--fs-body-sm);
+  color: var(--text-primary);
+}
+
+.app-button-text {
+  font-size: var(--fs-btn);
+  font-weight: var(--fw-btn);
 }
 
 /* Link defaults — purple accent. */

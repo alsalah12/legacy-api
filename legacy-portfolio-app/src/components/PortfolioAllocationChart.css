@@ -5,9 +5,10 @@
   box-shadow: var(--shadow-soft);
   padding: 18px;
   display: grid;
-  gap: 16px;
+  gap: 14px;
   min-width: 0;
-  overflow: hidden;
+  overflow: visible;
+  position: relative;
 }
 
 .portfolio-allocation-header h2 {
@@ -25,9 +26,9 @@
 
 .portfolio-allocation-body {
   display: grid;
-  grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
-  gap: 16px;
-  align-items: start;
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 0.95fr);
+  gap: 18px;
+  align-items: center;
   min-width: 0;
 }
 
@@ -41,7 +42,7 @@
 
 .portfolio-allocation-donut-wrap {
   position: relative;
-  width: min(100%, 260px);
+  width: min(100%, 310px);
   max-width: 100%;
   aspect-ratio: 1;
   display: grid;
@@ -58,15 +59,24 @@
 .portfolio-allocation-track,
 .portfolio-allocation-segment {
   fill: none;
-  stroke-width: 24;
+  stroke-width: 27;
 }
 
 .portfolio-allocation-track {
-  stroke: #efeaf8;
+  stroke: #ebe6f5;
 }
 
 .portfolio-allocation-segment {
   stroke-linecap: butt;
+  stroke: #6f2dbd;
+  stroke-linejoin: round;
+  transition: filter 0.15s ease, opacity 0.15s ease;
+  cursor: pointer;
+  filter: drop-shadow(0 0 0 rgba(0, 0, 0, 0));
+}
+
+.portfolio-allocation-segment:hover {
+  filter: drop-shadow(0 0 3px rgba(51, 36, 93, 0.35));
 }
 
 .portfolio-allocation-center {
@@ -96,23 +106,40 @@
 }
 
 .portfolio-allocation-legend {
-  display: grid;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
   gap: 8px;
   min-width: 0;
-  align-content: start;
+  align-self: stretch;
 }
 
 .portfolio-allocation-legend-row {
+  appearance: none;
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
-  gap: 8px;
+  gap: 14px;
   align-items: center;
-  padding: 2px 0;
+  padding: 8px 10px;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  background: rgba(248, 243, 255, 0.42);
+  width: 100%;
+  text-align: left;
   min-width: 0;
+  cursor: pointer;
+  transition: background 0.14s ease, border-color 0.14s ease, box-shadow 0.14s ease;
+}
+
+.portfolio-allocation-legend-row:hover,
+.portfolio-allocation-legend-row.active {
+  background: #f8f3ff;
+  border-color: #ddd2f3;
+  box-shadow: 0 8px 20px rgba(76, 29, 143, 0.06);
 }
 
 .portfolio-allocation-legend-left {
-  display: inline-flex;
+  display: flex;
   align-items: center;
   gap: 10px;
   min-width: 0;
@@ -122,42 +149,73 @@
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  display: inline-block;
+  display: block;
   flex-shrink: 0;
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.9);
 }
 
 .portfolio-allocation-legend-left strong {
   display: block;
   font-size: 12px;
-  color: var(--text-primary);
+  font-weight: 700;
+  color: #312648;
   line-height: 1.2;
-}
-
-.portfolio-allocation-legend-left span {
-  display: block;
-  margin-top: 1px;
-  font-size: 11px;
-  color: var(--text-secondary);
-  white-space: normal;
-  overflow-wrap: anywhere;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .portfolio-allocation-legend-right {
   text-align: right;
-  display: grid;
-  gap: 1px;
-}
-
-.portfolio-allocation-legend-right strong {
-  font-size: 12px;
-  color: var(--text-primary);
-  white-space: nowrap;
+  flex-shrink: 0;
+  min-width: 58px;
 }
 
 .portfolio-allocation-legend-right span {
+  font-size: 12px;
+  color: #4b1d8f;
+  font-weight: 700;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.01em;
+}
+
+.portfolio-allocation-tooltip {
+  position: fixed;
+  min-width: 220px;
+  max-width: min(280px, calc(100vw - 24px));
+  background: #0d1220;
+  color: #f8fbff;
+  border: 1px solid rgba(160, 179, 209, 0.2);
+  border-radius: 14px;
+  padding: 14px 15px;
+  box-shadow: 0 20px 42px rgba(9, 14, 24, 0.32), 0 6px 18px rgba(9, 14, 24, 0.22);
+  pointer-events: none;
+  z-index: 2147483647;
+  will-change: left, top;
+  backdrop-filter: blur(10px);
+}
+
+.portfolio-allocation-tooltip-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
   font-size: 11px;
-  color: #6f2dbd;
-  font-weight: 600;
+  color: #c2d0e6;
+  font-variant-numeric: tabular-nums;
+}
+
+.portfolio-allocation-tooltip-row strong {
+  font-size: 12px;
+  color: #ffffff;
+}
+
+.portfolio-allocation-tooltip-company {
+  margin: 8px 0 10px;
+  font-size: 11px;
+  color: #b8c7de;
+  line-height: 1.45;
 }
 
 .portfolio-allocation-empty {
@@ -179,9 +237,5 @@
 
   .portfolio-allocation-donut-wrap {
     width: min(100%, 280px);
-  }
-
-  .portfolio-allocation-legend-left span {
-    max-width: 100%;
   }
 }

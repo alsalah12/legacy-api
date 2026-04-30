@@ -1,14 +1,10 @@
-// React is needed because this file returns JSX.
 import React, { useState } from "react";
-// Link creates a clickable route link, and useNavigate lets us move routes in code.
 import { Link, useNavigate } from "react-router-dom";
-// Page-specific styles for the sign-up screen.
 import "./UserSignUp.css";
 import { usersAPI } from "./services/api";
+import legacyLogo from "./assets/legacy-logo.png";
 
-// This component renders the first screen the user sees at "/".
 function UserSignUp() {
-  // navigate is a function from React Router that changes the current page.
   const navigate = useNavigate();
 
   // Form state
@@ -84,67 +80,68 @@ function UserSignUp() {
   };
 
   return (
-    // Outer wrapper used to centre the card on the screen.
     <div className="signup-page">
-      {/* Card container that holds the sign-up content. */}
-      <div className="signup-card">
-        {/* Main title for the page. */}
-        <h1>Legacy Portfolio</h1>
-        {/* Supporting text under the title. */}
-        <p className="signup-subtitle">Create your account to continue</p>
+      <aside className="signup-brand-panel" aria-hidden="true">
+        <div className="signup-brand-glow" />
+        <div className="signup-brand-content">
+          <img src={legacyLogo} alt="LEGACY" className="signup-brand-logo" />
+          <p className="signup-brand-tagline">Build wealth with clarity.</p>
+        </div>
+      </aside>
 
-        {/* Form wrapper; submitting it runs handleSubmit above. */}
-        <form className="signup-form" onSubmit={handleSubmit}>
-          {/* Full name field. */}
-          <label>
-            Full name
-            <input 
-              type="text" 
-              name="fullName"
-              value={formData.fullName}
-              onChange={handleInputChange}
-              placeholder="Enter your full name" 
-            />
-          </label>
+      <section className="signup-form-panel">
+        <div className="signup-card">
+          <h1>Create your account</h1>
+          <p className="signup-subtitle">Start managing your portfolio with LEGACY</p>
 
-          {/* Email field. */}
-          <label>
-            Email
-            <input 
-              type="email" 
-              name="email"
-              value={formData.email}
-              onChange={handleInputChange}
-              placeholder="you@example.com" 
-            />
-          </label>
+          <form className="signup-form" onSubmit={handleSubmit}>
+            <label>
+              Full name
+              <input
+                type="text"
+                name="fullName"
+                value={formData.fullName}
+                onChange={handleInputChange}
+                placeholder="Enter your full name"
+              />
+            </label>
 
-          {/* Password field. */}
-          <label>
-            Password
-            <input 
-              type="password" 
-              name="password"
-              value={formData.password}
-              onChange={handleInputChange}
-              placeholder="Create a password" 
-            />
-          </label>
+            <label>
+              Email
+              <input
+                type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleInputChange}
+                placeholder="you@example.com"
+              />
+            </label>
 
-          {/* Submit button triggers the form's onSubmit handler. */}
-          <button type="submit" disabled={loading}>
-            {loading ? 'Creating account...' : 'Sign up'}
-          </button>
-        </form>
+            <label>
+              Password
+              <input
+                type="password"
+                name="password"
+                value={formData.password}
+                onChange={handleInputChange}
+                placeholder="Create a password"
+              />
+            </label>
 
-        {/* Secondary shortcut link for users who want to skip to the dashboard. */}
-        <p className="signup-footnote">
-          Already have an account? <Link to="/dashboard">Go to dashboard</Link>
-        </p>
+            {error ? <p className="signup-error">{error}</p> : null}
+
+            <button type="submit" disabled={loading}>
+              {loading ? "Creating account..." : "Sign up"}
+            </button>
+          </form>
+
+          <p className="signup-footnote">
+            Already have an account? <Link to="/dashboard">Go to dashboard</Link>
+          </p>
+        </div>
+      </section>
       </div>
-    </div>
   );
 }
 
-// Export this page so App.jsx can mount it for the "/" route.
 export default UserSignUp;

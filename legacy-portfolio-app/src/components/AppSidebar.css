@@ -30,91 +30,13 @@
   display: grid;
   gap: 10px;
   padding-top: 6px;
+  align-content: start;
+  min-height: 0;
 }
 
 .app-sidebar-item-group {
   display: grid;
   gap: 6px;
-}
-
-/* Profile area is anchored in lower sidebar section and visually separated from nav links. */
-.app-sidebar-profile {
-  margin-top: auto;
-  padding: 12px 10px;
-  border: 1px solid rgba(255, 255, 255, 0.09);
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.04);
-  display: grid;
-  justify-items: center;
-  gap: 6px;
-}
-
-.app-sidebar-profile-avatar {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #6f2dbd, #4b1d8f);
-  color: #fff;
-  font-size: 13px;
-  font-weight: 700;
-  display: grid;
-  place-items: center;
-}
-
-.app-sidebar-profile-name {
-  font-size: 12px;
-  font-weight: 600;
-  color: #eef1fc;
-  text-align: center;
-}
-
-.app-sidebar-profile-email {
-  font-size: 10px;
-  color: rgba(211, 217, 238, 0.75);
-  max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.app-sidebar-profile-controls {
-  width: 100%;
-  display: grid;
-  gap: 6px;
-}
-
-.app-sidebar-profile-select {
-  width: 100%;
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  border-radius: 8px;
-  background: rgba(12, 15, 27, 0.45);
-  color: #e9ebf7;
-  font-size: 10px;
-  padding: 6px 8px;
-}
-
-.app-sidebar-profile.collapsed {
-  border: none;
-  background: transparent;
-  padding-inline: 0;
-}
-
-/* Footer timestamp shown at the bottom center of sidebar. */
-.app-sidebar-updated {
-  margin-top: 10px;
-  padding-top: 8px;
-  text-align: center;
-  font-size: 10px;
-  color: rgba(185, 190, 210, 0.5);
-  white-space: nowrap;
-}
-
-.app-sidebar.collapsed .app-sidebar-updated {
-  display: none;
-}
-
-.app-sidebar.collapsed .app-sidebar-profile {
-  justify-items: center;
 }
 
 /* Shared link styling for every page — light text on dark sidebar. */
@@ -272,10 +194,6 @@ body.sidebar-collapsed .app-page-main {
     padding: 14px 12px;
     border-right-color: var(--border-color);
     transform: translateX(-100%);
-  }
-
-  .app-sidebar-updated {
-    display: none;
   }
 
   .app-page-main {

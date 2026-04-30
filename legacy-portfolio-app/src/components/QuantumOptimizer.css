@@ -1,0 +1,374 @@
+.holdings-page .quantum-section {
+  display: grid;
+  grid-template-columns: minmax(310px, 0.95fr) minmax(0, 1.45fr);
+  gap: 12px;
+  min-height: 0;
+}
+
+.holdings-page .quantum-card,
+.holdings-page .quantum-results-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-soft);
+  padding: 14px;
+}
+
+.holdings-page .quantum-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.holdings-page .quantum-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.holdings-page .quantum-card-header h2 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.holdings-page .quantum-card-badge {
+  padding: 3px 8px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 700;
+  color: #ffffff;
+  background: linear-gradient(135deg, #6f2dbd, #4b1d8f);
+}
+
+.holdings-page .quantum-card-subtitle {
+  margin: 0;
+  font-size: 11px;
+  color: var(--text-secondary);
+  line-height: 1.45;
+}
+
+.holdings-page .quantum-form {
+  display: grid;
+  gap: 10px;
+}
+
+.holdings-page .quantum-field {
+  display: grid;
+  gap: 6px;
+}
+
+.holdings-page .quantum-field span {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.holdings-page .quantum-field select,
+.holdings-page .quantum-field input {
+  width: 100%;
+  min-width: 0;
+  padding: 9px 10px;
+  border-radius: 10px;
+  border: 1px solid var(--border-color);
+  background: #ffffff;
+  color: var(--text-primary);
+  font-size: 12px;
+}
+
+.holdings-page .quantum-run-btn {
+  border: 1px solid #bfa2e7;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #6f2dbd, #4b1d8f);
+  color: #ffffff;
+  padding: 10px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.holdings-page .quantum-run-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 24px rgba(111, 45, 189, 0.25);
+}
+
+.holdings-page .quantum-run-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.8;
+}
+
+.holdings-page .quantum-results-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-height: 0;
+}
+
+.holdings-page .quantum-results-header h3 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.holdings-page .quantum-status {
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 12px;
+}
+
+.holdings-page .quantum-status-loading {
+  background: rgba(85, 72, 200, 0.08);
+  border: 1px solid rgba(85, 72, 200, 0.22);
+  color: var(--accent-purple-active);
+}
+
+.holdings-page .quantum-status-error {
+  background: #fff4f4;
+  border: 1px solid #fecaca;
+  color: #b91c1c;
+}
+
+.holdings-page .quantum-status-idle {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  color: var(--text-secondary);
+}
+
+.holdings-page .quantum-results-body {
+  display: grid;
+  gap: 12px;
+  min-height: 0;
+}
+
+.holdings-page .quantum-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.holdings-page .quantum-kpi-cell {
+  border: 1px solid #e9e9f3;
+  border-radius: 10px;
+  padding: 9px 10px;
+  background: #fcfbff;
+  display: grid;
+  gap: 4px;
+}
+
+.holdings-page .quantum-kpi-cell span {
+  color: var(--text-secondary);
+  font-size: 10px;
+}
+
+.holdings-page .quantum-kpi-cell strong {
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.holdings-page .quantum-comparison-panel,
+.holdings-page .quantum-reco-panel {
+  border: 1px solid #ececf5;
+  border-radius: 10px;
+  padding: 10px;
+  background: #ffffff;
+}
+
+.holdings-page .quantum-comparison-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.holdings-page .quantum-comparison-head h4,
+.holdings-page .quantum-reco-panel h4 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.holdings-page .quantum-comparison-legend {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 10px;
+  color: var(--text-secondary);
+}
+
+.holdings-page .legend-chip {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  margin-right: 4px;
+}
+
+.holdings-page .legend-chip.current {
+  background: #a3a6b2;
+}
+
+.holdings-page .legend-chip.optimized {
+  background: #5548c8;
+}
+
+.holdings-page .quantum-allocation-comparison {
+  display: grid;
+  gap: 8px;
+}
+
+.holdings-page .quantum-alloc-row {
+  display: grid;
+  grid-template-columns: minmax(80px, 0.7fr) minmax(0, 1.8fr) auto;
+  gap: 8px;
+  align-items: center;
+}
+
+.holdings-page .quantum-alloc-label {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.holdings-page .quantum-alloc-label strong {
+  font-size: 11px;
+  color: var(--text-primary);
+}
+
+.holdings-page .quantum-alloc-label span {
+  font-size: 10px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.holdings-page .quantum-alloc-bars {
+  display: grid;
+  gap: 4px;
+}
+
+.holdings-page .quantum-alloc-track {
+  width: 100%;
+  height: 7px;
+  border-radius: 999px;
+  background: #eceff4;
+  overflow: hidden;
+}
+
+.holdings-page .quantum-alloc-bar {
+  height: 100%;
+  display: block;
+  border-radius: 999px;
+}
+
+.holdings-page .quantum-alloc-bar.current {
+  background: #9ca3af;
+}
+
+.holdings-page .quantum-alloc-bar.optimized {
+  background: #5548c8;
+}
+
+.holdings-page .quantum-alloc-values {
+  display: grid;
+  justify-items: end;
+  font-size: 10px;
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+.holdings-page .quantum-empty-chart {
+  border: 1px dashed #d7dbe4;
+  border-radius: 10px;
+  padding: 12px;
+  text-align: center;
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+.holdings-page .quantum-reco-table-wrap {
+  margin-top: 8px;
+  overflow-x: auto;
+}
+
+.holdings-page .quantum-reco-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11px;
+}
+
+.holdings-page .quantum-reco-table th,
+.holdings-page .quantum-reco-table td {
+  text-align: left;
+  padding: 8px 9px;
+  border-bottom: 1px solid #eef1f5;
+  white-space: nowrap;
+}
+
+.holdings-page .quantum-reco-table th {
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+}
+
+.holdings-page .quantum-company {
+  color: var(--text-secondary);
+  font-size: 10px;
+  margin-top: 2px;
+}
+
+.holdings-page .quantum-action-pill {
+  padding: 3px 8px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+
+.holdings-page .quantum-action-pill.action-buy {
+  background: #ecfdf3;
+  color: #1d814f;
+}
+
+.holdings-page .quantum-action-pill.action-sell {
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+.holdings-page .quantum-action-pill.action-hold {
+  background: #eef2ff;
+  color: #4338ca;
+}
+
+@media (max-width: 1200px) {
+  .holdings-page .quantum-section {
+    grid-template-columns: 1fr;
+  }
+
+  .holdings-page .quantum-kpi-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .holdings-page .quantum-kpi-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .holdings-page .quantum-alloc-row {
+    grid-template-columns: 1fr;
+  }
+
+  .holdings-page .quantum-alloc-values {
+    justify-items: start;
+  }
+}
